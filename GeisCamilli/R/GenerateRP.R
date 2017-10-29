@@ -14,11 +14,11 @@ function(xi,theta,structure=structure,tau=NA) {
       P<-ProbIRT(xi,theta,guess=structure$guess,tau)
     }
   }  
-  if (is.na(tau)) {
+  if (is.na(tau)[1]) {
     for (i in 1:nrow(RP)) for (j in 1:ncol(RP)) RP[i,j]<-rbinom(1,size=1,prob=P[i,j])
   } else {
     for (i in 1:nrow(RP)) for (j in 1:ncol(RP)) {
-      RP[i,j]<-which(rmultinom(1,size=1,prob=P[i,j,])==1)
+      RP[i,j]<-which(rmultinom(n = 1,size=1,prob=diff(-1*c(1,P[i,j,],0)))==1)
     }
   }
   return(RP)

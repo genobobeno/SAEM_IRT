@@ -2,7 +2,6 @@ ProbOgive <-
 function(xi,theta,j=NA,guess=FALSE,tau=NA) { # gives back a N X J frame of probabilities... or N x 1
   #structure and settings have same list entries for calculations
   #tau will be J x K
-  xi;theta=t;j=NA;guess=FALSE;tau=tau
   theta = as.matrix(theta)
   if (guess) {
     aa<-as.matrix(xi[,1:(ncol(xi)-2)])
@@ -34,11 +33,11 @@ function(xi,theta,j=NA,guess=FALSE,tau=NA) { # gives back a N X J frame of proba
       AT<-array(rep(t(aa%*%t(theta)),ncol(tau)),c(nrow(theta),nrow(xi),ncol(tau))) #J x df  %*%  df x N
       B = list()
       for (i in 1:ncol(tau)) {
-        B[[i]]<-t((bb+tau[,i])%*%t(as.matrix(rep(1,nrow(theta)))))
+        B[[i]]<-t((tau[,i])%*%t(as.matrix(rep(1,nrow(theta)))))
       }
       Bz <- array(do.call(c,B),dim = c(nrow(theta),nrow(xi),ncol(tau)))
     } else {
-      Bz<-matrix(rep(bb[j,1]+tau[j,],nrow(theta)),nrow(theta),ncol(tau))
+      Bz<-matrix(rep(tau[j,],nrow(theta)),nrow(theta),ncol(tau))
       if (ncol(aa)>1) {
         AT<-matrix(rep(as.vector(aa[j,]%*%t(theta)),ncol(tau)),nrow(theta),ncol(tau))
       } else {
