@@ -1,8 +1,5 @@
-WD<-getwd()
 
-##########################################################################
-WorkingDirectory = "/home/egeis/Documents/Documents/Rutgers_GSE/Camilli/ParSAEM/"
-setwd(WorkingDirectory)
+source("Hello.R", chdir = T)
 
 PACK <- c("maptools","quantreg","MASS","plyr","ggplot2","Hmisc","fields",
           "truncdist","truncnorm","modeest","psych","GPArotation","abind",
@@ -99,45 +96,52 @@ if (PARALLEL) {
   #Rcpp::sourceCpp("truncNorm.cpp")
 Rcpp::sourceCpp("MVNormRand.cpp")
 
-source("GeneratingFunctions.R")
-source("Calculations.R")
-source("FileManagement.R")
-source("CodeDiagnostics.R")
-source("Estimation.R")
-source("ErrorFunctions.R")
-source("GIFAFunctions.R")
-source("IRTFunctions.R")
-source("PlotFunctions.R")
-source("PlotsOn.R")
-source("EmpiricalSE.R")
 
-# source("IRT_Response.R")
-# source("RunIRT.R")
-settings=list(model="gifa",    # Or "irt" = Analytical EM model
-              icc="ogive",     # Probability model... logistic? ogive? 
-              Adim=2,          # Multidimensional?
-              Akappa=10,          # Multidimensional?
-              guess=FALSE,     # Geussing ? TRUE
-              fm="camilli",    # Factor analysis procedure: fa() methods=c("ml","minres","wls","gls") or "camilli", or "old", "pca",...etc?
-              rmethod="pstT",    # GPArotation method, currently "targetT" or "pstT"
-              empiricalse=TRUE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-              est="rm",       # Estimation method? model("gifa) -> "off"=mean, "rm"=robbinsmonro, "sa"=simannealing; model("irt") -> "anr"=analytical newton-raphson, "nnr"=numerical newton-raphson #Convergence procedure
-              estgain=0.5,       # Constant to slow down(decrease to decimal)/speed up(increase) newton cycles, or exponent on denominator in rm-squeeze
-              burnin=500,       # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
-              quad="manual",   # manual, gauss-hermite
-              nodes=15,        # nodes for quadrature
-              gridbounds=c(-3.5,3.5), #manual quadrature bounds
-              tmu=c(0,0),           # Prior mean, can be multivariate vector(Adim)
-              tsigma=diag(2),        # Prior sigma, can be multivariate matrix(Adim x Adim)
-              eps=1e-4,        # Converged?
-              esttheta="mcmc", # "map", Must implement "eap"
-              nesttheta=10,    # if esttheta="mcmc", how many random samples?
-              impute=FALSE,    # Impute missing data?
-              chains=1,        # How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
-              initialize="random", # "best", "random"
-              plots=FALSE,     # Show plots for diagnostics
-              record="on",     # "off"
-              simfile=NA, # or NA
+J=200;N=10000;Q=10;K=4
+
+structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
+               Adist="beta",         # prior distribution of A's/loadings
+               Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
+               Adim=Q,               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
+               bdist="norm",         # distribution of B/intercept
+               bparams=c(0,1),       # parameters of bdist
+               guess=FALSE,          # guessing ? TRUE/FALSE
+               ncat=K,               # Ordinal Polythomous? Number of categories
+               taudist="norm",       # sample distribution for categorical intercepts
+               tauparams=c(0,1),     # parameters for taudist
+               cdist="unif",         # guessing parameter distribution for 3PNO or 3PL
+               cparams=c(0.05,0.3),  # bounds
+               tmu=rep(0,Q),         # Theta Prior... e.g. 0, or multivariate c(0,0) ... can be multidimensional
+               tsigma=if(Q==1) 1 else diag(Q), # Latent factor orthogonal covariance
+               simfile=paste0("Poly_J",J,"_N",N,"_Q",Q,ifelse(!is.na(K) & K>2,paste0("_K",K),""),".rda"))  # Name of saved file of generated data.
+
+settings=list(model="gifa",                   # Or "irt" = Analytical EM model
+              icc="ogive",                    # Probability model... logistic? ogive? 
+              Adim=Q,                         # Multidimensional?
+              Akappa=10,                      # Multidimensional?
+              ncat=K,                         # Ordinal Polythomous? Number of categories
+              guess=FALSE,                    # Geussing ? TRUE
+              fm="camilli",                   # Factor analysis procedure: fa() methods=c("ml","minres","wls","gls") or "camilli", or "old", "pca",...etc?
+              rmethod="pstT",                 # GPArotation method, currently "targetT" or "pstT"
+              empiricalse=TRUE,               # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+              est="rm",                       # Estimation method? model("gifa) -> "off"=mean, "rm"=robbinsmonro, "sa"=simannealing; model("irt") -> "anr"=analytical newton-raphson, "nnr"=numerical newton-raphson #Convergence procedure
+              estgain=0.5,                    # Constant to slow down(decrease to decimal)/speed up(increase) newton cycles, or exponent on denominator in rm-squeeze
+              burnin=300,                     # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
+              quad="manual",                  # manual, gauss-hermite
+              nodes=15,                       # nodes for quadrature
+              gridbounds=c(-3.5,3.5),         # manual quadrature bounds
+              tmu=rep(0,Q),                   # Prior mean, can be multivariate vector(Adim)
+              tsigma=if(Q==1) 1 else diag(Q), # Prior sigma, can be multivariate matrix(Adim x Adim)
+              RMwindow=100,                   # Simulated Annealing window
+              eps=1e-4,                       # Converged?
+              esttheta="mcmc",                # "map", Must implement "eap"
+              nesttheta=10,                   # if esttheta="mcmc", how many random samples?
+              impute=FALSE,                   # Impute missing data?
+              chains=1,                       # How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
+              initialize="random",            # "best", "random"
+              plots=FALSE,                    # Show plots for diagnostics
+              record="on",                    # "off"
+              simfile=NA,                     # or NA
               estfile="GIFA_Results") 
 
 #print(settings)

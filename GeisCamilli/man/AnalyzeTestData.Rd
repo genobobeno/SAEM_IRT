@@ -2,38 +2,60 @@
 \alias{AnalyzeTestData}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+Begin Analysis of Test Data
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+This will kick off the process of fitting the data to the Model chosen.
 }
 \usage{
-AnalyzeTestData(RP, settings = settings)
+AnalyzeTestData(RP, settings = settings, verbose=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{RP}{
-%%     ~~Describe \code{RP} here~~
-}
+  matrix; This is a response pattern. If dichotomous, 1's and 0's. If polythomous, 0 is still the lowest ordinal category.
+  }
   \item{settings}{
-%%     ~~Describe \code{settings} here~~
-}
+  list; This is the list of settings for the algorithm.
+  }
+  \item{verbose}{
+  TRUE/FALSE; This will provide some outputs.
+  }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+The bulk of this work is based on Stochastic Approximation of the EM Algorithm for Multidimensional Item Response Theory using the Probit link. 
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+ A list:
+\item{ XI }{The generated parameters, slopes and intercept, J X Q + 1 + (guessing==TRUE)+0}
+\item{ RP }{The input response pattern}
+\item{ THETA}{The generated latent factors}
+\item{ A }{ The fitted slopes, J X Q}
+\item{ AR}{ The rotated fitted slopes, J X Q}
+\item{ B }{The fitted intercepts}
+\item{ C }{The fitted guessing parameters}
+\item{ xi}{The item-specific fitted matrix of slopes, intercepts, and guessing}
+\item{ xiError }{The errors of the parameters in \code{xi}}
+\item{ iError}{The Lewis errors of the parameters before SAEM in \code{xi}}
+\item{ oError}{The Lewis errors of the parameters during SAEM in \code{xi}}
+\item{ gain }{The vector of the gain parameter used at every iteration of the Markov Chain}
+\item{ EZ }{The expectation value of the augmented data}
+\item{ EZZ }{The expectation of the covariance matrix of the augmented data}
+\item{ That }{The EAP of the latent factors, N X Q}
+\item{ Tmap }{The MAP of the latent factors, N X Q}
+\item{ Tmaprot }{The MAP of the rotated latent factors, N X Q}
+\item{ TRmap}{The MAP of the rotated latent factors, N X Q}
+\item{ Theta}{The EAP of the rotated latent factors, N X Q}
+\item{ Trot=TROT }{}
+\item{ EmpSE}{The empirical errors of the parameters in \code{xi}}
+\item{ ThetaFix}{The Empirical Bayesian estimate of the latent factors, N X Q}
+\item{ settings}{The list of settings for parameters used in the algorithm }
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+Eugene Geis
 }
 \note{
 %%  ~~further notes~~
@@ -45,31 +67,7 @@ AnalyzeTestData(RP, settings = settings)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (RP, settings = settings) 
-{
-    stopwatch <- Sys.time()
-    stopifnot(nrow(RP) > ncol(RP))
-    rp <- RP
-    J <- ncol(rp)
-    N <- nrow(rp)
-    print(paste("*****************   Analyzing Test Data, J =", 
-        J, ";  N =", N, "; Output =", settings$estfile, "  ******************"))
-    Init <- InitializeParams(rp, settings = settings)
-    if (tolower(settings$model) == "gifa") {
-        Estimates <- GoGIFA(rp, init = Init, settings = settings)
-    }
-    else if (tolower(settings$model) == "irt") {
-        Estimates <- GoIRT(rp, init = Init, settings = settings)
-    }
-    else {
-        print(paste("Model", settings$model, "not implemented yet"))
-    }
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

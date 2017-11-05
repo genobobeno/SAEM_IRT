@@ -1,0 +1,85 @@
+---
+title: "SAEM_IRT Tutorial"
+output: html_notebook
+---
+
+
+# Probit Link MIRT: A Gibbs Sampler Applying SAEM
+Welcome to the tutorial on using the SAEM_IRT code to fit your IRT exploratory models.
+
+The first thing we want to do is to appropriately set up your environment for running our code. The following code will appropriately set the working directory and demonstrate the R Notebook features if you have not yet been introduced to this markdown format.
+```{r}
+knitr::opts_chunk$set(echo=FALSE,warning = FALSE)
+source("Hello.R", chdir = T)
+Hello()
+```
+
+## R Environment and Packages
+Before we get started, we'll have to make sure you have some packages installed. We used a C++ implementation for some functions so Rcpp is key. Also, for our parallelization pleasure, we'll include some logic to decide which packages are appropriate in your environment.
+```{r,message=FALSE}
+### Packages called ###
+PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
+         ifelse(get_os()=="windows","doSNOW","doParallel"),
+         "rlecuyer","GPArotation","mvnfast","psych","modeest","MASS",
+         "Rcpp","RcppArmadillo","devtools","compiler","doRNG","abind",
+         "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix")
+
+### Install packages not already installed ###
+for (i in 1:length(PACK)){
+  if(PACK[i] %in% rownames(installed.packages()) == FALSE) {install.packages(PACK[i],dependencies = TRUE)}
+}
+# NOTE: You will not see output when message=FALSE. You will still see warnings, etc.
+```
+
+
+### Assumptions
+In running the SAEM algorithm, you'll want to either load your own data or generate data. It is a good idea to generate some data to get a feel for the inputs and outputs, and that's what we'll do here. Several data sets are included to help facilitate your work with this code as well.
+
+Please NOTE the following assumptions here: 
+
+* This suite of functionality assumes orthogonal latent factors in its factor analysis.
+* Rotations on output are made based on assumptions about the structure of multidimensionality in items.
+* The model uses a probit link. Later in this tutorial, we will transform back to a 2PL or 3PL for pedagogical purposes.
+  
+## Generate Data
+A very simple approach is to generate a small dichotomous test. Let's say 10 items, 500 examinees, and let's keep it simple with a single slope and intercept per item. The latent factor will be a normal distribution, there will be no guessing, and the model of the item characteristic curve will be a probit. There are many other parameters required for properly sampling
+```{r}
+J = 10; N <- 500; Q <- 1; K <-NA
+structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
+               Adist="beta",         # prior distribution of A's/loadings
+               Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
+               Adim=Q,               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
+               bdist="norm",         # distribution of B/intercept
+               bparams=c(0,1),       # parameters of bdist
+               guess=FALSE,          # guessing ? TRUE/FALSE
+               ncat=K,               # Ordinal Polythomous? Number of categories
+               taudist="norm",       # sample distribution for categorical intercepts
+               tauparams=c(0,1),     # parameters for taudist
+               cdist="unif",         # guessing parameter distribution for 3PNO or 3PL
+               cparams=c(0.05,0.3),  # bounds
+               tmu=rep(0,Q),         # Theta Prior... e.g. 0, or multivariate c(0,0) ... can be multidimensional
+               tsigma=if(Q==1) 1 else diag(Q), # Latent factor orthogonal covariance
+               simfile=paste0("Poly_J",J,"_N",N,"_Q",Q,ifelse(!is.na(K) & K>2,paste0("_K",K),""),".rda"))  # Name of saved file of generated data.
+
+# This will show you the parameters you're using for sampling the response pattern.
+VisualizeParams(structure)
+```
+
+Now let's generate some response pattern data!
+```{r}
+Gen.Data<-GenerateTestData(j=J,n=N,structure=structure)
+cat("\nParameters (A and b)\n")
+print(head(Gen.Data$XI,n=10))
+cat("\nParameters (Theta)\n")
+print(head(Gen.Data$THETA))
+OgiveICC(xi = Gen.Data$XI,guess=structure$guess,j=1)
+cat("\nResponse Data\n")
+print(head(Gen.Data$RP))
+```
+
+## Fit the Data
+Now that we have response data, we want to fit it using our Gibbs Sampler.
+```{r}
+
+```
+
