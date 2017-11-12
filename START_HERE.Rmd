@@ -26,8 +26,17 @@ PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
 
 ### Install packages not already installed ###
 for (i in 1:length(PACK)){
-  if(PACK[i] %in% rownames(installed.packages()) == FALSE) {install.packages(PACK[i],dependencies = TRUE)}
+  if(PACK[i] %in% rownames(installed.packages()) == FALSE) {
+    install.packages(PACK[i],dependencies = TRUE)}
 }
+```
+
+Now we source those packages, source our beta functions (pre-CRAN-package) code, and then run some specific code to source the nuanced functions, C++, etc.
+```{r, message=FALSE}
+required<-lapply(PACK, require, character.only = TRUE)                       # Call the libraries (will deprecate)
+Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm Random (fast)
+file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
+sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
 # NOTE: You will not see output when message=FALSE. You will still see warnings, etc.
 ```
 
@@ -73,12 +82,44 @@ print(head(Gen.Data$XI,n=10))
 cat("\nParameters (Theta)\n")
 print(head(Gen.Data$THETA))
 OgiveICC(xi = Gen.Data$XI,guess=structure$guess,j=1)
+for (i in 2:5) OgiveICC(xi = Gen.Data$XI,guess=structure$guess,j=i,overlay=TRUE,col=i)
 cat("\nResponse Data\n")
 print(head(Gen.Data$RP))
 ```
 
+## Fit Settings 
+
+Now for the complicated part, parameters for fitting the model! 
+
+### Minimal Fix...
+
+If you'd prefer to not think about this, let's start by making a minimal set of features... in fact, we've set this up so you should only need to choose the dimensions. We've got the rest set up for you.
+
+In the block below, we are designating Q = 1. The rest of the settings are a small introduction to the basics of the code's flexibility and are initialized as follows:
+
+* guess = FALSE; No guessing parameter
+* empiricalse=FALSE; Don't resample (from conditional distributions given fitted values) for standard errors after the fit
+* est="rm"; Use the Robbins-Munro [RM] algorithm
+* estgain=1; Set the gain exponent in the denominator of the RM algorithm to 1
+* burnin=1000; Run 1000 Gibbs cycles before using RM
+* tmu=0; Set prior mean of latent factor to zero
+* tsigma=diag(Q); Set prior variance of latent factor to Unity
+* eps=1e-4; Set convergence criterion for all item function parameters to 0.0001
+* parallel=parallel::detectCores()>2; If you have more than 2 cores, parallelize the algorithm
+* estfile="FitFile_Test"; Save the output into an R-Data file "FitFile_Test.rda"
+
+Note: Since there are more settings than this subset, the CheckParams() function will fill in the blanks with defaults! The same is true for the generate structure parameters (the generate argument is the switch).
+```{r}
+Q <- 1 # Number of dimensions to fit, chosen above... but here for pedagogy
+settings = list(Adim=Q,guess=FALSE,empiricalse=FALSE,est="rm",estgain=1,burnin=1000,
+                tmu=rep(0,Q),tsigma=diag(Q),eps=1e-4,parallel=(parallel::detectCores()>2),                             estfile="FitFile_Test")
+settings<-CheckParams(parameters = settings,generate=FALSE)
+```
+
 ## Fit the Data
-Now that we have response data, we want to fit it using our Gibbs Sampler.
+
+Now that we have response data, we want to fit it using our MIRT Gibbs Sampler.
+
 ```{r}
 
 ```

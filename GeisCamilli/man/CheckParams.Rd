@@ -1,5 +1,5 @@
-\name{ParamCheck}
-\alias{ParamCheck}
+\name{CheckParams}
+\alias{CheckParams}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Check Parameters for Generation or Fit
@@ -8,18 +8,15 @@ Check Parameters for Generation or Fit
 Verifies names of parameters, cleans case, creates defaults if parameters not defined.
 }
 \usage{
-ParamCheck(name, plist, dplist)
+CheckParams(parameters,generate=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{name}{
-Name of default parameter
+  \item{parameters}{
+list; the list of parameters for generating or fitting
 }
-  \item{plist}{
-Parameter list defined by user
-}
-  \item{dplist}{
-Default parameter list defined by package; 'structure' for Generator, 'settings' for Fit.
+  \item{generate}{
+TRUE/FALSE; if true, parameters are assumed to be the "generate" parameters, else, the model's parameters for fitting.
 }
 }
 \details{
@@ -48,16 +45,8 @@ Eugene Geis
 ##-- ==>  Define data, use random,
 ##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (name, plist, dplist) 
-{
-    if (!(tolower(name) \%in\% tolower(names(dplist)) && !is.na(plist[name]))) {
-        plist[name] = dplist[name]
-    }
-    names(plist)[names(plist) == name] <- names(dplist)[which(tolower(names(dplist)) \%in\% 
-        tolower(name))]
-    return(plist)
-  }
+structure<-CheckParams()
+settings<-CheckParams(generate=FALSE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

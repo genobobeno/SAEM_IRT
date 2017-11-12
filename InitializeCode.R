@@ -73,7 +73,7 @@ lsos <- function(..., n=10) {
 
 enableJIT(1)
 
-if (PARALLEL) {
+if (PARALLEL & OS = "linux") {
   Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
   Sys.setenv("PKG_LIBS"="-fopenmp")
 

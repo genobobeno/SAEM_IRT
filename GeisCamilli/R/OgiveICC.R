@@ -1,5 +1,5 @@
 OgiveICC <-
-function(xi,guess=settings$guess,j=NA) { # gives back a N X J frame of probabilities... or N x 1
+function(xi,guess=settings$guess,j=NA,overlay=FALSE,...) { # gives back a N X J frame of probabilities... or N x 1
   #structure and settings have same list entries for calculations
   stopifnot((ncol(xi)<=4 & guess)|(ncol(xi)<4 & !guess))
   if (guess) {
@@ -70,13 +70,22 @@ function(xi,guess=settings$guess,j=NA) { # gives back a N X J frame of probabili
         text(-2,0.9,paste("Item",j))
       }
     } else {
-      par(mfrow=c(1,1),mar=c(5,5,4,3))
-      Bz<-bb[j]
-      ifelse(ncol(aa)>1,AT<-(aa[j,]%*%t(as.matrix(theta))),AT<-aa[j]*theta)
-      par(mfrow=c(1,1),mar=c(5,5,4,3))
-      ifelse(!guess,p<-pnorm(AT-Bz),p<-C+(1-C)*pnorm(AT-Bz))
-      plot(theta,p,type="n",main=paste("ICC for Item",j),ylab="P",xlab="Theta",xlim=range(theta),ylim=c(0,1))
-      lines(theta,p) 
+      if (!overlay) {
+        par(mfrow=c(1,1),mar=c(5,5,4,3))
+        Bz<-bb[j]
+        ifelse(ncol(aa)>1,AT<-(aa[j,]%*%t(as.matrix(theta))),AT<-aa[j]*theta)
+        par(mfrow=c(1,1),mar=c(5,5,4,3))
+        ifelse(!guess,p<-pnorm(AT-Bz),p<-C+(1-C)*pnorm(AT-Bz))
+        plot(theta,p,type="n",main=paste("ICC for Item",j),ylab="P",xlab="Theta",xlim=range(theta),ylim=c(0,1),...)
+        lines(theta,p) 
+      } else {
+        Bz<-bb[j]
+        ifelse(ncol(aa)>1,AT<-(aa[j,]%*%t(as.matrix(theta))),AT<-aa[j]*theta)
+        par(mfrow=c(1,1),mar=c(5,5,4,3))
+        ifelse(!guess,p<-pnorm(AT-Bz),p<-C+(1-C)*pnorm(AT-Bz))
+        lines(theta,p,...) 
+        text(x=quantile(theta,probs = 0.25),y=(1-(1+j)*0.1),labels = paste0("j = ",j),...)
+      }
     }  
   }
 }

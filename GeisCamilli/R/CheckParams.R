@@ -1,4 +1,5 @@
-CheckParams = function(parameters,generate = TRUE) {
+CheckParams = function(parameters=NA,generate = TRUE) {
+  stopifnot(is.na(parameters)|is.list(parameters))
   parCheck = function(name,plist,dplist) {
     if (!tolower(name) %in% tolower(names(plist))) {
       plist[[name]] <- dplist[[name]]
@@ -44,17 +45,17 @@ CheckParams = function(parameters,generate = TRUE) {
                 eps=1e-4,        # Converged?
                 nesttheta=10,    # if esttheta="mcmc", how many random samples?
                 thetamap=TRUE,   # do an MAP estimate of Theta?
-                thetaGen=Gen2D$THETA, # Did you simulate a new set of thetas? if so, give them to me. 
+                thetaGen=NA, # Did you simulate a new set of thetas? if so, give them to me. 
                 impute=FALSE,    # Impute missing data?
-                plots=PLOT,     # Show plots for diagnostics
+                plots=FALSE,     # Show plots for diagnostics
                 chains=5,        # How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
                 initialize="best", # "best", "random"
                 record="on",     # "off"
-                parallel=TRUE) #,  # True or false for parallel computation?
+                parallel=(parallel::detectCores()>2)) #,  # True or false for parallel computation?
                 # simfile=structure$simfile, # or NA
                 defaultP$estfile=paste("FitFile_Test") 
   }
-  if (is.na(parameters)) {
+  if (is.na(parameters)[1]) {
     parameters<-defaultP
   } else {
     for (i in names(defaultP)) {

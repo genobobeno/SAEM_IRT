@@ -8,7 +8,7 @@ function(RP,settings=settings,verbose=FALSE) {
   if (verbose) {
   print(paste("*****************   Analyzing Test Data, J =",J,";  N =",N,"; Output =",settings$estfile,"  ******************"))
   }
-  Init<-InitializeParams(rp,settings=settings) # returns XI and THat
+  Init<-InitializePrior(rp,settings=settings) # returns XI and THat
   if (tolower(settings$model)=="gifa") {
     Estimates<-GoGIFA(rp,init=Init,settings=settings) # returns xi, that, xiErr, thatErr, Arot
   } else if (tolower(settings$model)=="irt") {

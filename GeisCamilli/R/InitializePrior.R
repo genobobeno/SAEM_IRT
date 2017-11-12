@@ -1,4 +1,4 @@
-InitializeParams <-
+InitializePrior <-
 function(rp,settings=settings) {
   J<-ncol(rp)
   N<-nrow(rp)
@@ -35,9 +35,11 @@ function(rp,settings=settings) {
     B<-qnorm(1-colSums(rp)/N)*2
     XI<-cbind(A,B)
     if (settings$guess) {
-      C<-runif(J,0.01,0.3)
+      rpGuess0 = rp[THat<quantile(THat[,1],probs=0.15),]; rpGuess1 = rp[THat>quantile(THat[,1],probs=0.85),]
+      Gap = apply(rpGuess1,2,mean,na.rm=TRUE) - apply(rpGuess0,2,mean,na.rm=TRUE)
+      C<-seq(0.35,0.01,length.out = J)[order(Gap)] #C<-runif(J,0.01,0.3)
       XI<-cbind(XI,C)
     }
   }
-  return(list(XI=XI,THat=THat))
+  list(XI=XI,THat=THat)
 }
