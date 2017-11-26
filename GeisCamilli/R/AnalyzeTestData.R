@@ -2,6 +2,24 @@ AnalyzeTestData <-
 function(RP,settings=settings,verbose=FALSE) {
   stopwatch<-Sys.time()
   stopifnot(nrow(RP)>ncol(RP))
+  if (settings$parallel & settings$cores>1) {
+    if (get_os()=="windows") {
+      cl <<- parallel::makePSOCKcluster(settings$cores)
+      parallel::clusterSetRNGStream(cl, iseed = round(runif(6)*1001))
+      #parallel::setDefaultCluster(cl)
+      prl<-TRUE
+    } else if (get_os()=="linux") {
+      cl <<- parallel::makeCluster(settings$cores,type="FORK")
+      parallel::registerDoParallel(cl)
+      parallel::clusterSetRNGstream(cl,iseed = round(runif(6)*1001))
+      #parallel::setDefaultCluster(cl)
+      prl<-TRUE
+    } else {
+      cat("\nI have only been testing for 'linux' and 'windows' operating systems. 
+        Please feel free to edit the code in StartParallel() to add yours.\n")
+      prl<-FALSE
+    } 
+  }
   rp<-RP  
   J<-ncol(rp)
   N<-nrow(rp)
@@ -16,6 +34,10 @@ function(RP,settings=settings,verbose=FALSE) {
   } else {
     print(paste("Model",settings$model,"not implemented yet"))
   }
+  if (prl) {
+    # cl <- parallel::getDefaultCluster()
+    parallel::stopCluster(cl)
+  }
   cat("
       Model has been fit
       Time: ",Sys.time()-stopwatch)
@@ -24,4 +46,5 @@ function(RP,settings=settings,verbose=FALSE) {
 #     plot(as.vector(Estimates$xi-gen.xi),main="Parameter Estimate differences",ylab="XI_hat - XI_gen",xlab="A(1...J), B(1...J)")
 #     plot(as.vector(Estimates$theta-gen.theta),main="Theta Estimate differences",ylab="Theta_hat - Theta_gen",xlab="Theta (1...N)")  
 #   }
+  Estimates
 }

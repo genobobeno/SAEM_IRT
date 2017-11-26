@@ -1,9 +1,9 @@
 GenerateTestData <-
-function(j=30,n=1000,structure=structure) {
+function(j=30,n=1000,structure=structure,verbose = FALSE) {
   #j=J;n=N
   stopifnot(tolower(structure$icc) %in% c("logistic","ogive"),j>4,
             length(structure$Aparams)>=1,n>50,structure$Adim==length(structure$tmu))
-  print("***********************  Generating Parameters  **************************")
+  if (verbose)  print("***********************  Generating Parameters  **************************")
   #print(unlist(structure))
   A<-GenerateA(j,structure$Adim,tolower(structure$Adist),structure$Aparams)
   if (!is.na(structure$ncat) && structure$ncat!=2) {
@@ -13,7 +13,7 @@ function(j=30,n=1000,structure=structure) {
     tau<-NA
     b<-GenerateB(j,tolower(structure$bdist),structure$bparams)
   }
-  if (length(A)==j) cat(" ...IRT pseudo-difficulties of Ogive: ",b/A)
+  if (length(A)==j & verbose) cat(" ...IRT pseudo-difficulties of Ogive: ",b/A)
   xi<-cbind(A,b)
   if (structure$guess) {
     c<-GenerateC(j,tolower(structure$cdist),structure$cparams)

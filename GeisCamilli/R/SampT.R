@@ -22,27 +22,12 @@ function(aa,bb,zz,rp,prior) {
   #### Resample Theta around that mean estimate ####
   if (ncol(as.matrix(aa))==1) {
     #for (n in 1:N) that[n]<-rnorm(1,mean=(tHat[n]/V+prior$tmu/prior$tsigma)/(1/V+1/prior$tsigma),sd=sqrt(1/(1/V+1/prior$tsigma)))
-    Mean<-(tHat/V+prior$tmu/prior$tsigma)/(1/V+1/prior$tsigma)
+    Mean<-(tHat/V+prior$tmu/as.vector(prior$tsigma))/(1/V+1/as.vector(prior$tsigma))
     SD<-sqrt(1/(1/V+1/prior$tsigma))
     that<-rnorm(N,mean=Mean,sd=SD)
   } else {
     #for (n in 1:N) that[n,]<-mvrnorm(1,tHat[n,],Sigma=V)
     that<-mvrnormArma(N, tHat, V)
   }
-#   if (ncol(as.matrix(aa))==1) {
-#     par(mfrow=c(1,1))
-#     hist(that,main="Sampled Thetas")
-#   } else {
-#     par(mfrow=c(1,ncol(as.matrix(aa))))
-#     print("Variance of Theta")
-#     print(V)
-# #     for (i in 1:ncol(as.matrix(aa))) {
-# #       hist(that[,i],main=paste("Theta",i))
-#     }
-#   }
-#   if (ncol(as.matrix(aa))>1) {
-#     print("Covariance of Theta")
-#     print(cov(that))
-#   }
-  return (that)
+  that
 }

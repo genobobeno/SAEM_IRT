@@ -20,7 +20,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
 #   print(L)
   #ifelse(ncol(aa)>1,alpha<-L%*%ZB,alpha<-as.matrix(L%*%ZB)) # D x N
   if (tolower(settings$fm)=="camilli" | EmpT) {
-    if (is.na(ez)) {
+    if (is.na(ez)[1]) {
       S<-EZZ-as.matrix(EZ)%*%t(as.matrix(EZ))
 #       print("First term")
 #       print(S%*%t(L))
@@ -42,7 +42,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
     }    
     B<-EZ*(-1)
   } else if (tolower(settings$fm)=="eigen") {
-    if (is.na(ez)) {
+    if (is.na(ez)[1]) {
       S<-EZZ-as.matrix(EZ)%*%t(as.matrix(EZ))
       #ifelse(settings$Adim>1,A<-(S%*%t(L))%*%ginv(settings$tsigma-L%*%aa+L%*%S%*%t(L)),A<-(S%*%t(L))/as.numeric(settings$tsigma-L%*%aa+L%*%S%*%t(L)))
     } else {
@@ -66,7 +66,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
     B<-EZ*(-1)
     #ifelse(settings$Adim>1,A<-(S%*%t(L))%*%ginv(settings$tsigma-L%*%aa+L%*%S%*%t(L)),A<-(S%*%t(L))/as.numeric(settings$tsigma-L%*%aa+L%*%S%*%t(L)))
   } else if (tolower(settings$fm)=="new") {
-    if (is.na(ez)) {
+    if (is.na(ez)[1]) {
       S<-EZZ-as.matrix(EZ)%*%t(as.matrix(EZ))
       #ifelse(settings$Adim>1,A<-(S%*%t(L))%*%ginv(settings$tsigma-L%*%aa+L%*%S%*%t(L)),A<-(S%*%t(L))/as.numeric(settings$tsigma-L%*%aa+L%*%S%*%t(L)))
       out = princomp( covmat=S, scores=FALSE, cor=FALSE)
@@ -104,7 +104,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
     }    
     B<-EZ*(-1)
   } else if (tolower(settings$fm)=="old") {
-    if (is.na(ez)) {
+    if (is.na(ez)[1]) {
       S<-EZZ-as.matrix(EZ)%*%t(as.matrix(EZ))
       A<-as.matrix(fa(S,nfactors=ncol(as.matrix(aa)),fm="ml",covar=TRUE,rotate="none",scores="none")$loadings)
       #       print("A loadings")
@@ -157,7 +157,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
     B<-EZ*(-1)
     #B<-as.vector(A%*%as.matrix(mT)-EZ)  
   } else {
-    if (is.na(ez)) {
+    if (is.na(ez)[1]) {
       S<-EZZ-as.matrix(EZ)%*%t(as.matrix(EZ))
       A<-as.matrix(fa(S,nfactors=ncol(aa),fm=tolower(settings$fm),covar=TRUE,rotate="none",scores="none")$loadings)      
     } else {
@@ -168,7 +168,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
     }             
     B<-EZ*(-1)
   }
-  if (!is.na(w)&!is.na(rp)) {
+  if (!is.na(w)&!is.na(rp)[1]) {
     C<-rep(0,ncol(w))
     s<-rep(0,ncol(w))
     t<-rep(0,ncol(w))

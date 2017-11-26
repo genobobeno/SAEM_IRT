@@ -35,11 +35,8 @@ function(rp,init=Init,settings=settings) {
     LLiter<-vector()
   }
   #Gain constant array
-  RMwindow<-100
-  gain<-c(rep(1,settings$burnin+1),
-          runif(rep(1,RMwindow/2),min = 1.0/(1:(RMwindow/2))^settings$estgain, max = 1.0),1.0,
-          runif(1, min = 1.0/((RMwindow/2+1):RMwindow)^settings$estgain, max = 1.0/(1:(RMwindow/2))^settings$estgain),
-          1.0/RMwindow:ceiling(2/settings$eps))  
+  gain <- GainConstant(settings=settings)
+
   Dnew = rep(0,(settings$Adim+1)*J) # Jacobian Delta
   Gnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
   Jnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
@@ -68,12 +65,13 @@ function(rp,init=Init,settings=settings) {
   HessT=matrix(rep(0,(pxi)^2),pxi,pxi) 
   Gamma=matrix(rep(0,(pxi)^2),pxi,pxi) 
   GammaT=matrix(rep(0,(pxi)^2),pxi,pxi) 
-  W<-NA  
+  W<-NA
+  cat("Iterations")
   while (max(abs(test))>settings$eps) {    
     #print(paste(It,"Next Iteration"))
-    if (It%%10==0) cat(".")
-    if (It%%100==0) cat(":")
-    if (It%%1000==0) cat(" ",It," \n")
+    if (It%%10==1) cat(".")
+    if (It%%100==1) cat(":")
+    if (It%%500==1) cat("\n",It,"\t : ")
     if (tolower(settings$fm)=="licai") {
       for (i in 1:settings$chains) {
         ZCai[,,i]<-SampZ(aa=A,bb=B,that=as.matrix(TCai[,1:settings$Adim,i]),rp=rp,w=NA)  
@@ -132,7 +130,6 @@ function(rp,init=Init,settings=settings) {
           PSI<-GIFAEstimate(aa=A,bb=B,zz=Z,tt=THat,settings=settings,gain=gain[It],ez=PSI$EZ,ezz=PSI$EZZ)
         }    
       }
-      
       ##########################################
       A0<-A  # Fill old values for the "while(test)" Test
       B0<-B
@@ -254,7 +251,7 @@ function(rp,init=Init,settings=settings) {
       } else {
         print("You haven't chosen a valid estimation method... set settings$est='off' or 'rm'")
       }
-      THat<-SampT(aa=A,bb=B,zz=Z,rp=rp,prior=prior)
+      THat<-SampT(aa=A,bb=B,zz=Z,rp=rp,prior=prior) 
     }
     It<-It+1
   }
@@ -329,11 +326,11 @@ function(rp,init=Init,settings=settings) {
     AR<-NA
   }
   if (settings$guess & settings$Adim>1) {
-    if (!is.na(AR)) {
+    if (!is.na(AR)[1]) {
       xi=cbind(AR$loadings,B,C)
       } else {xi=cbind(A,B,C)}
   } else if (!settings$guess & settings$Adim>1 & tolower(settings$fm)!="licai") {
-    if (!is.na(AR)) {
+    if (!is.na(AR)[1]) {
       xi=cbind(AR$loadings,B)
     } else {
       xi=cbind(A,B)
@@ -344,7 +341,7 @@ function(rp,init=Init,settings=settings) {
     xi=cbind(A,B)
   }
   THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,prior=prior,setting=settings,R=AR)
-  if (settings$Adim>1 & tolower(settings$fm)!="licai" & !is.na(AR)) {
+  if (settings$Adim>1 & tolower(settings$fm)!="licai" & !is.na(AR)[1]) {
     TROT<-cbind(THAT$THETA[,Fctr]%*%AR$Th,THAT$THETA[,settings$Adim+Fctr]%*%AR$Th,THAT$THETA[,2*settings$Adim+Fctr]%*%AR$Th)
     if (settings$thetamap) {
       TMAPROT<-THAT$TMAP[,Fctr]%*%AR$Th
@@ -378,7 +375,7 @@ function(rp,init=Init,settings=settings) {
                   xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
                   That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
                   Theta=TROT[,1:settings$Adim],Trot=TROT,settings=settings)
-  } else if (settings$Adim>1 & is.na(AR)) {
+  } else if (settings$Adim>1 & is.na(AR)[1]) {
     Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],rp=rp,w=W) 
     oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],Z=Z,RP=rp)
     oJacob <- oJH$Jacob
@@ -430,12 +427,12 @@ function(rp,init=Init,settings=settings) {
   if (settings$empiricalse) {
     EmpSE<-GetEmpiricalSE(FitDATA,rp=rp)
     ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
-    if (settings$Adim>1 & !is.na(AR)) {
+    if (settings$Adim>1 & !is.na(AR)[1]) {
       FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
                     xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
                     Theta=TROT[,1:settings$Adim],Trot=TROT,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
-    } else if (settings$Adim>1 & is.na(AR)) {
+    } else if (settings$Adim>1 & is.na(AR)[1]) {
       FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
                     xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,

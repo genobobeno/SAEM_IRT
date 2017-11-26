@@ -37,6 +37,7 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                 est="rm",        # Estimation method? model("gifa) -> "off"=mean, "rm"=robbinsmonro, "sa"=simannealing; model("irt") -> "anr"=analytical newton-raphson, "nnr"=numerical newton-raphson #Convergence procedure
                 estgain=1,       # Constant to slow down(decrease to decimal)/speed up(increase) newton cycles, or exponent on denominator in rm-squeeze
                 burnin=500,      # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
+                annealing = "pseudo", # A pseudo-simulated random cooldown. Eventually will be true.
                 quad="manual",   # gauss-hermite
                 nodes=15,        # nodes for quadrature
                 gridbounds=c(-3.5,3.5), #manual quadrature bounds
@@ -51,8 +52,9 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                 chains=5,        # How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
                 initialize="best", # "best", "random"
                 record="on",     # "off"
-                parallel=(parallel::detectCores()>2)) #,  # True or false for parallel computation?
-                # simfile=structure$simfile, # or NA
+                parallel=(parallel::detectCores()>2), #,  # True or false for parallel computation?
+                cores=ceiling(parallel::detectCores()/2),
+                simfile=NA) # or NA
                 defaultP$estfile=paste("FitFile_Test") 
   }
   if (is.na(parameters)[1]) {
