@@ -22,6 +22,8 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                    cparams=c(0.05,0.3),  # bounds
                    tmu=rep(0,2),         # Theta Prior... e.g. 0, or multivariate c(0,0) ... can be multidimensional
                    tsigma=diag(2), # Latent factor orthogonal covariance
+                   missing=9,      # Value indicating missing data
+                   missingrate=NA,       # Rate of missing; 0.10 = 10% 
                    simfile=paste0("SimFile_",sample(1:99999,1),".rda"))  # Name of saved file of generated data.
   } else {
     defaultP=list(model="gifa",    # Or "irt" = Analytical EM model
@@ -48,6 +50,7 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                 thetamap=TRUE,   # do an MAP estimate of Theta?
                 thetaGen=NA, # Did you simulate a new set of thetas? if so, give them to me. 
                 impute=FALSE,    # Impute missing data?
+                missing=9,      # Value indicating missing data
                 plots=FALSE,     # Show plots for diagnostics
                 chains=5,        # How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
                 initialize="best", # "best", "random"
