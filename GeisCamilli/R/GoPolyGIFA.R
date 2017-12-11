@@ -10,10 +10,10 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   
   J=ncol(rp);N=nrow(rp);Q=settings$Adim
   # Starting values 
-  theta = Init$THat
-  A		= Init$XI[,1:settings$Adim]
-  b		= Init$XI[,ncol(Init$XI)-settings$guess]	
-  d		= Init$D
+  theta = init$THat
+  A		= init$XI[,1:settings$Adim]
+  b		= init$XI[,ncol(init$XI)-settings$guess]	
+  d		= init$D
   ncat <- settings$ncat
   #J=20;N=1000;Q=2;K=4
   niter<-ceiling(2/settings$eps)
@@ -54,9 +54,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       }
     }
   }
-  Y = y.b
+  Y <- y.b
   # nproc 	<- 24
-
   #  procs = nproc = parallel::detectCores()
   # for (procs in 1:nproc) {
   # if (settings$parallel) {
@@ -76,10 +75,10 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   # wrapper for snowfall called by drawX. For each person,
   # m x (ncat-1) matrix is returned for each person
   # wrapT is wrapper function for drawT
-  clusterExport(cl,c("Y","N","J","ncat","Q","refList"))
+  clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList"),envir=environment())
   clusterEvalQ(cl,c("WrapX","WrapT"))
   
-  X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,refList=refList,simplify=FALSE), higher=TRUE)	
+  X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
   Z		<- apply(X2,c(2,3),mean) 
   covZ  <- cov(Z)
   A	<- DrawA(covZ,Q,a=NA)
@@ -91,7 +90,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   
   # Now iterate
   if (settings$record) {
-    Aiter = array(GEN.DATA$XI[,1:Q],dim=c(J,Q,niter+1))
+    Aiter = array(0,dim=c(J,Q,niter+1))
     Aiter[,,1]<-A
   }
   Tstart <- Sys.time()
@@ -102,7 +101,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     if (i%%10==1) cat(".")
     if (i%%100==1) cat(":")
     if (i%%500==1) cat("\n",i,"\t : ")
-    X2		<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=theta,refList=refList), higher=TRUE)	
+    X2		<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=theta), higher=TRUE)	
     X3		<- t(apply(X2,c(1,3),mean))
     meanB <- meanB + alpha[i]*(t(t(rowMeans(X3)))-meanB)
     meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
@@ -110,7 +109,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     #Z		<- apply(X2,c(2,3),mean)
     Z		<- colMeans(X2)
     covZ	<- covZ + alpha[i]*(cov(Z)-covZ)
-    if (i<20) {prevA <- NA} else {prevA <- A}
+    if (i>20) prevA <- A
     A <- Anew	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
     ATA 		<- t(A)%*%A
     BTB_INV	<- solve(IQ + ATA)

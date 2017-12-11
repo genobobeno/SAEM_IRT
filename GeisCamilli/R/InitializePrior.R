@@ -2,7 +2,7 @@ InitializePrior <-
 function(rp,settings=settings) {
   J<-ncol(rp)
   N<-nrow(rp)
-  if (!is.na(settings$ncat) & settings$ncat>2) POLY=TRUE
+  if (!is.na(settings$ncat) & settings$ncat>2) POLY<-TRUE
   if (settings$initialize=="random") {
     if (settings$Adim==1) {
       THat<-rnorm(N,0,1)
@@ -21,10 +21,10 @@ function(rp,settings=settings) {
       C<-runif(J,0.01,0.3)
       XI<-cbind(XI,C)
     }
-  } else if (settings$initialize=="best") {
+  } else {  #if (settings$initialize=="best") {
     if (settings$Adim==1) {
       A<-rep(1,J)
-      if (POLY) {
+      if (!POLY) {
         THat<-qnorm(0.005+0.99*(rowSums(rp)/J)) # Small squeeze to prevent infinities
       } else {
         THat<-qnorm(0.005+0.99*((rowSums(rp)/(settings$ncat-1))/J)) # Small squeeze to prevent infinities
@@ -41,7 +41,7 @@ function(rp,settings=settings) {
         THat<-cbind(THat,THat[,1])
       }
     }
-    B<-qnorm(1-colSums(rp)/N)*2
+    B<-qnorm(1-colSums(rp)/(settings$ncat-1)/N)*2
     XI<-cbind(A,B)
     if (settings$guess) {
       rpGuess0 = rp[THat<quantile(THat[,1],probs=0.15),]; rpGuess1 = rp[THat>quantile(THat[,1],probs=0.85),]

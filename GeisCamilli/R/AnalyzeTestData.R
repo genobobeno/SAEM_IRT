@@ -23,7 +23,7 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
   rp<-RP  
   J<-ncol(rp)
   N<-nrow(rp)
-  if (!is.na(settings$missing)) {
+  if (!is.na(settings$missing)[1]) {
     K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x) | x!=settings$missing])))))
   } else {
     K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
@@ -37,7 +37,7 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
   Init<-InitializePrior(rp,settings=settings) # returns XI and THat
   if (tolower(settings$model)=="gifa" & (is.na(settings$ncat)|settings$ncat==2)) {
     Estimates<-GoGIFA(rp,init=Init,settings=settings,TargetA=TargetA) # returns xi, that, xiErr, thatErr, Arot
-  else if (tolower(settings$model)=="gifa" | (!is.na(settings$ncat)&settings$ncat>2)) {
+  } else if (tolower(settings$model)=="gifa" | (!is.na(settings$ncat)&settings$ncat>2)) {
     Estimates<-GoPolyGIFA(rp,init=Init,settings=settings,TargetA=TargetA) # returns xi, that, xiErr, thatErr, Arot
   } else if (tolower(settings$model)=="irt") {
     Estimates<-GoIRT(rp,init=Init,settings=settings) # returns xi, that, xiErr, thatErr

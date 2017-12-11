@@ -56,7 +56,7 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                 plots=FALSE,        # Show plots for diagnostics
                 chains=5,           # Not implemented; How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
                 initialize="best",  # "best", "random"
-                record="on",        # "off"
+                record=TRUE,        # "off"
                 parallel=(parallel::detectCores()>2), #,  # True or false for parallel computation?
                 cores=ceiling(parallel::detectCores()/2),
                 simfile=NA) # or NA

@@ -27,7 +27,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     B<-init$XI[,ncol(init$XI)]
     C<-NA #for placekeeping
   }
-  if (tolower(settings$record)=="on") {
+  if (settings$record) {
     Aiter<-array(A, dim=c(J,settings$Adim,1))    
     Biter<-matrix(B, nrow=J, ncol=1)
     ifelse(settings$guess,Citer<-matrix(C, nrow=J, ncol=1),Citer<-NA)
@@ -217,7 +217,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
 #         AR<-NA
 #       }
 #     }
-      if (tolower(settings$record)=="on") {
+      if (settings$record) {
         Aiter<-abind(Aiter,as.matrix(A),along=3)    
         Biter<-cbind(Biter,B)
         if (settings$guess) Citer<-cbind(Citer,C)
@@ -234,7 +234,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
         Gk0<-Gk0+gain[It]*(as.matrix(Jacob)%*%t(as.matrix(Jacob))-Gk0)
         Deltak0<-Deltak0+gain[It]*(Jacob-Deltak0)
       } else if (tolower(settings$est)=="off") {
-        if (tolower(settings$record)!="on") print("You need to set record='on' to use MCMC means to estimate convergence, i.e. for est='off'")
+        if (settings$record) print("You need to set record=TRUE to use MCMC means to estimate convergence, i.e. for est='off'")
         if (It>settings$burnin) {
           llim<-floor((It-settings$burnin)/3)
           if (settings$Adim>1) {
@@ -449,7 +449,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
   if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
     filename=settings$estfile
   } else { filename=paste(settings$estfile,".rda",sep="") }
-  if (tolower(settings$record)=="on") {
+  if (settings$record) {
     MCMCDATA<-list(Aiter=Aiter,Biter=Biter,Citer=Citer,LLiter=LLiter) #Titer=Titer,
     save(FitDATA,MCMCDATA,settings,file=filename)
   } else {
