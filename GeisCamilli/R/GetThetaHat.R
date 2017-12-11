@@ -1,5 +1,4 @@
-GetThetaHat <-
-function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA) {
+GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refList=NA) {
   #print("Theta Estimation GO!")
   #if (!is.na(R)) aa=R$loadings
   ZHAT<-zHat  # N x J
@@ -9,13 +8,32 @@ function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA) {
     THAT<-tHat
   }                      
   #  if (tolower(settings$esttheta)=="mcmc") {
-  for (i in 1:setting$nesttheta) {
-    tHat<-SampT(aa=aa,bb=bb,zz=zHat,rp=rp,prior=prior)
-    zHat<-SampZ(aa=aa,bb=bb,that=tHat,rp=rp,w=w)
-    ZHAT<-cbind(ZHAT,zHat)
-    ifelse(setting$Adim>1,THAT<-abind(THAT,tHat,along=3),THAT<-cbind(THAT,tHat))
+  if (is.na(D)[1]) {
+    for (i in 1:setting$nesttheta) {
+      tHat<-SampT(aa=aa,bb=bb,zz=zHat,rp=rp,prior=prior)
+      zHat<-SampZ(aa=aa,bb=bb,that=tHat,rp=rp,w=w)
+      ZHAT<-cbind(ZHAT,zHat)
+      if (setting$Adim>1) {
+        THAT<-abind(THAT,tHat,along=3)
+      } else {
+        THAT<-cbind(THAT,tHat)
+      }
+    }
+  } else {
+    ATA 		<- t(A)%*%A #*4
+    BTB_INV	<- solve(diag(setting$Adim) + ATA)
+    for (i in 1:setting$nesttheta) {
+      tHat	<- t(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z=zHat,BTB_INV=BTB_INV,b=bb))
+      X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,A=aa,b=bb,d=TAU-bb,theta=tHat,
+                                      refList=refList,simplify=FALSE), higher=TRUE)	
+      zHat	<- apply(X2,c(2,3),mean) 
+      if (setting$Adim>1) {
+        THAT<-abind(THAT,tHat,along=3)
+      } else {
+        THAT<-cbind(THAT,tHat)
+      }
+    }
   }
-  tHat<-SampT(aa=aa,bb=bb,zz=zHat,rp=rp,prior=prior)
   ifelse(setting$Adim>1,THAT<-abind(THAT[,,-1],tHat,along=3),THAT<-cbind(THAT[,-1],tHat))
   if (setting$Adim>1) {
     THETA<-apply(THAT,c(1,2),mean)
@@ -27,12 +45,12 @@ function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA) {
     colnames(THETA)<-c("Theta","Theta-SE","Theta+SE")
   }
   if (setting$thetamap) {
-    TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting)
+    TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU)
     TMAP<-as.matrix(TMAP)
     ifelse(setting$Adim==1,colnames(TMAP)<-"TMAP",colnames(TMAP)<-paste("TMAP",1:setting$Adim,sep=""))
     if (!is.na(R)) {
       aa=R$loadings
-      TRMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting)
+      TRMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU)
       TRMAP<-as.matrix(TRMAP)
       ifelse(setting$Adim==1,colnames(TRMAP)<-"TRMAP",colnames(TRMAP)<-paste("TRMAP",1:setting$Adim,sep=""))
     } else {

@@ -1,5 +1,5 @@
 AnalyzeTestData <-
-function(RP,settings=settings,verbose=FALSE) {
+function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
   stopwatch<-Sys.time()
   stopifnot(nrow(RP)>ncol(RP))
   if (settings$parallel & settings$cores>1) {
@@ -23,12 +23,22 @@ function(RP,settings=settings,verbose=FALSE) {
   rp<-RP  
   J<-ncol(rp)
   N<-nrow(rp)
+  if (!is.na(settings$missing)) {
+    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x) | x!=settings$missing])))))
+  } else {
+    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
+  }
+  if (K>2) settings$ncat <- K
+
   if (verbose) {
-  print(paste("*****************   Analyzing Test Data, J =",J,";  N =",N,"; Output =",settings$estfile,"  ******************"))
+    print(paste("************   Analyzing Test Data, J =",
+                J,";  N =",N,"; Output =",settings$estfile,"  *************"))
   }
   Init<-InitializePrior(rp,settings=settings) # returns XI and THat
-  if (tolower(settings$model)=="gifa") {
-    Estimates<-GoGIFA(rp,init=Init,settings=settings) # returns xi, that, xiErr, thatErr, Arot
+  if (tolower(settings$model)=="gifa" & (is.na(settings$ncat)|settings$ncat==2)) {
+    Estimates<-GoGIFA(rp,init=Init,settings=settings,TargetA=TargetA) # returns xi, that, xiErr, thatErr, Arot
+  else if (tolower(settings$model)=="gifa" | (!is.na(settings$ncat)&settings$ncat>2)) {
+    Estimates<-GoPolyGIFA(rp,init=Init,settings=settings,TargetA=TargetA) # returns xi, that, xiErr, thatErr, Arot
   } else if (tolower(settings$model)=="irt") {
     Estimates<-GoIRT(rp,init=Init,settings=settings) # returns xi, that, xiErr, thatErr
   } else {

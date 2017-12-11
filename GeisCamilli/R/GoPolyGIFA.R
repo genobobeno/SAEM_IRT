@@ -1,19 +1,20 @@
 
-GoPolyGIFA <- function(rp,init=Init,settings=settings) {
+GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   library(rlecuyer)		# for rand num generation
   library(snow)			# for parallel processing
   library(GPArotation)	# for rotations
   library(mvnfast)		# for function mvrnorm
   library(psych)			# for ML factor analysis
   library(foreach)
-
+  clusterEvalQ(cl,library(mvnfast))
   
   J=ncol(rp);N=nrow(rp);Q=settings$Adim
-  if (!is.na(settings$missing)) {
-    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x) | x!=settings$missing])))))
-  } else {
-    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
-  }
+  # Starting values 
+  theta = Init$THat
+  A		= Init$XI[,1:settings$Adim]
+  b		= Init$XI[,ncol(Init$XI)-settings$guess]	
+  d		= Init$D
+  ncat <- settings$ncat
   #J=20;N=1000;Q=2;K=4
   niter<-ceiling(2/settings$eps)
   nEM<-settings$burnin	#number of burnin EM cycles < niter
@@ -27,59 +28,41 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings) {
     #        runif(rep(1,ceiling(RMwindow/2)),min = 1.0/((RMwindow/2+1):RMwindow)^estgain, max = 1.0/(1:(RMwindow/2))^estgain),
     #        1/(ceiling(RMwindow/2):(niter-nEM+ceiling(RMwindow/2)))^estgain)  
 
-# csvfile = paste0("Poly_Q",Q,"_K",K,"_N",N,"_ResponseData.csv")
-# datafile = paste0("Poly_J",J,"_N",N,"_Q",Q,"_K",K,".rds")
-# GEN.DATA = readRDS(datafile)
-ncat <- K
-IQ <- diag(Q) 
-TrueTheta = data.matrix(read.csv(csvfile,header=TRUE)[,1:Q])
-# Read data
-# y.a = scan("form3_social.dat", what = "numeric",sep = "\n")
-y.a = data.matrix(read.csv(csvfile,header=TRUE)[,-(1:Q)]-1)
-# y.a = data.matrix(do.call(rbind,lapply(strsplit(y.a,"\\s"), function(x) as.numeric(x[-1]))))
-# Set up n x m x (ncat-1) data array of binary values for
-m = ncol(y.a); n = nrow(y.a)
-
-# DrawA generates A factor coefficients w/ eigenanalysis
-drawA <- function(covZ,Q,m,a)
-{
-  out 		<- eigen( covZ, symmetric=TRUE)
-  if (!is.na(a)) {
-    if (Q>1) {
-      Aload<-as.matrix(apply(rbind(out$vectors[,1:Q],a),2,
-                             function(x) (if (mean(x[1:(length(x)/2)]*x[length(x)/2+1:(length(x)/2)])>0 & sum(x[1:(length(x)/2)])>0) {return(x[1:(length(x)/2)])} 
-                                          else {return(-1*x[1:(length(x)/2)])})),nrow(covZ),Q)
-      Atemp = out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q]))
-    } else {
-      ifelse(mean(out$vectors[,1]*aa)>0,Aload<-out$vectors[,1],Aload<-(-1)*out$vectors[,1])
-      Atemp = as.matrix(Aload*sqrt(out$values[1]))
+  # csvfile = paste0("Poly_Q",Q,"_K",K,"_N",N,"_ResponseData.csv")
+  # datafile = paste0("Poly_J",J,"_N",N,"_Q",Q,"_K",K,".rds")
+  # GEN.DATA = readRDS(datafile)
+  IQ <- diag(Q) 
+  #TrueTheta = data.matrix(read.csv(csvfile,header=TRUE)[,1:Q])
+  # Read data
+  # y.a = scan("form3_social.dat", what = "numeric",sep = "\n")
+  # y.a = data.matrix(read.csv(csvfile,header=TRUE)[,-(1:Q)]-1)
+  # y.a = data.matrix(do.call(rbind,lapply(strsplit(y.a,"\\s"), function(x) as.numeric(x[-1]))))
+  # Set up n x m x (ncat-1) data array of binary values for
+  y.a = data.matrix(rp)
+  # cumulative option indicators
+  y.b = array(NA,c(J,ncat-1,N))
+  for (i in 1:N) { 
+    for (j in 1:J) {
+      # for missing responses, item propensities = 9 
+      if (y.a[i,j]==9)	{
+        y.b[j,,i] <- rep(9,(ncat-1))
+      } else {
+        for (k in 0:(ncat-2))
+          {		
+            y.b[j,(k+1),i] <- ifelse(y.a[i,j]<=k,0,1) 
+          }
+      }
     }
-  } else {
-    Atemp 	<- out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q]))
   }
-  return(Atemp)}
+  Y = y.b
+  # nproc 	<- 24
 
-# cumulative option indicators
-y.b = array(NA,c(m,ncat-1,n))
-for (i in 1:n) 
-  for (j in 1:m)
-    # for missing responses, item propensities = 9 
-    if (y.a[i,j]==9)	{y.b[j,,i] <- rep(9,(ncat-1))} else
-    {
-      for (k in 0:(ncat-2))
-      {		
-        y.b[j,(k+1),i] <- ifelse(y.a[i,j]<=k,0,1) 
-      }}
-Y = y.b
-
-# nproc 	<- 24
-
-procs = nproc = parallel::detectCores()
-#for (procs in 1:nproc) {
-  parallelCluster <- parallel::makeCluster(procs,type="SOCK")
-  print(parallelCluster)
-  clusterSetupRNG(parallelCluster, seed = round(runif(6)*1001))
-  clusterEvalQ(parallelCluster,library(mvnfast))
+  #  procs = nproc = parallel::detectCores()
+  # for (procs in 1:nproc) {
+  # if (settings$parallel) {
+  #   parallelCluster <- parallel::makeCluster(settings$cores,type="SOCK")
+  #   print(parallelCluster)
+  # clusterSetupRNG(parallelCluster, seed = round(runif(6)*1001))
   
   # wrapper for snowfall called by drawX. For each person,
   # m x (ncat-1) matrix is returned for each person
@@ -87,55 +70,39 @@ procs = nproc = parallel::detectCores()
   MY = lapply(1:(dim(Y)[1]),function(x) (which(Y[x,,]==9,arr.ind = TRUE)))
   MN = lapply(1:(dim(Y)[1]),function(x) (which(Y[x,,]!=9,arr.ind = TRUE)))
   R  = lapply(1:(dim(Y)[1]),function(x) Y[x,,])
-  missList = lapply(MY,function(x) (list(miss = nrow(x),nmis = n*n1cat-nrow(x),mcol = (n*n1cat-nrow(x))/n1cat)))
+  missList = lapply(MY,function(x) (list(miss = nrow(x),nmis = N*n1cat-nrow(x),mcol = (N*n1cat-nrow(x))/n1cat)))
   
+  refList <- list(MY=MY,MN=MN,R=R,missList=missList)
   # wrapper for snowfall called by drawX. For each person,
   # m x (ncat-1) matrix is returned for each person
-  wrapX <- function(j,A,b,d,theta) {
-    # ker is m x (ncat-1) matrix of item kernels
-    ker <- apply(theta%*%matrix(A[j,],Q,1)-b[j],1,
-                 function(x) x - c(d[j,]))
-    Xi	= matrix(NA,n1cat,n)
-    # Generate missing option propensities
-    Xi[MY[[j]]] <- rnorm(missList[[j]]$miss)
-    # Generate nonmissing option propensities
-    r1 		<- matrix(R[[j]][MN[[j]]]           ,n1cat,missList[[j]]$mcol)
-    U  		<- matrix(runif(missList[[j]]$nmis) ,n1cat,missList[[j]]$mcol)
-    P		  <- matrix(pnorm(-ker)[MN[[j]]]      ,n1cat,missList[[j]]$mcol)
-    Xi[MN[[j]]]  <-  qnorm( r1*U + P*(r1 + U - 2*r1*U) )
-    return(ker + Xi)}
-  
   # wrapT is wrapper function for drawT
-  wrapT <- function(i,A,Z,BTB_INV,b)             
-  { return(rmvn(1,BTB_INV%*%(t(A)%*%(Z[i,] + b)),BTB_INV))}
-  clusterExport(parallelCluster,c("Y","n","m","ncat","Q","MY","MN","R","n1cat","missList"))
-  clusterEvalQ(parallelCluster,c("wrapX","wrapT"))
+  clusterExport(cl,c("Y","N","J","ncat","Q","refList"))
+  clusterEvalQ(cl,c("WrapX","WrapT"))
   
-  # Starting values 
-  theta = matrix(rnorm(n*Q,0,1),n,Q)
-  A		= matrix(runif(m*Q)-.5,m,Q)
-  b		= matrix(rnorm(m),m,1);	
-  d		= matrix(seq(-1.0,1.0,length.out = n1cat),m,n1cat, byrow=TRUE)
-  
-  X2		<- simplify2array(parSapply(parallelCluster,1:m,wrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
+  X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,refList=refList,simplify=FALSE), higher=TRUE)	
   Z		<- apply(X2,c(2,3),mean) 
   covZ  <- cov(Z)
-  A	<- drawA(covZ,Q,m,a=NA)
+  A	<- DrawA(covZ,Q,a=NA)
   ATA 		<- t(A)%*%A #*4
   BTB_INV	<- solve(IQ + ATA)
-  theta	<- t(parSapply(parallelCluster,1:n,wrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b))
+  theta	<- t(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b))
   meanX	<- 0; meanD <- 0; meanB <- 0
   # alpha <- ifelse(1:niter < (nEM+1),rep(1,niter),1/(1:niter-nEM)^(2/3))
   
   # Now iterate
-  Aiter = array(GEN.DATA$XI[,1:Q],dim=c(m,Q,niter+1))
-  Aiter[,,1]<-A
-  #Rprof()
+  if (settings$record) {
+    Aiter = array(GEN.DATA$XI[,1:Q],dim=c(J,Q,niter+1))
+    Aiter[,,1]<-A
+  }
   Tstart <- Sys.time()
-  for (i in 1:niter) {
+  i<-1
+  prevA=mat.or.vec(J,Q)
+  while (max(A-prevA)>eps) {
     #if (i%%100==0) cat(nproc,i,"|")
-    cat(c(".",":","\n")[i%%c(10,100,1000)==0])
-    X2		<- simplify2array(parSapply(parallelCluster,1:m,wrapX,simplify=FALSE,A=A,b=b,d=d,theta=theta), higher=TRUE)	
+    if (i%%10==1) cat(".")
+    if (i%%100==1) cat(":")
+    if (i%%500==1) cat("\n",i,"\t : ")
+    X2		<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=theta,refList=refList), higher=TRUE)	
     X3		<- t(apply(X2,c(1,3),mean))
     meanB <- meanB + alpha[i]*(t(t(rowMeans(X3)))-meanB)
     meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
@@ -144,72 +111,104 @@ procs = nproc = parallel::detectCores()
     Z		<- colMeans(X2)
     covZ	<- covZ + alpha[i]*(cov(Z)-covZ)
     if (i<20) {prevA <- NA} else {prevA <- A}
-    A <- Anew		<- drawA(covZ-diag(m)/n1cat,Q,m,a=prevA)
+    A <- Anew	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
     ATA 		<- t(A)%*%A
     BTB_INV	<- solve(IQ + ATA)
-    theta		<- thetanew	<- t(parSapply(parallelCluster,1:n,wrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b))
-    # Aiter[,,i+1]<-A
-    # if (i%%100==0) {
-    #   par(mfrow=c(1,Q))
-    #   for (qq in 1:Q) {
-    #     plot(c(1,niter),c(-2,2))
-    #     abline(h=GEN.DATA$XI[,qq],col=1:m)
-    #     for (jj in 1:m) {lines(1:i,Aiter[jj,qq,1:i],col=jj)}
-    #   }
-    # }
+    theta		<- thetanew	<- t(parSapply(cl,1:N,WrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b))
+    if (settings$record) Aiter[,,i+1]<-A
+    if (settings$plots) {
+      if (i%%100==0) {
+        par(mfrow=c(1,Q))
+        for (qq in 1:Q) {
+          plot(c(1,niter),c(-2,2))
+          abline(h=GEN.DATA$XI[,qq],col=1:J)
+          for (jj in 1:J) {lines(1:i,Aiter[jj,qq,1:i],col=jj)}
+        }
+      }
+    }
+    i<-i+1
   }
-  Time <- Sys.time()-Tstart;	print(paste(nproc,"processors:",Time))
+  Time <- Sys.time()-Tstart;	print(paste(settings$cores,"processors:",Time))
+  
+  if (settings$Adim>1 & !is.na(TargetA)[1]) {
+    if (length(TargetA)==length(A)) {
+      # get eigenvectors for A
+      out    <- eigen(A[,1:Q]%*%t(A[,1:Q]))
+      Avec   <- out$values ; Aload     <- out$vectors
+      TA     <- Aload[,1:Q]%*%sqrt(diag(Avec[1:Q]))
+      # set up bifactor target matrix
+      # RTS<-permn(1:settings$Adim)
+      # rtest<-c()
+      # for (i in 1:length(RTS)) {
+        Target = matrix(NA,J,Q)
+        Target[TargetA==0] = 0
+        Target = matrix(Target,J,Q)
+      #   rtest<-c(rtest,sum(abs(TargetA[,RTS[[i]]]-abs(pstT(A, Tmat=diag(Q), W=WR, Target=as.matrix(gen.xi[,RTS[[i]]]), normalize=TRUE, eps=1e-8, maxit=1000)$loadings))))
+      #   # }    
+      #   # Fctr<-RTS[[which.min(rtest)]]
+      AR <- RotA = targetQ(TA, Tmat=diag(Q), Target=Target, normalize=FALSE, 
+                     eps=1e-4, maxit=10000)
+      THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,
+                        prior=prior,setting=settings,R=AR,D=d)
+      # if (settings$Adim>1 & !is.na(AR)[1]) {
+      #   TROT<-cbind(THAT$THETA[,Fctr]%*%AR$Th,THAT$THETA[,settings$Adim+Fctr]%*%AR$Th,THAT$THETA[,2*settings$Adim+Fctr]%*%AR$Th)
+      #   if (settings$thetamap) {
+      #     TMAPROT<-THAT$TMAP[,Fctr]%*%AR$Th
+      #   } else {
+      #     TMAPROT<-NA
+      #   }
+      # }
+    } else {AR<-A}
+  } else {
+    AR <- A
+  }
   #summaryRprof()
-  if(!is.null(parallelCluster)) {
-    stopCluster(parallelCluster)
-    parallelCluster <- c()
-  }
-#}
+  C<-NA
+  list(xi=cbind(AR,b),A=A,AR=AR,B=b,C=C,TAU=d+b,RP=rp,
+       xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+       That=theta,Tmap=NA,Tmaprot=NA,TRmap=NA,Trot=NA,
+       EmpSE=NA,ThetaFix=NA,settings=settings)
+}
 
-  
-  # set up bifactor target matrix
-  cor(as.vector(d),as.vector(sweep(GEN.DATA$TAU,1,GEN.DATA$XI[,Q+1],"-")))
-  lm(as.vector(sweep(GEN.DATA$TAU,1,GEN.DATA$XI[,Q+1],"-"))~as.vector(d))
-  cor(as.vector(d),as.vector(GEN.DATA$TAU))
-  cor(as.vector(b),as.vector(GEN.DATA$XI[,Q+1]))
-  cor(as.vector(A),as.vector(GEN.DATA$XI[,1:Q]))
-  cor(as.vector(GEN.DATA$THETA),as.vector(theta))
-  
+  # for (i in 1:length(RTS)) {
+  #   # A is A_gen
+  #   # B is estimated loading matrix
+  #   # W is a weight matrix. The rotation target is the bifactor 0’s
+  #   # pstT is partially specified target orthogonal rotation
+  #   WR <- matrix(0,J,settings$Adim)
+  #   WR[which(gen.xi[,1:settings$Adim]==0)] <- 1
+  #   Tmat <- matrix(-1,settings$Adim,settings$Adim)
+  #   Tmat[1,1] <-  1
+  #   rtest<-c(rtest,sum(abs(gen.xi[,RTS[[i]]]-abs(pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,RTS[[i]]]), normalize=TRUE, eps=1e-8, maxit=1000)$loadings))))
+  # }    
+  # Fctr<-RTS[[which.min(rtest)]]
+  # AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
+  # rits<-1
+  # while (min(apply((AR$loadings>0)+0,2,mean))<0.5) {
+  #   rots<-rep(-1,settings$Adim^2)
+  #   sr<-sample(1:settings$Adim^2)
+  #   rots[sr[1:(rits%%(settings$Adim^2)+1)]]<-1
+  #   Tmat<-matrix(rots,settings$Adim,settings$Adim)
+  #   AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
+  #   rits<-rits+1
+  # }
+  # AR$APermute<-Fctr
+
   ############## GREG's reconstruction
   # B.TMS <- A
   # B.TMS <- data.matrix(B.TMS)
   # #B  <- Varimax(B.TMS,Tmat=diag(ncol(B.TMS)),normalize=TRUE,eps=1e-5, maxit=10000)
   # B <- oblimin(B.TMS,Tmat=diag(ncol(B.TMS)),normalize=TRUE,eps=1e-5, maxit=10000,gam=0)
+  # mla <- fa(covZ,nfactors=Q,covar=TRUE,rotate="oblimin",fm="ml")
+  # covar     <- covZ - diag(m)
+  # out         <- eigen( covar, symmetric=TRUE)
+  # Avec     <- out$values
   
-  mla <- fa(covZ,nfactors=Q,covar=TRUE,rotate="oblimin",fm="ml")
-  covar     <- covZ - diag(m)
-  out         <- eigen( covar, symmetric=TRUE)
-  Avec     <- out$values
-  
-  # sweep average (b) out of gen.tau
-  LL=sweep(GEN.DATA$TAU,1,GEN.DATA$XI[,Q+1])
-  
-  # examine plot of estimated thresholds (d) again swept gen.tau
-  for ( i in 1:(K-1)) print(summary(lm(d[,i]~LL[,i])))
-  
-  # get eigenvectors for A
-  out         <- eigen(A[,1:Q]%*%t(A[,1:Q]))
-  Avec     <- out$values
-  Aload     <- out$vectors
-  TA     <- Aload[,1:Q]%*%sqrt(diag(Avec[1:Q]))
-  
-  # set up bifactor target matrix
-  Target = matrix(NA,m,Q)
-  Target[GEN.DATA$XI[,-(Q+1)]==0] = 0
-  Target = matrix(Target,m,Q)
-  RotA = targetQ(TA, Tmat=diag(Q), Target=Target, normalize=FALSE, 
-                 eps=1e-4, maxit=10000)
-  
-  par(mfrow=c(2,Q/2))
-  for (qq in 1:Q) {
-    RotA$loadings[,qq]<-ifelse(sum(RotA$loadings[,qq])<0,-1,1)*RotA$loadings[,qq]
-    plot(cbind(GEN.DATA$XI[,qq],RotA$loadings[,qq]),xlab="Actual",ylab="Fit",main=paste0("Q",qq))
-    abline(0,1)
-    cor(-RotA$loadings[,qq],GEN.DATA$XI[,qq])
-    lm(-RotA$loadings[,qq]~GEN.DATA$XI[,qq])
-  }
+  # par(mfrow=c(2,Q/2))
+  # for (qq in 1:Q) {
+  #   RotA$loadings[,qq]<-ifelse(sum(RotA$loadings[,qq])<0,-1,1)*RotA$loadings[,qq]
+  #   plot(cbind(GEN.DATA$XI[,qq],RotA$loadings[,qq]),xlab="Actual",ylab="Fit",main=paste0("Q",qq))
+  #   abline(0,1)
+  #   cor(-RotA$loadings[,qq],GEN.DATA$XI[,qq])
+  #   lm(-RotA$loadings[,qq]~GEN.DATA$XI[,qq])
+  # }

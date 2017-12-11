@@ -1,5 +1,5 @@
 GoGIFA <-
-function(rp,init=Init,settings=settings) {
+function(rp,init=Init,settings=settings,TargetA=NA) {
   ttt<-Sys.time()
   stopifnot(length(settings$tmu)==settings$Adim,ncol(init$XI)==(1+settings$Adim+(settings$guess+0)))
   prior<-list(tmu=settings$tmu,tsigma=settings$tsigma)

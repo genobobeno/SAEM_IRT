@@ -2,6 +2,7 @@ InitializePrior <-
 function(rp,settings=settings) {
   J<-ncol(rp)
   N<-nrow(rp)
+  if (!is.na(settings$ncat) & settings$ncat>2) POLY=TRUE
   if (settings$initialize=="random") {
     if (settings$Adim==1) {
       THat<-rnorm(N,0,1)
@@ -23,11 +24,19 @@ function(rp,settings=settings) {
   } else if (settings$initialize=="best") {
     if (settings$Adim==1) {
       A<-rep(1,J)
-      THat<-qnorm(0.005+0.99*(rowSums(rp)/J)) # Small squeeze to prevent infinities
+      if (POLY) {
+        THat<-qnorm(0.005+0.99*(rowSums(rp)/J)) # Small squeeze to prevent infinities
+      } else {
+        THat<-qnorm(0.005+0.99*((rowSums(rp)/(settings$ncat-1))/J)) # Small squeeze to prevent infinities
+      }
     } else {
-      if (settings$Adim==1) {A0 = 1} else {A0 = matrix(c(rep(0.85,J),rep(0.45,J*(settings$Adim-1))),J,settings$Adim)+0.3*matrix(runif(J*settings$Adim),J,settings$Adim)}
+      A0 = matrix(c(rep(0.85,J),rep(0.45,J*(settings$Adim-1))),J,settings$Adim)+0.3*matrix(runif(J*settings$Adim),J,settings$Adim)
       A<-mat.or.vec(J,settings$Adim)+A0
-      THat<-as.matrix(qnorm(0.005+0.99*(rowSums(rp)/J))) # Small squeeze to prevent infinities
+      if (POLY) {
+        THat<-as.matrix(qnorm(0.005+0.99*((rowSums(rp)/(settings$ncat-1))/J))) # Small squeeze to prevent infinities
+      } else {
+        THat<-as.matrix(qnorm(0.005+0.99*(rowSums(rp)/J))) # Small squeeze to prevent infinities
+      }
       for (i in 2:settings$Adim) {
         THat<-cbind(THat,THat[,1])
       }
@@ -41,5 +50,12 @@ function(rp,settings=settings) {
       XI<-cbind(XI,C)
     }
   }
-  list(XI=XI,THat=THat)
+  if (POLY) {
+    D = matrix(seq(-1.0,1.0,length.out = (settings$ncat-1)),J,(settings$ncat-1), byrow=TRUE)
+  } else {D<-NA}
+  # theta = matrix(rnorm(n*Q,0,1),n,Q)
+  # A		= matrix(runif(m*Q)-.5,m,Q)
+  # b		= matrix(rnorm(m),m,1);	
+  # d		= matrix(seq(-1.0,1.0,length.out = n1cat),m,n1cat, byrow=TRUE)
+  list(XI=XI,THat=THat,D=D)
 }
