@@ -167,7 +167,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                      eps=1e-4, maxit=10000)
       
       THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,
-                        prior=prior,setting=settings,R=AR,D=d)
+                        prior=prior,setting=settings,R=AR,
+                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
 
     } else {AR<-A}
   } else {
