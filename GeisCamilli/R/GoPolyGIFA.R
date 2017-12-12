@@ -139,31 +139,43 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       # RTS<-permn(1:settings$Adim)
       # rtest<-c()
       # for (i in 1:length(RTS)) {
-        Target = matrix(NA,J,Q)
-        Target[TargetA==0] = 0
-        Target = matrix(Target,J,Q)
+      Target = matrix(NA,J,Q)
+      Target[TargetA==0] = 0
+      Target = matrix(Target,J,Q)
       #   rtest<-c(rtest,sum(abs(TargetA[,RTS[[i]]]-abs(pstT(A, Tmat=diag(Q), W=WR, Target=as.matrix(gen.xi[,RTS[[i]]]), normalize=TRUE, eps=1e-8, maxit=1000)$loadings))))
       #   # }    
       #   # Fctr<-RTS[[which.min(rtest)]]
-      AR <- RotA = targetQ(TA, Tmat=diag(Q), Target=Target, normalize=FALSE, 
+      Rtest<-c()
+      TestMat = diag(Q)
+      RMAT = list()
+      SRot<-sample(1:Q,8,replace = TRUE)
+      SAng<-sample(2*pi/(0:360),8)
+      for (i in 1:8) {
+        if (SRot[i]!=SRot[i%%8+1]) {
+          TestMat[SRot[i],SRot[i]]<-sin(SAng[i])*TestMat[SRot[i],SRot[i]]
+          TestMat[SRot[i%%8+1],SRot[i%%8+1]]<-sin(SAng[i])*TestMat[SRot[i%%8+1],SRot[i%%8+1]]
+          TestMat[SRot[i],SRot[i%%8+1]]<-ifelse(TestMat[SRot[i],SRot[i%%8+1]]==0,cos(SAng[i]),cos(SAng[i])*TestMat[SRot[i],SRot[i%%8+1]])
+          TestMat[SRot[i%%8+1],SRot[i]]<-ifelse(TestMat[SRot[i%%8+1],SRot[i]]==0,cos(-SAng[i]),cos(-SAng[i])*TestMat[SRot[i%%8+1],SRot[i]])
+        }
+        RMAT[[i]]<-TestMat
+        RotA = targetQ(TA, Tmat=TestMat, Target=Target, normalize=FALSE, 
+                       eps=1e-4, maxit=10000)
+        Rtest<-c(Rtest,sd(RotA$loadings[!is.na(Target) & Target==0]))
+      }
+      AR<- targetQ(TA, Tmat=RMAT[[which.min(Rtest)]], 
+                     Target=Target, normalize=FALSE, 
                      eps=1e-4, maxit=10000)
+      
       THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,
                         prior=prior,setting=settings,R=AR,D=d)
-      # if (settings$Adim>1 & !is.na(AR)[1]) {
-      #   TROT<-cbind(THAT$THETA[,Fctr]%*%AR$Th,THAT$THETA[,settings$Adim+Fctr]%*%AR$Th,THAT$THETA[,2*settings$Adim+Fctr]%*%AR$Th)
-      #   if (settings$thetamap) {
-      #     TMAPROT<-THAT$TMAP[,Fctr]%*%AR$Th
-      #   } else {
-      #     TMAPROT<-NA
-      #   }
-      # }
+
     } else {AR<-A}
   } else {
     AR <- A
   }
   #summaryRprof()
   C<-NA
-  list(xi=cbind(AR,b),A=A,AR=AR,B=b,C=C,TAU=d+b,RP=rp,
+  list(xi=cbind(AR,b),A=A,AR=AR,B=b,C=C,TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),RP=rp,
        xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
        That=theta,Tmap=NA,Tmaprot=NA,TRmap=NA,Trot=NA,
        EmpSE=NA,ThetaFix=NA,settings=settings)
