@@ -8,7 +8,7 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     THAT<-tHat
   }                      
   #  if (tolower(settings$esttheta)=="mcmc") {
-  if (is.na(D)[1]) {
+  if (is.na(TAU)[1]) {
     for (i in 1:setting$nesttheta) {
       tHat<-SampT(aa=aa,bb=bb,zz=zHat,rp=rp,prior=prior)
       zHat<-SampZ(aa=aa,bb=bb,that=tHat,rp=rp,w=w)
@@ -20,7 +20,7 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
       }
     }
   } else {
-    ATA 		<- t(A)%*%A #*4
+    ATA 		<- t(aa)%*%aa #*4
     BTB_INV	<- solve(diag(setting$Adim) + ATA)
     for (i in 1:setting$nesttheta) {
       tHat	<- t(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z=zHat,BTB_INV=BTB_INV,b=bb))

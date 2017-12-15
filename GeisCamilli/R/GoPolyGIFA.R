@@ -23,6 +23,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   eps=settings$eps
   # nproc 	<- 2
   alpha<-GainConstant(settings=settings)
+  prior<-list(tmu=settings$tmu,tsigma=settings$tsigma)
     # c(rep(1,nEM-RMwindow),
     #        runif(rep(1,ceiling(RMwindow/2)),min = 1.0/(1:(RMwindow/2))^estgain, max = 1.0),1.0,
     #        runif(rep(1,ceiling(RMwindow/2)),min = 1.0/((RMwindow/2+1):RMwindow)^estgain, max = 1.0/(1:(RMwindow/2))^estgain),
@@ -165,8 +166,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       AR<- targetQ(TA, Tmat=RMAT[[which.min(Rtest)]], 
                      Target=Target, normalize=FALSE, 
                      eps=1e-4, maxit=10000)
-      
-      THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,
+      C<-NA;W<-NA
+      THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
                         prior=prior,setting=settings,R=AR,
                         TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
 
