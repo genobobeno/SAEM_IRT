@@ -115,6 +115,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     } else {
       if (settings$guess) W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp)
       Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
+      #print(Z)
       LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
       if (It<=settings$burnin | tolower(settings$est)!="rm") {
         if (settings$guess) {

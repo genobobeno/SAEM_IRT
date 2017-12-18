@@ -10,8 +10,8 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
       prl<-TRUE
     } else if (get_os()=="linux") {
       cl <<- parallel::makeCluster(settings$cores,type="FORK")
-      parallel::registerDoParallel(cl)
-      parallel::clusterSetRNGstream(cl,iseed = round(runif(6)*1001))
+      doParallel::registerDoParallel(cl)
+      parallel::clusterSetRNGStream(cl,iseed = round(runif(6)*1001))
       #parallel::setDefaultCluster(cl)
       prl<-TRUE
     } else {

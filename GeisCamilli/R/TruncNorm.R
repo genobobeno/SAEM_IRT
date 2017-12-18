@@ -5,11 +5,11 @@ function(Means,HighLow,prl,cluster=cl) {
   N<-length(Means)
   if (prl & get_os()=="linux") {
     if (HighLow=="high") {
-      Q<-unlist(mclapply(Means,function(x) {if(x>4) {LB=0.0000001+pnorm(0-x)} else {LB=pnorm(0-x)}
+      Q<-simplify2array(mclapply(Means,function(x) {if(x>4) {LB=0.0000001+pnorm(0-x)} else {LB=pnorm(0-x)}
         x+qnorm(runif(1,LB,1)-0.00000001)}))
       #      x <- qnorm( runif(1, pnorm(0-Means[i]), 1) )
     } else {
-      Q<-unlist(mclapply(Means,function(x) {if(x<(-4)) {UB=pnorm(0-x)-0.0000001} else {UB=pnorm(0-x)}
+      Q<-simplify2array(mclapply(Means,function(x) {if(x<(-4)) {UB=pnorm(0-x)-0.0000001} else {UB=pnorm(0-x)}
         x+qnorm(runif(1,0,UB)+0.00000001)}))
     }
   } else if (prl & get_os()=="windows") {

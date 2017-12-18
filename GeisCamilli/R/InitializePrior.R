@@ -2,6 +2,7 @@ InitializePrior <-
 function(rp,settings=settings) {
   J<-ncol(rp)
   N<-nrow(rp)
+  POLY<-FALSE
   if (!is.na(settings$ncat) & settings$ncat>2) POLY<-TRUE
   if (settings$initialize=="random") {
     if (settings$Adim==1) {
@@ -41,7 +42,11 @@ function(rp,settings=settings) {
         THat<-cbind(THat,THat[,1])
       }
     }
-    B<-qnorm(1-colSums(rp)/(settings$ncat-1)/N)*2
+    if (!is.na(settings$ncat) & settings$ncat>2) {
+      B<-qnorm(1-colSums(rp)/(settings$ncat-1)/N)*2
+    } else {
+      B<-qnorm(1-colSums(rp)/N)*2
+    }
     XI<-cbind(A,B)
     if (settings$guess) {
       rpGuess0 = rp[THat<quantile(THat[,1],probs=0.15),]; rpGuess1 = rp[THat>quantile(THat[,1],probs=0.85),]
