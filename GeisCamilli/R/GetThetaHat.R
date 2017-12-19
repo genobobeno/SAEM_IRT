@@ -35,6 +35,7 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
       }
     }
   }
+  print("Finished MCMC theta Estimate")
   ifelse(setting$Adim>1,THAT<-abind(THAT[,,-1],tHat,along=3),THAT<-cbind(THAT[,-1],tHat))
   if (setting$Adim>1) {
     THETA<-apply(THAT,c(1,2),mean)
@@ -45,6 +46,7 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     THETA<-cbind(THETA,THETA-apply(THAT,1,sd),THETA+apply(THAT,1,sd))
     colnames(THETA)<-c("Theta","Theta-SE","Theta+SE")
   }
+  print("Running Theta MAP Estimate")
   if (setting$thetamap) {
     TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU)
     TMAP<-as.matrix(TMAP)

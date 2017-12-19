@@ -41,6 +41,17 @@ function(j,Adim,Adist,Aparams) {
         }
       }
     }
-  }  
+  } else if (Adist=="test") {
+    if (Adim>1) {
+      A<-mat.or.vec(j,Adim)
+      for (i in 1:Adim) {
+        A[((i-1)*ceiling(j/Adim)+1):(i*ceiling(j/Adim)),i]<-rbeta(ceiling(j/Adim),2.5,3.0) #1D, N=5000, J=50
+        A[which(A[,i]!=0),i]<-(Aparams[2]-Aparams[1])*A[which(A[,i]!=0),i]+Aparams[1]
+      }
+    } else {
+      A<-rbeta(j,2.5,3.0) #1D, N=5000, J=50
+      A<-(Aparams[2]-Aparams[1])*A+Aparams[1]
+    }
+  }
   return(A)
 }
