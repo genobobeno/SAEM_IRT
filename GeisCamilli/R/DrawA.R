@@ -8,10 +8,14 @@ DrawA <- function(covZ,Q,a) {
                                           else {return(-1*x[1:(length(x)/2)])})),nrow(covZ),Q)
       out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q]))
     } else {
-      ifelse(mean(out$vectors[,1]*aa)>0,Aload<-out$vectors[,1],Aload<-(-1)*out$vectors[,1])
+      ifelse(mean(out$vectors[,1]*a)>0,Aload<-out$vectors[,1],Aload<-(-1)*out$vectors[,1])
       as.matrix(Aload*sqrt(out$values[1]))
     }
   } else {
-    out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q]))
+    if (Q>1) {
+      out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q]))
+    } else {
+      out$vectors[,1]*sqrt(out$values[1])
+    }
   }
 }

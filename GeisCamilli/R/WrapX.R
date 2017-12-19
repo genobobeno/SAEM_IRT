@@ -1,7 +1,11 @@
 WrapX <- function(j,A,b,d,theta) {
   # ker is m x (ncat-1) matrix of item kernels
-  ker <- apply(theta%*%matrix(A[j,],Q,1)-b[j],1,
-               function(x) x - c(d[j,]))
+  if (ncol(as.matrix(A))>1) {
+    ker <- apply(theta%*%matrix(A[j,],Q,1)-b[j],1,
+                 function(x) x - c(d[j,]))
+  } else {
+    ker <- sapply(theta*A[j]-b[j],function(x) x - c(d[j,]))
+  }
   Xi	= matrix(NA,n1cat,N)
   # Generate missing option propensities
   Xi[MY[[j]]] <- rnorm(missList[[j]]$miss)

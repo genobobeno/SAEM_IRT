@@ -1,7 +1,7 @@
 
 GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   library(rlecuyer)		# for rand num generation
-  library(snow)			# for parallel processing
+  if (get_os()=="windows") library(snow)			# for parallel processing
   library(GPArotation)	# for rotations
   library(mvnfast)		# for function mvrnorm
   library(psych)			# for ML factor analysis
@@ -96,8 +96,12 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   }
   Tstart <- Sys.time()
   i<-1
-  prevA=mat.or.vec(J,Q)
-  while (max(A-prevA)>eps) {
+  if (Q>1) {
+    prevA=mat.or.vec(J,Q)
+  } else {
+    prevA<-rep(0,J)
+  }
+  while (abs(max(A-prevA))>eps) {
     #if (i%%100==0) cat(nproc,i,"|")
     if (i%%10==1) cat(".")
     if (i%%100==1) cat(":")
