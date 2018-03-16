@@ -9,6 +9,7 @@ Welcome to the tutorial on using the SAEM_IRT code to fit your IRT exploratory m
 
 The first thing we want to do is to appropriately set up your environment for running our code. The following code will appropriately set the working directory and demonstrate the R Notebook features if you have not yet been introduced to this markdown format.
 ```{r}
+if (!"knitr" %in% installed.packages()[,1]) { install.packages("knitr",dependencies = TRUE)} 
 knitr::opts_chunk$set(echo=FALSE,warning = FALSE)
 source("Hello.R", chdir = T)
 Hello()
