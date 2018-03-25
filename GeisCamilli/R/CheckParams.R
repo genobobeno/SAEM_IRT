@@ -29,11 +29,13 @@ CheckParams = function(parameters=NA,generate = TRUE) {
     defaultP=list(model="gifa",     # Or "irt" = Analytical EM model
                 icc="ogive",        # Probability model... logistic? ogive? 
                 Adim=2,             # Multidimensional?
+                drawA="eigen"       # eigen or lowertriangular
                 exploreAdim=FALSE,  # Run Marcenko Pasteur trimming starting from much higher dimensions
                 ncat=NA,            # Ordinal Polythomous? Number of categories
                 guess=FALSE,        # Geussing ? TRUE
                 quad="manual",      # gauss-hermite
                 nodes=15,           # nodes for quadrature
+                truncation=2,       # augmented single truncated (1) or doubly truncated (2)
                 gridbounds=c(-3.5,3.5), #manual quadrature bounds
                 tmu=c(0,0),         # Prior mean, can be multivariate vector(Adim)
                 tsigma=matrix(c(1,0,0,1),nrow=2,ncol=2),        # Prior sigma, can be multivariate matrix(Adim x Adim)

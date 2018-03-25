@@ -15,6 +15,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   b		= init$XI[,ncol(init$XI)-settings$guess]	
   d		= init$D
   ncat <- settings$ncat
+  oldvec <- rep(0,Q)
+  Aold1 <- matrix(runif(J*Q),J,Q)
+  Aold2 <- matrix(0,J,Q)
   #J=20;N=1000;Q=2;K=4
   niter<-ceiling(2/settings$eps)
   nEM<-settings$burnin	#number of burnin EM cycles < niter
@@ -71,16 +74,33 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   MN = lapply(1:(dim(Y)[1]),function(x) (which(Y[x,,]!=9,arr.ind = TRUE)))
   R  = lapply(1:(dim(Y)[1]),function(x) Y[x,,])
   missList = lapply(MY,function(x) (list(miss = nrow(x),nmis = N*n1cat-nrow(x),mcol = (N*n1cat-nrow(x))/n1cat)))
-  
-  refList <- list(MY=MY,MN=MN,R=R,missList=missList)
+
+  # Values for the double truncated WrapZ() function  
+  indL<-list();indU<-list()
+  for (j in 1:J) {
+    yA<-y.a[,j]
+    ### This missing handling needs to be revisited... 
+    # Best solution is a sample from a different kind of augmented Z... thresholds off?
+    if (sum(yA==9)>0) {
+      yA[yA==9]<-floor(mean(yA[yA!=9]))
+    }
+    yL <- matrix(yA+1,N,1)
+    indL[[j]] <- cbind(1:N,yL); 		indU[[j]] <- cbind(1:N,yL + 1)
+  }
+  # refList <- list(MY=MY,MN=MN,R=R,missList=missList)
   # wrapper for snowfall called by drawX. For each person,
   # m x (ncat-1) matrix is returned for each person
   # wrapT is wrapper function for drawT
-  clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList"),envir=environment())
-  clusterEvalQ(cl,c("WrapX","WrapT"))
+  clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
+  clusterEvalQ(cl,c("WrapX","WrapT","WrapZ"))
   
-  X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
-  Z		<- apply(X2,c(2,3),mean) 
+  if (settings$truncation==1) {
+    X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
+    Z		<- apply(X2,c(2,3),mean) 
+  } else {
+    Z 		<- simplify2array(parSapply(cl,1:J,wrapZ,A=A,b=b,d=d,theta=theta,simplify=FALSE), 
+                          higher=TRUE)
+  }
   covZ  <- cov(Z)
   A	<- DrawA(covZ,Q,a=NA)
   ATA 		<- t(A)%*%A #*4
@@ -94,14 +114,17 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     Aiter = array(0,dim=c(J,Q,niter+1))
     Aiter[,,1]<-A
   }
-  Tstart <- Sys.time()
+  #Tstart<-Sys.time()
   i<-1
   if (Q>1) {
     prevA=mat.or.vec(J,Q)
+    Avec0<-rep(0,Q)
   } else {
     prevA<-rep(0,J)
+    Avec0<-0
   }
-  while (abs(max(A-prevA))>eps) {
+  itest<-(A-prevA)
+  while (max(abs(itest)))>eps) {
     #if (i%%100==0) cat(nproc,i,"|")
     if (i%%10==1) cat(".")
     if (i%%100==1) cat(":")
@@ -112,10 +135,33 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
     b         <- -meanB;    d        <- -meanD   
     #Z		<- apply(X2,c(2,3),mean)
-    Z		<- colMeans(X2)
+    if (settings$truncation==1) {
+      Z		<- colMeans(X2)
+    } else {
+      X1 		<- parSapply(cl,1:m,wrapZ,simplify=FALSE)
+      Z		<- simplify2array(X1, higher=TRUE)	
+    }
     covZ	<- covZ + alpha[i]*(cov(Z)-covZ)
-    if (i>20) prevA <- A
-    A <- Anew	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
+    if (i>20) {
+      prevA <- A 
+      Avec0 <- atemp$Avec[1:Q]
+    }
+    #DrawAEigen <- function(covZ,Q,m)
+    #drawALowerDiag <- function(covT,covTZ,Q,m,n)
+    #DrawA <- function(covZ,Q,a)
+    if (settings$drawA=="lowertriangular") {
+      #compue covariances
+      covTMC	<- cov(theta)
+      covTZMC	<- cov(theta,Z)
+      covT		<- covT  + alpha[i]*(covTMC-covT)
+      covTZ		<- covTZ + alpha[i]*(covTZMC-covTZ)
+      atemp	<- DrawALowerDiag(covT=covT,covTZ=covTZ,Q,J,N)
+    } else if (settings$drawA=="eigen") {
+      atemp	<- DrawAEigen(covZ-diag(J),Q)
+    } else {
+      atemp	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
+    }
+    A <- Anew <- atemp$Atemp
     ATA 		<- t(A)%*%A
     BTB_INV	<- solve(IQ + ATA)
     theta		<- thetanew	<- t(parSapply(cl,1:N,WrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b))
@@ -125,14 +171,19 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
         par(mfrow=c(1,Q))
         for (qq in 1:Q) {
           plot(c(1,niter),c(-2,2))
-          abline(h=GEN.DATA$XI[,qq],col=1:J)
-          for (jj in 1:J) {lines(1:i,Aiter[jj,qq,1:i],col=jj)}
+          abline(h=abs(GEN.DATA$XI[,qq]),col=1:J)
+          for (jj in 1:J) {lines(1:i,abs(Aiter[jj,qq,1:i]),col=jj)}
         }
       }
     }
     i<-i+1
+    if (settings$drawA=="lowertriangular") {
+      itest<-(A-prevA)
+    } else {
+      itest<-(Atemp$Avec - Avec0)
+    }
   }
-  Time <- Sys.time()-Tstart;	print(paste(settings$cores,"processors:",Time))
+  # Time <- Sys.time()-Tstart;	print(paste(settings$cores,"processors:",Time))
   
   if (settings$Adim>1 & !is.na(TargetA)[1]) {
     if (length(TargetA)==length(A)) {

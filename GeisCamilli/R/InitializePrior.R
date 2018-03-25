@@ -2,6 +2,12 @@ InitializePrior <-
 function(rp,settings=settings) {
   J<-ncol(rp)
   N<-nrow(rp)
+  if (sum(rp==9)>0) {
+    for (i in 1:J) {
+      TF<-rp[,i]==9
+      if (sum(TF)>0) rp[TF,i]<-mean(rp[!TF,i])
+    }
+  }
   POLY<-FALSE
   if (!is.na(settings$ncat) & settings$ncat>2) POLY<-TRUE
   if (settings$initialize=="random") {

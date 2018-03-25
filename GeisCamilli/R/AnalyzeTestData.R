@@ -1,6 +1,6 @@
 AnalyzeTestData <-
 function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
-  stopwatch<-Sys.time()
+  stopwatch<-Timing()
   stopifnot(nrow(RP)>ncol(RP))
   if (settings$parallel & settings$cores>1) {
     if (get_os()=="windows") {
@@ -20,16 +20,21 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
       prl<-FALSE
     } 
   }
-  rp<-RP  
+  ### From this ifelse statement on, all missing data should have a value of 9
+  if (sum(is.na(RP))>0 | sum(RP==settings$missing,na.rm = TRUE)>0) {
+    rp<-CodeMissing(rp=RP,settings=settings)
+  } else {
+    rp<-RP  
+  }
   J<-ncol(rp)
   N<-nrow(rp)
-  if (!is.na(settings$missing)[1]) {
-    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x) | x!=settings$missing])))))
-  } else {
-    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
-  }
-  if (K>2) settings$ncat <- K
+  #if (!is.na(settings$missing)[1]) {
+  #  K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x) | x!=9])))))
+  #} else {
+  K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
+  #}
 
+  if (K>2) settings$ncat <- K
   if (verbose) {
     print(paste("************   Analyzing Test Data, J =",
                 J,";  N =",N,"; Output =",settings$estfile,"  *************"))
@@ -50,7 +55,7 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
   }
   cat("
       Model has been fit
-      Time: ",Sys.time()-stopwatch)
+      Time: ",Timing(stopwatch))
 #   if (!is.na(settings$simfile)) {
 #     ifelse(grepl("\\.[Rr][Dd][Aa]",settings$simfile),load(settings$simfile),load(paste(settings$simfile,".rda",sep="")))
 #     plot(as.vector(Estimates$xi-gen.xi),main="Parameter Estimate differences",ylab="XI_hat - XI_gen",xlab="A(1...J), B(1...J)")
