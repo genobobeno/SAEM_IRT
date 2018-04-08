@@ -29,17 +29,18 @@ CheckParams = function(parameters=NA,generate = TRUE) {
     defaultP=list(model="gifa",     # Or "irt" = Analytical EM model
                 icc="ogive",        # Probability model... logistic? ogive? 
                 Adim=2,             # Multidimensional?
-                drawA="eigen"       # eigen or lowertriangular
+                drawA="eigen",      # eigen or lowertriangular
                 exploreAdim=FALSE,  # Run Marcenko Pasteur trimming starting from much higher dimensions
                 ncat=NA,            # Ordinal Polythomous? Number of categories
-                guess=FALSE,        # Geussing ? TRUE
+                guess=FALSE,        # Guessing ? TRUE
                 quad="manual",      # gauss-hermite
                 nodes=15,           # nodes for quadrature
-                truncation=2,       # augmented single truncated (1) or doubly truncated (2)
+                dbltrunc=TRUE,      # augmented single truncated (FALSE) or doubly truncated (TRUE)
                 gridbounds=c(-3.5,3.5), #manual quadrature bounds
                 tmu=c(0,0),         # Prior mean, can be multivariate vector(Adim)
                 tsigma=matrix(c(1,0,0,1),nrow=2,ncol=2),        # Prior sigma, can be multivariate matrix(Adim x Adim)
-                fm="eigen",         # Factor analysis procedure: fa() methods=c("ml","minres","wls","gls") or "licai", "camilli", or "old"...etc?
+                initialize="best",  # "best", "random"
+                fm="eigen",         # Factor analysis procedure (dichotomous): fa() methods=c("ml","minres","wls","gls") or "licai", "camilli", or "old"...etc?
                 rmethod="pstT",     # GPArotation method, currently "targetT" or "pstT"
                 empiricalse=TRUE,   # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
                 nesttheta=10,       # if esttheta="mcmc", how many random samples?
@@ -50,15 +51,16 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                 estgain=1,          # Constant to slow down(decrease to decimal)/speed up(increase) newton cycles, or exponent on denominator in rm-squeeze
                 burnin=500,         # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
                 annealing = "pseudo", # A pseudo-simulated random cooldown. Eventually will be true.
+                converge="eigenvalues",      # Which metric to use? (eigenvalues, slopes, ...?)
                 eps=1e-4,           # Converged?
                 thetamap=TRUE,      # do an MAP estimate of Theta?
                 thetaGen=NA,        # Did you simulate a new set of thetas? if so, give them to me. 
                 impute=FALSE,       # Impute missing data?
                 missing=9,          # Value indicating missing data; currently only for polytomous
-                plots=FALSE,        # Show plots for diagnostics
-                chains=5,           # Not implemented; How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
-                initialize="best",  # "best", "random"
                 record=TRUE,        # "off"
+                plots=FALSE,        # Show plots for diagnostics
+                plotiter=100,       # Show diagnostic plots every "plotiter" iterations
+                chains=5,           # Not implemented; How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
                 parallel=(parallel::detectCores()>2), #,  # True or false for parallel computation?
                 cores=ceiling(parallel::detectCores()/2),
                 simfile=NA) # or NA

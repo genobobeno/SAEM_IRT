@@ -5,7 +5,7 @@ WrapZ <- function(j,A,b,d,theta) {
   hold <- sweep(bd,1,eta,"-")
   pp <- cbind(-Inf,hold,Inf)
   # Trim extreme values
-  U  <- matrix(runif(n,0.000009,0.999991),n,1)
+  U  <- matrix(runif(N,0.000009,0.999991),N,1)
 
   # Item propensities for all examinees from truncated normal
   # yL <- matrix(y.a[,j]+1,n,1) 

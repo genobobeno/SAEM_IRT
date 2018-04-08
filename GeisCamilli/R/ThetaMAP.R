@@ -26,6 +26,8 @@ function(aa,bb,cc,rp,settings,TAU=NA) {
   } else {
     tgrid<-seq(-3.3,3.3,length.out=761)
     THAT<-mat.or.vec(nrow(rp),settings$Adim)
+    print(paste0("Iterating Over ",settings$Adim,"D Grid For Each of ",nrow(rp),
+                 " examinees, Max: 500 iterations each"))
     if (is.na(TAU)[1]) {
       for (n in 1:nrow(rp)) {
         xy<-rep(1,settings$Adim)
@@ -34,6 +36,9 @@ function(aa,bb,cc,rp,settings,TAU=NA) {
         tsearch<-mat.or.vec(length(tgrid),settings$Adim)
         while(sum(xy!=xy0)>0 | It>500) {
           xy0<-xy
+          if (i%%10==1) cat(".")
+          if (i%%100==1) cat(":")
+          if (i%%500==1) cat("\n",i,"\t : ")
           for (q in 1:settings$Adim) {
             tsearch[,q]<-tgrid
             p<-ProbOgive(xi=xi,theta=tsearch) # TQ x J

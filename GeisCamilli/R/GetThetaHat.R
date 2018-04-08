@@ -23,7 +23,7 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     ATA 		<- t(aa)%*%aa #*4
     BTB_INV	<- solve(diag(setting$Adim) + ATA)
     for (i in 1:setting$nesttheta) {
-      tHat	<- t(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z=zHat,BTB_INV=BTB_INV,b=bb))
+      tHat	<- t(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z=zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=settings$dbltrunc))
       X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,A=aa,b=bb,
                                         d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat,
                                         simplify=FALSE), higher=TRUE)	
@@ -46,8 +46,8 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     THETA<-cbind(THETA,THETA-apply(THAT,1,sd),THETA+apply(THAT,1,sd))
     colnames(THETA)<-c("Theta","Theta-SE","Theta+SE")
   }
-  print("Running Theta MAP Estimate")
   if (setting$thetamap) {
+    print("Running Theta MAP Estimate")
     TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU)
     TMAP<-as.matrix(TMAP)
     ifelse(setting$Adim==1,colnames(TMAP)<-"TMAP",colnames(TMAP)<-paste("TMAP",1:setting$Adim,sep=""))

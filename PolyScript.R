@@ -1,5 +1,5 @@
 #setwd("/home/egeis/Documents/Documents/Rutgers_GSE/Camilli/ParSAEM/SAEM_IRT")
-J=20;N=2000;Q=1;K=4
+J=50;N=10000;Q=5;K=4
 structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
                Adist="beta",         # prior distribution of A's/loadings
                Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
@@ -32,10 +32,21 @@ GEN.DATA = GenerateTestData(j=J,n=N,structure = structure)
 #names(GEN.DATA$ResponseData)<-c(paste0("Theta",1:Q),paste0("J",1:J))
 #write.csv(GEN.DATA$ResponseData,file = paste0("Poly_Q",Q,"_K",K,"_N",N,"_ResponseData.csv"),row.names=FALSE)
 
-
-settings = list(Adim=Q,guess=FALSE,empiricalse=FALSE,est="rm",estgain=1,burnin=1000,ncat=K,
-                tmu=rep(0,Q),tsigma=diag(Q),eps=1e-4,parallel=(parallel::detectCores()>2),
-                estfile="FitFile_Test")
+settings = list(Adim=Q,guess=FALSE,empiricalse=FALSE,est="rm",estgain=1,burnin=100,ncat=K,
+                plots=TRUE,plotiter=5,tmu=rep(0,Q),tsigma=diag(Q),eps=1e-4,
+                parallel=(parallel::detectCores()>2),thetamap=FALSE,
+                estfile="FitFile_Test",record=TRUE)
 settings<-CheckParams(parameters = settings,generate=FALSE)
-
 MyFirstFit<-AnalyzeTestData(RP=GEN.DATA$RP,settings=settings,TargetA = GEN.DATA$XI[,1:Q])
+
+load("D:/Documents/Rutgers/SAEM_IRT/Poly_J100_N1e+05_Q10_K4.rda")
+rp <- gen.rp
+Q<-10
+settings = list(Adim=Q,guess=FALSE,empiricalse=FALSE,est="rm",estgain=1,burnin=100,ncat=K,
+                plots=TRUE,plotiter=5,tmu=rep(0,Q),tsigma=diag(Q),eps=1e-4,
+                parallel=(parallel::detectCores()>2),thetamap=FALSE,
+                estfile="FitFile_Test",record=TRUE)
+settings<-CheckParams(parameters = settings,generate=FALSE)
+MyFirstFit<-AnalyzeTestData(RP=rp,settings=settings,TargetA = gen.xi[,1:Q])
+
+parallel::stopCluster(cl)

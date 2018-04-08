@@ -15,32 +15,16 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   b		= init$XI[,ncol(init$XI)-settings$guess]	
   d		= init$D
   ncat <- settings$ncat
-  oldvec <- rep(0,Q)
   Aold1 <- matrix(runif(J*Q),J,Q)
-  Aold2 <- matrix(0,J,Q)
-  #J=20;N=1000;Q=2;K=4
+  # Aold2 <- matrix(0,J,Q)
   niter<-ceiling(2/settings$eps)
   nEM<-settings$burnin	#number of burnin EM cycles < niter
   RMwindow<-ceiling(settings$burnin*(0.2))
   estgain=settings$estgain
   eps=settings$eps
-  # nproc 	<- 2
   alpha<-GainConstant(settings=settings)
   prior<-list(tmu=settings$tmu,tsigma=settings$tsigma)
-    # c(rep(1,nEM-RMwindow),
-    #        runif(rep(1,ceiling(RMwindow/2)),min = 1.0/(1:(RMwindow/2))^estgain, max = 1.0),1.0,
-    #        runif(rep(1,ceiling(RMwindow/2)),min = 1.0/((RMwindow/2+1):RMwindow)^estgain, max = 1.0/(1:(RMwindow/2))^estgain),
-    #        1/(ceiling(RMwindow/2):(niter-nEM+ceiling(RMwindow/2)))^estgain)  
-
-  # csvfile = paste0("Poly_Q",Q,"_K",K,"_N",N,"_ResponseData.csv")
-  # datafile = paste0("Poly_J",J,"_N",N,"_Q",Q,"_K",K,".rds")
-  # GEN.DATA = readRDS(datafile)
   IQ <- diag(Q) 
-  #TrueTheta = data.matrix(read.csv(csvfile,header=TRUE)[,1:Q])
-  # Read data
-  # y.a = scan("form3_social.dat", what = "numeric",sep = "\n")
-  # y.a = data.matrix(read.csv(csvfile,header=TRUE)[,-(1:Q)]-1)
-  # y.a = data.matrix(do.call(rbind,lapply(strsplit(y.a,"\\s"), function(x) as.numeric(x[-1]))))
   # Set up n x m x (ncat-1) data array of binary values for
   y.a = data.matrix(rp)
   # cumulative option indicators
@@ -59,16 +43,6 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     }
   }
   Y <- y.b
-  # nproc 	<- 24
-  #  procs = nproc = parallel::detectCores()
-  # for (procs in 1:nproc) {
-  # if (settings$parallel) {
-  #   parallelCluster <- parallel::makeCluster(settings$cores,type="SOCK")
-  #   print(parallelCluster)
-  # clusterSetupRNG(parallelCluster, seed = round(runif(6)*1001))
-  
-  # wrapper for snowfall called by drawX. For each person,
-  # m x (ncat-1) matrix is returned for each person
   n1cat = (ncat-1)
   MY = lapply(1:(dim(Y)[1]),function(x) (which(Y[x,,]==9,arr.ind = TRUE)))
   MN = lapply(1:(dim(Y)[1]),function(x) (which(Y[x,,]!=9,arr.ind = TRUE)))
@@ -87,25 +61,27 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     yL <- matrix(yA+1,N,1)
     indL[[j]] <- cbind(1:N,yL); 		indU[[j]] <- cbind(1:N,yL + 1)
   }
-  # refList <- list(MY=MY,MN=MN,R=R,missList=missList)
-  # wrapper for snowfall called by drawX. For each person,
-  # m x (ncat-1) matrix is returned for each person
-  # wrapT is wrapper function for drawT
   clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
   clusterEvalQ(cl,c("WrapX","WrapT","WrapZ"))
   
-  if (settings$truncation==1) {
+  if (!settings$dbltrunc) {
     X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
     Z		<- apply(X2,c(2,3),mean) 
   } else {
-    Z 		<- simplify2array(parSapply(cl,1:J,wrapZ,A=A,b=b,d=d,theta=theta,simplify=FALSE), 
+    Z 		<- simplify2array(parSapply(cl,1:J,WrapZ,A=A,b=b,d=d,theta=theta,simplify=FALSE), 
                           higher=TRUE)
   }
   covZ  <- cov(Z)
-  A	<- DrawA(covZ,Q,a=NA)
+  if (settings$exploreAdim) {
+    Q<-Q0<-sum(eigen(covZ)$values>MarcenkoPastur(J=J,N=N))
+  } else {
+    Q0<-Q
+  }
+  atemp	<- DrawA(covZ,Q,a=NA)
+  A<-atemp$Atemp
   ATA 		<- t(A)%*%A #*4
   BTB_INV	<- solve(IQ + ATA)
-  theta	<- t(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b))
+  theta	<- t(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
   meanX	<- 0; meanD <- 0; meanB <- 0
   # alpha <- ifelse(1:niter < (nEM+1),rep(1,niter),1/(1:niter-nEM)^(2/3))
   
@@ -113,18 +89,19 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   if (settings$record) {
     Aiter = array(0,dim=c(J,Q,niter+1))
     Aiter[,,1]<-A
+    Viter = array(0,dim=c(Q,niter+1)) 
+    Viter[,1]<-eigen(covZ)$values[1:Q]
+    Biter = array(0,dim=c(J,niter+1)) 
+    Biter[,1]<-b
+    Diter = array(0,dim=c(J,n1cat,niter+1))
+    Diter[,,1]<-d
   }
   #Tstart<-Sys.time()
   i<-1
-  if (Q>1) {
-    prevA=mat.or.vec(J,Q)
-    Avec0<-rep(0,Q)
-  } else {
-    prevA<-rep(0,J)
-    Avec0<-0
-  }
+  prevA=mat.or.vec(J,Q)
+  Avec0<-rep(0,Q)
   itest<-(A-prevA)
-  while (max(abs(itest)))>eps) {
+  while (max(abs(itest))>eps) {
     #if (i%%100==0) cat(nproc,i,"|")
     if (i%%10==1) cat(".")
     if (i%%100==1) cat(":")
@@ -135,20 +112,23 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
     b         <- -meanB;    d        <- -meanD   
     #Z		<- apply(X2,c(2,3),mean)
-    if (settings$truncation==1) {
+    if (!settings$dbltrunc) {
       Z		<- colMeans(X2)
     } else {
-      X1 		<- parSapply(cl,1:m,wrapZ,simplify=FALSE)
+      X1 		<- parSapply(cl,1:J,WrapZ,simplify=FALSE,A=A,b=b,d=d,theta=theta)
       Z		<- simplify2array(X1, higher=TRUE)	
     }
     covZ	<- covZ + alpha[i]*(cov(Z)-covZ)
-    if (i>20) {
+    # print(i)
+    # print("covZ")
+    # print(covZ)
+    # out<-eigen( covZ-diag(J), symmetric=TRUE)
+    # print(out)
+    # print(out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q])))
+    #if (i>20) {
       prevA <- A 
       Avec0 <- atemp$Avec[1:Q]
-    }
-    #DrawAEigen <- function(covZ,Q,m)
-    #drawALowerDiag <- function(covT,covTZ,Q,m,n)
-    #DrawA <- function(covZ,Q,a)
+    #}
     if (settings$drawA=="lowertriangular") {
       #compue covariances
       covTMC	<- cov(theta)
@@ -157,30 +137,78 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       covTZ		<- covTZ + alpha[i]*(covTZMC-covTZ)
       atemp	<- DrawALowerDiag(covT=covT,covTZ=covTZ,Q,J,N)
     } else if (settings$drawA=="eigen") {
-      atemp	<- DrawAEigen(covZ-diag(J),Q)
+      atemp	<- DrawAEigen(covZ = covZ-diag(J),Q)
     } else {
       atemp	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
     }
     A <- Anew <- atemp$Atemp
+    # print("A")
+    # print(A)
     ATA 		<- t(A)%*%A
     BTB_INV	<- solve(IQ + ATA)
-    theta		<- thetanew	<- t(parSapply(cl,1:N,WrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b))
-    if (settings$record) Aiter[,,i+1]<-A
-    if (settings$plots) {
-      if (i%%100==0) {
-        par(mfrow=c(1,Q))
-        for (qq in 1:Q) {
-          plot(c(1,niter),c(-2,2))
-          abline(h=abs(GEN.DATA$XI[,qq]),col=1:J)
-          for (jj in 1:J) {lines(1:i,abs(Aiter[jj,qq,1:i]),col=jj)}
+    # print("BTB_INV")
+    # print(BTB_INV)
+    theta		<- thetanew	<- t(parSapply(cl,1:N,WrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    # print("theta")
+    # print(theta)
+    
+    if (settings$record) {
+      Aiter[,,i+1]<-A
+      Viter[,i+1]<-atemp$Avec[1:Q]
+      Biter[,i+1]<-b
+      Diter[,,i+1]<-d
+      if (settings$plots) {
+        if (i%%settings$plotiter==0) {
+          par(mfrow=c(ceiling((Q+2+ifelse(!is.na(TargetA)[1],Q,0))/5),5),mar=c(4,4,1,1))
+          plot(c(1,100*ceiling(i/100)),c(0,2*Q),xlab="iteration",ylab="sqrt(eigenvalues)",type="n")
+          abline(h=rowMeans(sqrt(Viter[,max(1,i-20):i])),col=1:J,lwd=0.5,lty=3)
+          for (qq in 1:Q) {lines(1:i,sqrt(Viter[qq,1:i]),col=qq)}
+          for (qq in 1:Q) {
+            plot(c(1,100*ceiling(i/100)),c(-0.1,ifelse(qq==1,2.5,1)),xlab="iteration",ylab="slopes",type="n")
+            if (!is.na(TargetA)[1]) {
+              abline(h=abs(TargetA[,qq]),col=1,lwd=0.5,lty=3)
+            } else {
+              abline(h=rowMeans(abs(Aiter[,qq,max(1,i-20):i])),col=1:J,lwd=0.5,lty=3)
+            } 
+            for (jj in 1:J) {lines(1:i,abs(Aiter[jj,qq,1:i]),col=jj)}
+          }
+          plot(c(1,100*ceiling(i/100)),c(-3,3),xlab="iteration",ylab="intercepts",type="n")
+          abline(h=rowMeans(Biter[,max(1,i-20):i]),col=1:J,lwd=0.5,lty=3)
+          for (jj in 1:J) {lines(1:i,Biter[jj,1:i],col=jj)}
+          if (!is.na(TargetA)[1]) { # TargetA
+            #plot(c(1,100*ceiling(i/100)),c(0,2*Q),xlab="iteration",ylab="eigenvalues",type="n")
+            for (ii in 1:Q) {
+              if (i > 4) {if (cor(Aold1[,ii],Anew[,ii]) < -.25) Anew[,ii] <- -Anew[,ii]}
+            }
+            Aold1 <- Anew
+            if (atemp$Avec[1]/atemp$Avec[2]>3) {
+              Target <- matrix(NA,J,Q)
+              Target[TargetA==0] <- 0
+              Target <- matrix(Target,J,Q)
+              RotT <- targetT(Anew,Tmat=diag(Q),Target=Target,normalize=TRUE,eps=1e-4, maxit=1000)
+              #RotV <- Varimax(RotT$loadings,Tmat=diag(Q),normalize=TRUE,eps=1e-4,maxit=100)
+              A2 <- RotT$loadings
+            } else {
+              RotT <- targetT(Anew,Tmat=diag(Q),Target=TargetA,normalize=TRUE,eps=1e-4, maxit=1000)
+              RotV <- Varimax(RotT$loadings,Tmat=diag(Q),normalize=TRUE,eps=1e-4,maxit=100)
+              A2 <- RotV$loadings
+            }
+            for (ii in 1:Q) {
+              if (abs(min(A2[,ii])) > max(A2[,ii])) A2[,ii]=-A2[,ii]
+              plot(TargetA[,ii], A2[,ii],ylab=paste("Est A",ii),
+                   xlab = paste0("True A",ii)); abline(a=0,b=1)
+            }
+          }
         }
       }
     }
     i<-i+1
-    if (settings$drawA=="lowertriangular") {
+    if (tolower(settings$converge)=="a"|grepl("slop",tolower(settings$converge))) {
       itest<-(A-prevA)
+    } else if (grepl("eig.+val",tolower(settings$converge))|grepl("e?(.+)val",tolower(settings$converge))) {
+      itest<-(atemp$Avec[1:Q] - Avec0)
     } else {
-      itest<-(Atemp$Avec - Avec0)
+      itest<-(A-prevA)
     }
   }
   # Time <- Sys.time()-Tstart;	print(paste(settings$cores,"processors:",Time))
