@@ -19,7 +19,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   # Aold2 <- matrix(0,J,Q)
   niter<-ceiling(2/settings$eps)
   nEM<-settings$burnin	#number of burnin EM cycles < niter
-  RMwindow<-ceiling(settings$burnin*(0.2))
+  RMwindow<-ceiling(settings$burnin*(0.4))
   estgain=settings$estgain
   eps=settings$eps
   alpha<-GainConstant(settings=settings)
@@ -100,6 +100,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   i<-1
   prevA=mat.or.vec(J,Q)
   Avec0<-rep(0,Q)
+  pRotT<-NA
+  pRotV<-NA
   itest<-(A-prevA)
   while (max(abs(itest))>eps) {
     #if (i%%100==0) cat(nproc,i,"|")
@@ -160,11 +162,11 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       if (settings$plots) {
         if (i%%settings$plotiter==0) {
           par(mfrow=c(ceiling((Q+2+ifelse(!is.na(TargetA)[1],Q,0))/5),5),mar=c(4,4,1,1))
-          plot(c(1,100*ceiling(i/100)),c(0,2*Q),xlab="iteration",ylab="sqrt(eigenvalues)",type="n")
+          plot(c(1,100*ceiling(i/100)),c(0,max(Viter[,i])*1.25),xlab="iteration",ylab="sqrt(eigenvalues)",type="n")
           abline(h=rowMeans(sqrt(Viter[,max(1,i-20):i])),col=1:J,lwd=0.5,lty=3)
           for (qq in 1:Q) {lines(1:i,sqrt(Viter[qq,1:i]),col=qq)}
           for (qq in 1:Q) {
-            plot(c(1,100*ceiling(i/100)),c(-0.1,ifelse(qq==1,2.5,1)),xlab="iteration",ylab="slopes",type="n")
+            plot(c(1,100*ceiling(i/100)),c(-0.1,ifelse(qq==1,2.5,1.2)),xlab="iteration",ylab="slopes",type="n")
             if (!is.na(TargetA)[1]) {
               abline(h=abs(TargetA[,qq]),col=1,lwd=0.5,lty=3)
             } else {
@@ -172,7 +174,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
             } 
             for (jj in 1:J) {lines(1:i,abs(Aiter[jj,qq,1:i]),col=jj)}
           }
-          plot(c(1,100*ceiling(i/100)),c(-3,3),xlab="iteration",ylab="intercepts",type="n")
+          plot(c(1,100*ceiling(i/100)),c(-max(Biter),max(Biter)),xlab="iteration",ylab="intercepts",type="n")
           abline(h=rowMeans(Biter[,max(1,i-20):i]),col=1:J,lwd=0.5,lty=3)
           for (jj in 1:J) {lines(1:i,Biter[jj,1:i],col=jj)}
           if (!is.na(TargetA)[1]) { # TargetA
@@ -185,12 +187,30 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
               Target <- matrix(NA,J,Q)
               Target[TargetA==0] <- 0
               Target <- matrix(Target,J,Q)
-              RotT <- targetT(Anew,Tmat=diag(Q),Target=Target,normalize=TRUE,eps=1e-4, maxit=1000)
+              RotT <- tryCatch({targetT(Anew,Tmat=diag(Q),Target=Target,normalize=TRUE,eps=1e-4, maxit=1000)},
+                               error = function(err) {
+                                 cat("R")
+                                 return(NA)
+                               })
               #RotV <- Varimax(RotT$loadings,Tmat=diag(Q),normalize=TRUE,eps=1e-4,maxit=100)
+              if (is.na(RotT)) RotT<-pRotT
+              pRotT <- RotT
               A2 <- RotT$loadings
             } else {
-              RotT <- targetT(Anew,Tmat=diag(Q),Target=TargetA,normalize=TRUE,eps=1e-4, maxit=1000)
-              RotV <- Varimax(RotT$loadings,Tmat=diag(Q),normalize=TRUE,eps=1e-4,maxit=100)
+              RotT <- tryCatch({targetT(Anew,Tmat=diag(Q),Target=TargetA,normalize=TRUE,eps=1e-4, maxit=1000)},
+                               error = function(err) {
+                                 cat("R")
+                                 return(NA)
+                               })
+              if (is.na(RotT)) RotT<-pRotT
+              pRotT <- RotT
+              RotV <- tryCatch({Varimax(RotT$loadings,Tmat=diag(Q),normalize=TRUE,eps=1e-4,maxit=100)},
+                                error = function(err) {
+                                cat("R")
+                                return(NA)
+                              })
+              if (is.na(RotV)) RotV<-pRotV
+              pRotV <- RotV
               A2 <- RotV$loadings
             }
             for (ii in 1:Q) {
@@ -234,6 +254,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       RMAT = list()
       SRot<-sample(1:Q,8,replace = TRUE)
       SAng<-sample(2*pi/(0:360),8)
+      pRotA<-NA
       for (i in 1:8) {
         if (SRot[i]!=SRot[i%%8+1]) {
           TestMat[SRot[i],SRot[i]]<-sin(SAng[i])*TestMat[SRot[i],SRot[i]]
@@ -241,10 +262,19 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
           TestMat[SRot[i],SRot[i%%8+1]]<-ifelse(TestMat[SRot[i],SRot[i%%8+1]]==0,cos(SAng[i]),cos(SAng[i])*TestMat[SRot[i],SRot[i%%8+1]])
           TestMat[SRot[i%%8+1],SRot[i]]<-ifelse(TestMat[SRot[i%%8+1],SRot[i]]==0,cos(-SAng[i]),cos(-SAng[i])*TestMat[SRot[i%%8+1],SRot[i]])
         }
+        RotA = tryCatch({targetQ(TA, Tmat=TestMat, Target=Target, normalize=FALSE, 
+                       eps=1e-4, maxit=10000)},error=function(err) {
+                         print("Rotation Error with targetQ at end.")
+                         return(NA)
+                       })
+        if (is.na(RotA)) {
+          RotA<-pRotA
+          Rtest<-c(Rtest,100)
+        } else {
+          Rtest<-c(Rtest,sd(RotA$loadings[!is.na(Target) & Target==0]))
+        }
         RMAT[[i]]<-TestMat
-        RotA = targetQ(TA, Tmat=TestMat, Target=Target, normalize=FALSE, 
-                       eps=1e-4, maxit=10000)
-        Rtest<-c(Rtest,sd(RotA$loadings[!is.na(Target) & Target==0]))
+        pRotA<-RotA
       }
       AR<- targetQ(TA, Tmat=RMAT[[which.min(Rtest)]], 
                      Target=Target, normalize=FALSE, 
@@ -253,14 +283,14 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
                         prior=prior,setting=settings,R=AR,
                         TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
-
+      ARot<-AR$loadings
     } else {AR<-A}
   } else {
     AR <- A
   }
   #summaryRprof()
   C<-NA
-  list(xi=cbind(AR,b),A=A,AR=AR,B=b,C=C,TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),RP=rp,
+  list(xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),RP=rp,
        xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
        That=theta,Tmap=NA,Tmaprot=NA,TRmap=NA,Trot=NA,
        EmpSE=NA,ThetaFix=NA,settings=settings)

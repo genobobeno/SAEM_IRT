@@ -11,18 +11,17 @@ library(mvnfast)        # for function mvrnorm
 library(psych)            # for ML factor analysis
 
 # DrawA generates A factor coefficients w/ eigenanalysis
-drawA <- function(covT,covTZ,Q,m,n)
-{
-  Abtemp <- matrix(0,m,Q)
-  TT      <- covT
-  for (k in 1:m)
+drawA <- function(covT,covTZ,Q,J,n) {
+  Abtemp <- matrix(0,J,Q)
+  # TT      <- covT
+  for (k in 1:J)
   { 
-    if (k<=10) {    E     = k
-    IQ    = diag(k)
-    TT     = covT[1:E,1:E]
-    TZ     = covTZ[1:E,k] 
-    } else 
-    {    
+    if (k<=10) {    
+      E = k
+      IQ    = diag(k)
+      TT     = covT[1:E,1:E]
+      TZ     = covTZ[1:E,k] 
+    } else {    
       E     = Q
       IQ     = diag(Q)
       TT    = covT
@@ -32,18 +31,18 @@ drawA <- function(covT,covTZ,Q,m,n)
   }
   return(Abtemp)
 }
-# Number of items (m), schools (n), dimensions (Q)
-m <- 100; n <- 100000 ; Q <- 10; ncat <- 4; IQ <- diag(Q)
+# Number of items (J), schools (n), dimensions (Q)
+J <- 100; n <- 100000 ; Q <- 10; ncat <- 4; IQ <- diag(Q)
 
 # Read data
 load("C:\\Users\\gregory.camilli\\Desktop\\Eugene\\Poly_J100_N1e+05_Q10_K4.rda")
 y.a <- gen.rp
 y.a = data.matrix(y.a)
-# Set up n x m x (ncat-1) data array of binary values for
+# Set up n x J x (ncat-1) data array of binary values for
 # cumulative option indicators
-y.b = array(NA,c(m,ncat-1,n))
+y.b = array(NA,c(J,ncat-1,n))
 for (i in 1:n) 
-  for (j in 1:m)
+  for (j in 1:J)
     # for missing responses, item propensities = 9 
     if (y.a[i,j]==9)    {y.b[j,,i] <- rep(9,(ncat-1))} else
     {
@@ -62,13 +61,13 @@ nproc     <-  10
 cl <- makeCluster(nproc,type="SOCK")
 clusterSetupRNG(cl, seed = round(runif(6)*1001))
 clusterEvalQ(cl,library(mvnfast))
-clusterExport(cl,c("Y","n","m","ncat","Q"))
+clusterExport(cl,c("Y","n","J","ncat","Q"))
 
 # wrapper for snow called by drawX. For each person,
-# m x (ncat-1) matrix is returned for each person
+# J x (ncat-1) matrix is returned for each person
 wrapX <- function(j) {
   
-  # ker is m x (ncat-1) matrix of item kernels
+  # ker is J x (ncat-1) matrix of item kernels
   ker <- apply(theta%*%matrix(A[j,],Q,1)-b[j],1,
                function(x) x - c(d[j,]))
   
@@ -102,7 +101,7 @@ clusterEvalQ(cl,"wrapX")
 wrapT <- function(i)             
 {
   IQ         <- diag(Q)
-  ATZ       <- t(A)%*%(Z[i,] + b)*3
+  ATZ       <- t(A)%*%(Z[i,] + b)*(ncat-1)
   That        <- BTB_INV%*%ATZ
   ttempi     <- rmvn(1,That,BTB_INV)
   return(ttempi)}
@@ -116,9 +115,9 @@ clusterEvalQ(cl,"wrapT")
 theta     = matrix(rnorm(n*Q,0,1),n,Q)
 clusterExport(cl,"theta")
 
-A        = matrix(.25*(runif(m*Q)-.5),m,Q)
-b        = matrix(rnorm(m),m,1);    
-d        = matrix(c(-0.50, -0.25, 0.25, 0.50),m,ncat-1, byrow=TRUE)
+A        = matrix(.25*(runif(J*Q)-.5),J,Q)
+b        = matrix(rnorm(J),J,1);    
+d        = matrix(c(-0.50, -0.25, 0.25, 0.50),J,ncat-1, byrow=TRUE)
 #clusterExport(cl,c("A","b","d","theta"))
 
 AA=gen.xi[,1:10]
@@ -134,7 +133,7 @@ Tstart <- Sys.time()
 for (i in 1:niter) {
   if (i < (nEM+1)) alpha <- 1 else alpha <- 1/(i-nEM)
   print(c(i,alpha)); print(i)
-  X1         <- parSapply(cl,1:m,wrapX,simplify=FALSE)
+  X1         <- parSapply(cl,1:J,wrapX,simplify=FALSE)
   X2        <- simplify2array(X1, higher=TRUE)    
   X3        <- t(apply(X2,c(1,3),mean))
   meanBMC    <- t(t(rowMeans(X3)))
@@ -157,7 +156,7 @@ for (i in 1:niter) {
   covTZ        <- covTZ + alpha*(covTZMC-covTZ)
   
   #get ML estimate of A
-  Anew        <- drawA(covT,covTZ,Q,m,n)
+  Anew        <- drawA(covT,covTZ,Q,J,n)
   print(max(Anew - A))
   A <- Anew
   #A <- AA    # to fix A
@@ -203,14 +202,14 @@ for (i in 1:niter) {
   # End diagnostics
   #########################################################
   
-  ATA         <- t(A)%*%A*3
+  ATA         <- t(A)%*%A*(ncat-1)
   BTB_INV    <- solve(IQ + ATA)
   clusterExport(cl,"BTB_INV")
   
   #Draw theta
   thetanew    <- t(parSapply(cl,1:n,wrapT))
   print(max(thetanew-theta))
-  theta        <- thetanew
+  theta       <- thetanew
   theta <- ttheta # to fix theta at true values
   clusterExport(cl,"theta")
   

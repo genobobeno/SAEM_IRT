@@ -1,7 +1,7 @@
 #setwd("/home/egeis/Documents/Documents/Rutgers_GSE/Camilli/ParSAEM/SAEM_IRT")
-J=50;N=10000;Q=5;K=4
+J=40;N=20000;Q=10;K=4
 structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
-               Adist="beta",         # prior distribution of A's/loadings
+               Adist="test",         # prior distribution of A's/loadings
                Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
                Adim=Q,               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
                bdist="norm",         # distribution of B/intercept
