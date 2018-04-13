@@ -1,0 +1,188 @@
+---
+title: "SAEM_IRT Tutorial"
+output: html_notebook
+---
+
+
+# Probit Link MIRT: A Gibbs Sampler Applying SAEM
+Welcome to the tutorial on using the SAEM_IRT code to fit your MIRT exploratory models. This markdown is specific to polytomous generated data.
+
+The first thing we want to do is to appropriately set up your environment for running our code. The following code will appropriately set the working directory and demonstrate the R Notebook features if you have not yet been introduced to this markdown format.
+```{r}
+if (!"knitr" %in% installed.packages()[,1]) { install.packages("knitr",dependencies = TRUE)} 
+knitr::opts_chunk$set(echo=FALSE,warning = FALSE)
+source("Hello.R", chdir = T)
+Hello()
+```
+
+## R Environment and Packages
+Before we get started, we'll have to make sure you have some packages installed. We used a C++ implementation for some functions so Rcpp is key. Also, for our parallelization pleasure, we'll include some logic to decide which packages are appropriate in your environment.
+```{r,message=FALSE}
+### Packages called ###
+PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
+         ifelse(get_os()=="windows","doSNOW","doParallel"),
+         "rlecuyer","GPArotation","mvnfast","psych","modeest","MASS",
+         "Rcpp","RcppArmadillo","devtools","compiler","doRNG","abind",
+         "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix")
+
+### Install packages not already installed ###
+for (i in 1:length(PACK)){
+  if(PACK[i] %in% rownames(installed.packages()) == FALSE) {
+    install.packages(PACK[i],dependencies = TRUE)}
+}
+```
+
+Now we source those packages, source our beta functions (pre-CRAN-package) code, and then run some specific code to source the nuanced functions, C++, etc.
+```{r, message=FALSE}
+required<-lapply(PACK, require, character.only = TRUE)                       # Call the libraries (will deprecate)
+Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm Random (fast)
+file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
+sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
+# NOTE: You will not see output when message=FALSE. You will still see warnings, etc.
+```
+
+
+### Assumptions
+In running the SAEM algorithm, you'll want to either load your own data or generate data. It is a good idea to generate some data to get a feel for the inputs and outputs, and that's what we'll do here. Several data sets are included to help facilitate your work with this code as well.
+
+Please NOTE the following assumptions here: 
+
+* This suite of functionality assumes orthogonal latent factors in its factor analysis.
+* Rotations on output are made based on assumptions about the structure of multidimensionality in items.
+* The model uses a probit link.
+  
+## Generate Data
+For the pedagogical purpose of this markdown (which is to emphasize the speed of the algorithm at high dimensions), we will generate a larger polytomous test. Let's say 40 items, 20000 examinees, at 10 dimensions. The latent factor will be a multivariate normal distribution, there will be no guessing, and the model of the item characteristic curve will be a probit. There are many other parameters required for properly sampling with this code... and, very sorry to disappoint, but multiple settings that are implemented for dichotomous data have to yet to be programmed for polytomous data. Hopefully this can be completed to bring this code to a "CRAN-permissible" package.
+```{r}
+
+J=40;N=20000;Q=10;K=4
+structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
+               Adist="test",         # prior distribution of A's/loadings
+                                     #   'test' makes it a subscale test
+               Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
+               Adim=Q,               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
+               bdist="norm",         # distribution of B/intercept
+               bparams=c(0,1),       # parameters of B distribution
+               guess=FALSE,          # guessing ? TRUE/FALSE
+               ncat=K,
+               taudist="norm",
+               tauparams=c(0,1),
+               cdist="unif",         # guessing parameter distribution for 3PNO or 3PL
+               cparams=c(0.05,0.3),  # bounds
+               tmu=rep(0,Q),                # Theta Prior... e.g. 0, or multivariate c(0,0) # can be multidimensional
+               tsigma=if(Q==1) 1 else diag(Q),
+               simfile=paste0("Poly_J",J,"_N",N,"_Q",Q,"_K",K,".rda")) # A file is saved. 
+
+# This will show you the parameters you're using for sampling the response pattern.
+VisualizeParams(structure)
+```
+
+Now let's generate some response pattern data!
+```{r}
+GEN.DATA = GenerateTestData(j=J,n=N,structure = structure)
+cat("\nParameters (A and b)\n")
+print(head(GEN.DATA$XI,n=10))
+cat("\nParameters (Theta)\n")
+print(head(GEN.DATA$THETA))
+cat("\nResponse Data\n")
+print(head(GEN.DATA$RP))
+```
+
+## Fit Settings 
+
+Now for the complicated part, parameters for fitting the model! 
+
+### Minimal Fix...
+
+If you'd prefer to not think about this, let's start by making a minimal set of features... in fact, we've set this up so you should only need to choose the dimensions. We've got the rest set up for you.
+
+In the block below, we are designating Q = 1. The rest of the settings are a small introduction to the basics of the code's flexibility and are initialized as follows:
+
+* guess = FALSE; No guessing parameter
+* empiricalse=FALSE; Don't resample (from conditional distributions given fitted values) for standard errors after the fit
+* est="rm"; Use the Robbins-Monro [RM] algorithm
+* estgain=1; Set the gain exponent in the denominator of the RM algorithm to 1
+* burnin=1000; Run 1000 Gibbs cycles before using RM
+* tmu=0; Set prior mean of latent factor to zero
+* tsigma=diag(Q); Set prior variance of latent factor to Unity
+* eps=1e-4; Set convergence criterion for all item function parameters to 0.0001
+* parallel=parallel::detectCores()>2; If you have more than 2 cores, parallelize the algorithm
+* estfile="FitFile_Test"; Save the output into an R-Data file "FitFile_Test.rda"
+
+Note: Since there are more settings than this subset, the CheckParams() function will fill in the blanks with defaults and run a *thin* validation! The same is true for the generate structure parameters (the 'generate' argument is the switch).
+```{r}
+settings = list(Adim=Q,            # Simplify using same number of dimensions
+                guess=FALSE,       # Guessing not implemented for polytomuos
+                empiricalse=FALSE, # Not yet implemented empirical SEs for poly
+                est="rm",          # Robbins Monro, not mean of iterations
+                estgain=1,         # Exponent to the gain constant
+                burnin=100,        # burnin iterations. big for small datasets
+                ncat=K,            # number of categories in data
+                plots=TRUE,        # we want to see diagnostic plots
+                plotiter=5,        # we'll see plots every `plotiter` iterations
+                tmu=rep(0,Q),      # theta prior mean
+                tsigma=diag(Q),    # theta prior variance
+                eps=1e-4,          # criterion for convergence
+                parallel=(parallel::detectCores()>2), # T/F for parallel
+                thetamap=FALSE,    # don't run MAP theta estimate grid
+                estfile="FitFile_Test", # estimation data file
+                record=TRUE)       # record iterations for plotting
+settings<-CheckParams(parameters = settings,generate=FALSE)
+
+```
+
+## Fit the Data
+
+Now that we have response data, we want to fit it using our MIRT Gibbs Sampler. 
+NOTE: I apologize that I have yet to fully embrace R's object-oriented S4 classes; a great deal of the functions in this project could probably be more efficiently streamlined with those enhancements. 
+
+```{r}
+MyFirstFit<-AnalyzeTestData(RP=GEN.DATA$RP,settings=settings,
+                            TargetA = GEN.DATA$XI[,1:Q])
+```
+
+Hopefully that went well... and you now have accomplisted your first fit!
+
+Let's see how it did! First, let's start with the slopes:
+```{r}
+load("D:/Documents/Rutgers/SAEM_IRT/Poly_J100_N1e+05_Q10_K4.rda")
+rp <- gen.rp
+Q<-10
+settings = list(Adim=Q,guess=FALSE,empiricalse=FALSE,est="rm",
+                estgain=1,burnin=100,ncat=K,
+                plots=TRUE,plotiter=5,tmu=rep(0,Q),tsigma=diag(Q),eps=1e-4,
+                parallel=(parallel::detectCores()>2),thetamap=FALSE,
+                estfile="FitFile_Test",record=TRUE)
+settings<-CheckParams(parameters = settings,generate=FALSE)
+MyFirstFit<-AnalyzeTestData(RP=rp,settings=settings,TargetA = gen.xi[,1:Q])
+fittest<-lm(MyFirstFit$A~Gen.Data$XI[,1:Q])
+abline(fittest)
+summary(fittest)
+```
+
+We don't expect perfection with only 500 examinees. Intercepts always look better, so let's check them out:
+```{r}
+plot(Gen.Data$XI[,Q+1],MyFirstFit$B,xlab="Generated Intercepts",ylab="Fitted Intercepts",main=paste("Difficulty Reconstruction; N =",N),col=1:J,pch=16)
+fittest<-lm(MyFirstFit$B~Gen.Data$XI[,Q+1])
+abline(fittest)
+summary(fittest)
+```
+
+As long as you have taken the default for the "extended" parameters that were not explicitly declared, you have the opportunity to visualize the Markov chain! The iteration of these values are saved in another file that should have found its way into your current working directory.
+
+```{r}
+load("FitFile_Test.rda") # This will create an object called MCMCDATA and another called FitDATA
+cat("Dimensions of the MCMC Matrix of slopes is [J X Q X Iteration]: ",dim(MCMCDATA$Aiter)) # This matrix
+plot(c(1,dim(MCMCDATA$Aiter)[3]),range(MCMCDATA$Aiter[,1,]),type="n",main=paste("The",J,"Slopes' Markov Chains"),
+     ylab="Slope",xlab="Gibbs cycle")
+for (j in 1:J) lines(1:dim(MCMCDATA$Aiter)[3],MCMCDATA$Aiter[j,1,],col=j)
+```
+
+And one more time for the Intercepts:
+
+```{r}
+cat("Dimensions of the MCMC Matrix of intercepts is [J X Iteration]: ",dim(MCMCDATA$Biter)) # This matrix
+plot(c(1,dim(MCMCDATA$Biter)[2]),range(MCMCDATA$Biter),type="n",main=paste("The",J,"Intercepts' Markov Chains"),
+     ylab="Intercept",xlab="Gibbs cycle")
+for (j in 1:J) lines(1:dim(MCMCDATA$Biter)[2],MCMCDATA$Biter[j,],col=j)
+```
