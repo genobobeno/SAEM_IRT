@@ -41,7 +41,7 @@ function(j,Adim,Adist,Aparams) {
         }
       }
     }
-  } else if (Adist=="test") {
+  } else if (Adist=="subscale") {
     if (Adim>1) {
       A<-mat.or.vec(j,Adim)
       for (i in 1:Adim) {
