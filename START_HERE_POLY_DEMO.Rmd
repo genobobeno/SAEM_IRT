@@ -55,7 +55,7 @@ Please NOTE the following assumptions here:
 For the pedagogical purpose of this markdown (which is to emphasize the speed of the algorithm at high dimensions), we will generate a larger polytomous test. Let's say 40 items, 20000 examinees, at 10 dimensions. The latent factor will be a multivariate normal distribution, there will be no guessing, and the model of the item characteristic curve will be a probit. There are many other parameters required for properly sampling with this code... and, very sorry to disappoint, but multiple settings that are implemented for dichotomous data have to yet to be programmed for polytomous data. Hopefully this can be completed to bring this code to a "CRAN-permissible" package.
 ```{r}
 
-J=40;N=20000;Q=10;K=4
+J=80;N=20000;Q=10;K=4
 structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
                Adist="subscale",         # prior distribution of A's/loadings
                                      #   'test' makes it a subscale test
@@ -124,7 +124,7 @@ settings = list(Adim=Q,            # Simplify using same number of dimensions
                 tsigma=diag(Q),    # theta prior variance
                 eps=1e-3,          # criterion for convergence
                 parallel=(parallel::detectCores()>2), # T/F for parallel
-                ncores=6,
+                #ncores=6,
                 thetamap=FALSE,    # don't run MAP theta estimate grid
                 estfile="FitFile_Test", # estimation data file
                 record=TRUE)       # record iterations for plotting
@@ -153,7 +153,8 @@ cor((MyFirstFit$That[,1:Q]%*%MyFirstFit$AR$Th),GEN.DATA$THETA)
 RTheta<-(MyFirstFit$That[,1:Q]%*%MyFirstFit$AR$Th)
 par(mfrow=c(5,2))
 for (i in 1:Q) {plot(GEN.DATA$THETA[,i],RTheta[,i])}
-for (i in 1:Q) {plot(density(GEN.DATA$THETA[,i]-RTheta[,i]))}
+for (i in 1:Q) {plot(density(GEN.DATA$THETA[,i]-RTheta[,i]));
+  text(0,0.1,paste("SD:",round(sd(GEN.DATA$THETA[,i]-RTheta[,i]),digits=2)))}
 ```
 
 If all looks good, now test your computer's speed and fit 100,000 examinees on 100 bifactor items.
