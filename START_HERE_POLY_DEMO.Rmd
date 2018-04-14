@@ -143,46 +143,49 @@ MyFirstFit<-AnalyzeTestData(RP=GEN.DATA$RP,settings=settings,
 
 Hopefully that went well... and you now have accomplisted your first fit!
 
-Let's see how it did! First, let's start with the slopes:
+Let's look at some latent factors:
+```{r}
+# Correlation matrix of 10D factors to generated latent factors
+cor((MyFirstFit$That[,1:10]%*%MyFirstFit$AR$Th),GEN.DATA$THETA)
+
+# Rotate latent factor estimates, and plot them and their residuals
+RTheta<-(MyFirstFit$That[,1:10]%*%MyFirstFit$AR$Th)
+par(mfrow=c(5,2))
+for (i in 1:10) {plot(GEN.DATA$THETA[,i],RTheta[,i])}
+for (i in 1:10) {plot(density(GEN.DATA$THETA[,i]-RTheta[,i]))}
+```
+
+If all looks good, now test your computer's speed and fit 100,000 examinees on 100 bifactor items.
 ```{r}
 load("D:/Documents/Rutgers/SAEM_IRT/Poly_J100_N1e+05_Q10_K4.rda")
 rp <- gen.rp
-Q<-10
+Q<-10;K=4
 settings = list(Adim=Q,guess=FALSE,empiricalse=FALSE,est="rm",
                 estgain=1,burnin=100,ncat=K,
-                plots=TRUE,plotiter=5,tmu=rep(0,Q),tsigma=diag(Q),eps=1e-4,
+                plots=FALSE,tmu=rep(0,Q),tsigma=diag(Q),eps=1e-4,
                 parallel=(parallel::detectCores()>2),thetamap=FALSE,
                 estfile="FitFile_Test",record=TRUE)
 settings<-CheckParams(parameters = settings,generate=FALSE)
 MyFirstFit<-AnalyzeTestData(RP=rp,settings=settings,TargetA = gen.xi[,1:Q])
-fittest<-lm(MyFirstFit$A~Gen.Data$XI[,1:Q])
-abline(fittest)
-summary(fittest)
 ```
 
-We don't expect perfection with only 500 examinees. Intercepts always look better, so let's check them out:
-```{r}
-plot(Gen.Data$XI[,Q+1],MyFirstFit$B,xlab="Generated Intercepts",ylab="Fitted Intercepts",main=paste("Difficulty Reconstruction; N =",N),col=1:J,pch=16)
-fittest<-lm(MyFirstFit$B~Gen.Data$XI[,Q+1])
-abline(fittest)
-summary(fittest)
-```
 
-As long as you have taken the default for the "extended" parameters that were not explicitly declared, you have the opportunity to visualize the Markov chain! The iteration of these values are saved in another file that should have found its way into your current working directory.
+As long as you have taken the default for the "extended" parameters that were not explicitly declared, you have the opportunity to visualize the Markov chain! The iteration of these values are saved in another file that should have found its way into your current working directory. This should get you started on a way to look at the first 10 items.
 
 ```{r}
 load("FitFile_Test.rda") # This will create an object called MCMCDATA and another called FitDATA
 cat("Dimensions of the MCMC Matrix of slopes is [J X Q X Iteration]: ",dim(MCMCDATA$Aiter)) # This matrix
-plot(c(1,dim(MCMCDATA$Aiter)[3]),range(MCMCDATA$Aiter[,1,]),type="n",main=paste("The",J,"Slopes' Markov Chains"),
+plot(c(1,dim(MCMCDATA$Aiter)[3]),range(MCMCDATA$Aiter[,1,]),type="n",
+     main=paste("The",J,"Slopes' Markov Chains"),
      ylab="Slope",xlab="Gibbs cycle")
-for (j in 1:J) lines(1:dim(MCMCDATA$Aiter)[3],MCMCDATA$Aiter[j,1,],col=j)
+for (j in 1:10) lines(1:dim(MCMCDATA$Aiter)[3],MCMCDATA$Aiter[j,1,],col=j)
 ```
 
-And one more time for the Intercepts:
+And one more time for the first ten marginalized Intercepts:
 
 ```{r}
 cat("Dimensions of the MCMC Matrix of intercepts is [J X Iteration]: ",dim(MCMCDATA$Biter)) # This matrix
 plot(c(1,dim(MCMCDATA$Biter)[2]),range(MCMCDATA$Biter),type="n",main=paste("The",J,"Intercepts' Markov Chains"),
      ylab="Intercept",xlab="Gibbs cycle")
-for (j in 1:J) lines(1:dim(MCMCDATA$Biter)[2],MCMCDATA$Biter[j,],col=j)
+for (j in 1:10) lines(1:dim(MCMCDATA$Biter)[2],MCMCDATA$Biter[j,],col=j)
 ```
