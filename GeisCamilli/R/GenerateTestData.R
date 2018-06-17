@@ -1,11 +1,13 @@
 GenerateTestData <-
 function(j=30,n=1000,structure=structure,verbose = FALSE) {
   #j=J;n=N
+  #cat("start")
   stopifnot(tolower(structure$icc) %in% c("logistic","ogive"),j>4,
             length(structure$Aparams)>=1,n>50,structure$Adim==length(structure$tmu))
   if (verbose)  print("***********************  Generating Parameters  **************************")
   #print(unlist(structure))
   A<-GenerateA(j,structure$Adim,tolower(structure$Adist),structure$Aparams)
+  #cat("generated A")
   if (!is.na(structure$ncat) && structure$ncat!=2) {
     tau = GenerateTau(j,ncat=structure$ncat,taudist=tolower(structure$taudist),tauparams=structure$tauparams)
     b<-as.vector(rowMeans(tau))
@@ -13,6 +15,7 @@ function(j=30,n=1000,structure=structure,verbose = FALSE) {
     tau<-NA
     b<-GenerateB(j,tolower(structure$bdist),structure$bparams)
   }
+  #cat("generated Tau and/or B")
   if (length(A)==j & verbose) cat(" ...IRT pseudo-difficulties of Ogive: ",b/A)
   xi<-cbind(A,b)
   if (structure$guess) {
@@ -20,7 +23,9 @@ function(j=30,n=1000,structure=structure,verbose = FALSE) {
     xi<-cbind(xi,c)
   }  
   t<-GenerateTheta(n,structure$tmu,structure$tsigma)
+  #cat("generated Theta")
   rp<-GenerateRP(xi=xi,theta=t,structure=structure,tau=tau)
+  #cat("generated RP")
   gen.rp<-rp
   gen.xi<-xi
   gen.theta<-t
@@ -31,5 +36,6 @@ function(j=30,n=1000,structure=structure,verbose = FALSE) {
       save(gen.rp,gen.xi,gen.theta,gen.tau,gen.structure,file=structure$simfile)
     } else {save(gen.rp,gen.xi,gen.theta,gen.tau,gen.structure,file=paste(structure$simfile,".rda",sep=""))}
   }
+  #cat("Saved")
   return(list(RP=rp,XI=xi,THETA=t,TAU=tau))
 }
