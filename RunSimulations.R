@@ -6,7 +6,7 @@ PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
          ifelse(get_os()=="windows","doSNOW","doParallel"),
          "rlecuyer","GPArotation","mvnfast","psych","modeest","MASS",
          "Rcpp","RcppArmadillo","devtools","compiler","doRNG","abind",
-         "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix")
+         "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix","mcmc")
 
 ### Install packages not already installed ###
 for (i in 1:length(PACK)){
@@ -18,11 +18,8 @@ Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm
 file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
 sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
 library(stringr)
-SFileString<-function(l,gen,r=NA) {
-  f<-paste0(sapply(names(l),function(x) (paste0(substr(x,1,1),l[[x]]))),collapse="_")
-  ifelse(gen,paste0("Gen_",f),paste0("Sim_",f,"_",r))
-}
-
+source("CreateSimulationStructure.R")
+set.seed(4321)
 #CheckFiles
 for (d in names(sim.list)) {
   print(paste("Checking files for:",d))
@@ -38,6 +35,7 @@ for (d in names(sim.list)) {
     nf<-c(1:sim.list[[d]]$Reps)[!1:sim.list[[d]]$Reps %in% nf]
   }
   print(paste("  Files to generate:",length(nf)))
+  if (exists("Gen.Data")) rm(Gen.Data)
   if (length(nf)>0) {
     gf<-paste0(fs,"_",nf)
     for (sim in gf) {
@@ -58,9 +56,16 @@ for (d in names(sim.list)) {
                      cparams=c(0.05,0.3),  # bounds
                      tmu=rep(0,Q),         # Theta Prior... e.g. 0, or multivariate c(0,0) ... can be multidimensional
                      tsigma=if(Q==1) 1 else diag(Q), # Latent factor orthogonal covariance
-                     simfile=paste0(simdir,"/",sim,".rda"))  # Name of saved file of generated data.
+                     simfile=paste0(simdir,"/",sim))  # Name of saved file of generated data.
       structure = CheckParams(parameters = structure,generate = TRUE) # Explained in a hot minute.
-      Gen.Data<-GenerateTestData(j=J,n=N,structure=structure)
+      if (exists("Gen.Data")) {
+        gen.list<-Gen.Data$gen.list
+      } else if (any(!1:sim.list[[d]]$Reps %in% nf)) {
+        gsim<-paste0(fs,"_",c(1:(sim.list[[d]]$Reps))[!1:sim.list[[d]]$Reps %in% nf][1])
+        Gen.Data<-readRDS(paste0(simdir,"/",gsim,".rds"))
+        gen.list<-Gen.Data$gen.list
+      } else {gen.list<-NA}
+      Gen.Data<-GenerateTestData(j=J,n=N,structure=structure,gen.list=gen.list)
     }
   }
 }

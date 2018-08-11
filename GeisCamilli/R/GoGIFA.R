@@ -7,6 +7,13 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
   N<-nrow(rp)
   CV<-mat.or.vec(J,J)+1
   pxi<-J*(1+settings$Adim)
+  indL<-indU<-list()
+  for (j in 1:J) {
+    indL[[j]] <- cbind(1:N,rp[,j]+1)
+    indU[[j]] <- cbind(1:N,rp[,j]+2)
+  }
+  
+  clusterExport(cl,c("J","N","rp","indL","indU"),envir=environment())
   if (settings$plots) {
     ItCC<-vector() 
     ItAC<-vector() 
@@ -114,7 +121,8 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
       Biter<-cbind(Biter,B)
     } else {
       if (settings$guess) W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp)
-      Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
+      # Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
+      Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
       #print(Z)
       LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
       if (It<=settings$burnin | tolower(settings$est)!="rm") {
@@ -349,7 +357,8 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     } else {
       TMAPROT<-NA
     }
-    Z<-SampZ(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],rp=rp,w=W) 
+    # Z<-SampZ(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],rp=rp,w=W) 
+    Z<-SampZFast(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],srp=rp,w=W) 
     oJH<-GetErrorOgive(A=AR$loadings,B=B,C=C,TH=TROT[,1:settings$Adim],Z=Z,RP=rp)
     oJacob <- oJH$Jacob
     oHess  <- oJH$Hess
@@ -377,7 +386,8 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
                   That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
                   Theta=TROT[,1:settings$Adim],Trot=TROT,settings=settings)
   } else if (settings$Adim>1 & is.na(AR)[1]) {
-    Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],rp=rp,w=W) 
+    #Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],rp=rp,w=W) 
+    Z<-SampZFast(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],srp=rp,w=W) 
     oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],Z=Z,RP=rp)
     oJacob <- oJH$Jacob
     oHess  <- oJH$Hess
@@ -401,7 +411,8 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
                   That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
                   Theta=NA,Trot=NA,settings=settings)
   } else {
-    Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1],rp=rp,w=W)
+    #Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1],rp=rp,w=W)
+    Z<-SampZFast(aa=A,bb=B,that=THAT$THETA[,1],srp=rp,w=W)
     oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$THETA[,1],Z=Z,RP=rp)
     oJacob <- oJH$Jacob
     oHess  <- oJH$Hess

@@ -8,10 +8,15 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     THAT<-tHat
   }                      
   #  if (tolower(settings$esttheta)=="mcmc") {
+  cat("\n *** Starting Theta Estimation *** \n")
+  cat(paste(setting$nesttheta,"Draws \n\n"))
   if (is.na(TAU)[1]) {
     for (i in 1:setting$nesttheta) {
+      if (i%%10==1) cat(".")
+      if (i%%100==1) cat(":")
       tHat<-SampT(aa=aa,bb=bb,zz=zHat,rp=rp,prior=prior)
-      zHat<-SampZ(aa=aa,bb=bb,that=tHat,rp=rp,w=w)
+      #zHat<-SampZ(aa=aa,bb=bb,that=tHat,rp=rp,w=w)
+      zHat<-SampZFast(aa=aa,bb=bb,that=tHat,srp=rp,w=w)
       ZHAT<-cbind(ZHAT,zHat)
       if (setting$Adim>1) {
         THAT<-abind(THAT,tHat,along=3)

@@ -15,13 +15,9 @@ sim.list<-list("S1"=list(Guessing=FALSE,J=100,K=2,N=5000,Q=1,mType="beta",Reps=5
                "S8"=list(Guessing=FALSE,J=100,K=4,N=100000,Q=10,mType="bifactor",Reps=5), #bifactor
                "S9"=list(Guessing=FALSE,J=100,K=4,N=100000,Q=10,mType="subscale",Reps=5)) #subscale
 
+if (!gen.dir %in% dir()) dir.create(gen.dir)
+
 if (!"Simulations.rds" %in% dir(gen.dir)) {
-# Set Simulation Conditions' Parameters
-  if (!gen.dir %in% dir()) dir.create(gen.dir)
-  if (!fit.dir %in% dir()) dir.create(fit.dir)
-  # for (d in names(sim.list)) {
-  #   if (length(dir(gen.dir))==0 | !d %in% dir(gen.dir)) dir.create(paste0(gen.dir,"/",d))
-  # }
   saveRDS(sim.list,paste0(gen.dir,"/Simulations.rds"))
 } else {
   print("Generated Files directory and Simulations.rds already created")
@@ -40,22 +36,16 @@ if (!"Simulations.rds" %in% dir(gen.dir)) {
 
 SFileString<-function(l,gen,r=NA) {
   f<-paste0(sapply(names(l),function(x) (paste0(substr(x,1,1),l[[x]]))),collapse="_")
-  ifelse(gen,paste0("Gen_",f),paste0("Sim_",f,"_",r))
+  ifelse(gen,paste0("Gen_",f),ifelse(!is.na(r),paste0("Fit_",f,"_",r),paste0("Fit_",f)))
 }
 
-# Check directories
+# Check Simulation directories
 for (d in names(sim.list)) {
   ## Check generated directories
   if (length(dir(gen.dir))==0 | !d %in% dir(gen.dir)) { 
     dir.create(paste0(gen.dir,"/",d))
   } else {
     print(paste0(gen.dir,"/",d," already exists."))
-  }
-  ## Check fit directories
-  if (length(dir(fit.dir))==0 | !d %in% dir(fit.dir)) { 
-    dir.create(paste0(fit.dir,"/",d))
-  } else {
-    print(paste0(fit.dir,"/",d," already exists."))
   }
 }
 

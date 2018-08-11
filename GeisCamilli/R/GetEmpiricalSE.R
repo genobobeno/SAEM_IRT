@@ -43,7 +43,8 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   XIMean0<-rep(1,J*(1+settings$Adim))  
   
   ifelse(settings$guess,W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp),W<-NA)  
-  Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
+  #Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
+  Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
   ASEiter<-array(A, dim=c(J,settings$Adim,1))    
   BSEiter<-matrix(B, nrow=J, ncol=1)
   ifelse(settings$guess,CSEiter<-matrix(C, nrow=J, ncol=1),CSEiter<-NA)
@@ -61,7 +62,8 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     } else {
       W<-NA  
     }
-    Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
+    #Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
+    Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
     LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
     if (settings$guess) {
       PSI<-GIFAEstimate(aa=A,bb=B,zz=Z,tt=THat,settings=settings,w=W,rp=rp,EmpT=TRUE)    

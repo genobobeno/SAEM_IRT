@@ -55,9 +55,15 @@ function(rp,settings=settings) {
     }
     XI<-cbind(A,B)
     if (settings$guess) {
-      rpGuess0 = rp[THat<quantile(THat[,1],probs=0.15),]; rpGuess1 = rp[THat>quantile(THat[,1],probs=0.85),]
+      if (settings$Adim==1) {
+        rpGuess0 = rp[THat<quantile(THat,probs=0.12),]; rpGuess1 = rp[THat>quantile(THat,probs=0.88),]
+      } else {
+        rpGuess0 = rp[THat<quantile(THat[,1],probs=0.12),]; rpGuess1 = rp[THat>quantile(THat[,1],probs=0.88),]
+      }
       Gap = apply(rpGuess1,2,mean,na.rm=TRUE) - apply(rpGuess0,2,mean,na.rm=TRUE)
-      C<-seq(0.35,0.01,length.out = J)[order(Gap)] #C<-runif(J,0.01,0.3)
+      C<-apply(rpGuess0,2,mean,na.rm=TRUE)
+      C[Gap>0.5 & apply(rpGuess1,2,mean,na.rm=TRUE)>0.78]<-(apply(rpGuess0,2,mean,na.rm=TRUE)*(1-Gap))[Gap>0.5 & apply(rpGuess1,2,mean,na.rm=TRUE)>0.78]
+      #C<-seq(0.35,0.01,length.out = J)[order(Gap)] #C<-runif(J,0.01,0.3)
       XI<-cbind(XI,C)
     }
   }
