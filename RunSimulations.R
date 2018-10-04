@@ -48,7 +48,7 @@ for (d in names(sim.list)) {
                      Adim=Q,               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
                      bdist="norm",         # distribution of B/intercept
                      bparams=c(0,1),       # parameters of bdist
-                     guess=FALSE,          # guessing ? TRUE/FALSE
+                     guess=sim.list[[d]]$Guessing,          # guessing ? TRUE/FALSE
                      ncat=K,               # Ordinal Polythomous? Number of categories
                      taudist="norm",       # sample distribution for categorical intercepts
                      tauparams=c(0,1),     # parameters for taudist

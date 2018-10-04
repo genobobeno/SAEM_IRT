@@ -54,9 +54,9 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   #print(paste("Running Standard Errors using",IT,"iterations"))
   
   for (it in 1:IT) {
-    if (it%%10==0) cat(".")
-    if (it%%100==0) cat(":")
-    if (it%%1000==0) cat(" ",it)
+    if (it%%10==1) cat(".")
+    if (it%%100==1) cat(":")
+    if (it%%500==1) cat(" \n",it,"\t")
     if (settings$guess) {
       W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp)
     } else {

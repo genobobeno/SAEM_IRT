@@ -1,5 +1,5 @@
 ThetaMAP <-
-function(aa,bb,cc,rp,settings,TAU=NA) {
+function(aa,bb,cc,rp,settings,TAU=NA,That=NA) {
   xi<-as.matrix(cbind(aa,bb))
   if (settings$Adim==1) {
     tgrid<-seq(-3.3,3.3,length.out=761)
@@ -33,8 +33,12 @@ function(aa,bb,cc,rp,settings,TAU=NA) {
         xy<-rep(1,settings$Adim)
         xy0<-rep(0,settings$Adim)
         It<-0
-        tsearch<-mat.or.vec(length(tgrid),settings$Adim)
-        while(sum(xy!=xy0)>0 | It>500) {
+        if (!is.na(That)[1]){
+          tsearch<-mat.or.vec(length(tgrid),settings$Adim)
+        } else {
+          tsearch<-matrix(That[n,1:settings$Adim],nrow=length(tgrid),ncol=settings$Adim,byrow=TRUE)
+        }
+        while(sum(xy!=xy0)>0 & It<500) {
           xy0<-xy
           if (i%%10==1) cat(".")
           if (i%%100==1) cat(":")
@@ -63,8 +67,12 @@ function(aa,bb,cc,rp,settings,TAU=NA) {
         xy<-rep(1,settings$Adim)
         xy0<-rep(0,settings$Adim)
         It<-0
-        tsearch<-mat.or.vec(length(tgrid),settings$Adim)
-        while(sum(xy!=xy0)>0 | It>500) {
+        if (!is.na(That)[1]){
+          tsearch<-mat.or.vec(length(tgrid),settings$Adim)
+        } else {
+          tsearch<-matrix(That[n,1:settings$Adim],nrow=length(tgrid),ncol=settings$Adim,byrow=TRUE)
+        }
+        while(sum(xy!=xy0)>0 & It<500) {
           xy0<-xy
           for (q in 1:settings$Adim) {
             tsearch[,q]<-tgrid

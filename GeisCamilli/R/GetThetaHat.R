@@ -9,9 +9,10 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
   }                      
   #  if (tolower(settings$esttheta)=="mcmc") {
   cat("\n *** Starting Theta Estimation *** \n")
-  cat(paste(setting$nesttheta,"Draws \n\n"))
+  cat(paste(setting$nesttheta,"Draws \n"))
   if (is.na(TAU)[1]) {
     for (i in 1:setting$nesttheta) {
+      if (i%%500==1) cat(" \n",i,"\t")
       if (i%%10==1) cat(".")
       if (i%%100==1) cat(":")
       tHat<-SampT(aa=aa,bb=bb,zz=zHat,rp=rp,prior=prior)
@@ -28,7 +29,11 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     ATA 		<- t(aa)%*%aa #*4
     BTB_INV	<- solve(diag(setting$Adim) + ATA)
     for (i in 1:setting$nesttheta) {
-      tHat	<- t(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z=zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=settings$dbltrunc))
+      if (setting$Adim==1) {
+        tHat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=settings$dbltrunc))
+      } else {
+        tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=settings$dbltrunc))
+      }
       X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,A=aa,b=bb,
                                         d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat,
                                         simplify=FALSE), higher=TRUE)	
@@ -53,12 +58,12 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
   }
   if (setting$thetamap) {
     print("Running Theta MAP Estimate")
-    TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU)
+    TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU,That=THETA[,1:setting$Adim])
     TMAP<-as.matrix(TMAP)
     ifelse(setting$Adim==1,colnames(TMAP)<-"TMAP",colnames(TMAP)<-paste("TMAP",1:setting$Adim,sep=""))
     if (!is.na(R)) {
       aa=R$loadings
-      TRMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU)
+      TRMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU,That=THETA[,1:setting$Adim])
       TRMAP<-as.matrix(TRMAP)
       ifelse(setting$Adim==1,colnames(TRMAP)<-"TRMAP",colnames(TRMAP)<-paste("TRMAP",1:setting$Adim,sep=""))
     } else {

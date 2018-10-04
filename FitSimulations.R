@@ -78,7 +78,7 @@ for (d in names(sim.list)) {
   for (r in R) {
     gc()
     gfile<-paste0(simdir,"/",fs,"_",r)
-    cat(paste0("Fitting ",gfile,": ",r,"\n"))
+    cat(paste0("\n\nFitting ",gfile,": ",r,"\n"))
     genlist<-readRDS(paste0(gfile,".rds"))
     if (is.na(sim.list[[d]]$K) | sim.list[[d]]$K<3) {
       settings=list(model="gifa",    # Or "irt" = Analytical EM model
@@ -120,11 +120,15 @@ for (d in names(sim.list)) {
                       empiricalse=TRUE,
                       est="rm",
                       estgain=1,
+                      empiricalse=TRUE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                      thinA=10, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                      thinB=7, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                      EmpIT=2000, # Iterations of Empirical Errors
                       burnin=as.integer(5000000/sim.list[[d]]$N),
                       ncat=sim.list[[d]]$K,
                       plots=FALSE,
-                      tmu=rep(0,Q),
-                      tsigma=diag(Q),
+                      tmu=rep(0,sim.list[[d]]$Q),
+                      tsigma=diag(sim.list[[d]]$Q),
                       eps=1e-4,
                       thetaGen=genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
                       nesttheta=100,    # if esttheta="mcmc", how many random samples?
@@ -134,7 +138,7 @@ for (d in names(sim.list)) {
                       thetamap=TRUE,
                       record=TRUE)
       settings<-CheckParams(parameters = settings,generate=FALSE)
-      Fit2D<-AnalyzeTestData(RP=rp,settings=settings,TargetA = gen.xi[,1:Q]) 
+      Fit2D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,TargetA = genlist$gen.xi[,1:sim.list[[d]]$Q]) 
       saveRDS(Fit2D,paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
     }
   }

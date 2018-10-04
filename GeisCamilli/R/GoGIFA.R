@@ -235,7 +235,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
         if (It%%(10*settings$Adim)==0 && settings$plots && ncol(Biter)>settings$burnin+1 && !is.na(settings$simfile)) PlotsChain(Aiter,Biter,settings,A,init)
       }
       if (tolower(settings$est)=="rm") {
-        test<-c(as.vector(A-A0),B-B0)
+        test<-as.vector(A-A0)
         JH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THat,RP=rp)
         Jacob <- JH$Jacob
         Hess  <- JH$Hess
@@ -335,6 +335,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     AR<-NA
   }
   if (settings$guess & settings$Adim>1) {
+    C<-rowMeans(Citer[,It-50:0])
     if (!is.na(AR)[1]) {
       xi=cbind(AR$loadings,B,C)
       } else {xi=cbind(A,B,C)}
@@ -345,6 +346,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
       xi=cbind(A,B)
     }
   } else if (settings$guess & settings$Adim==1) {
+    C<-rowMeans(Citer[,It-50:0])
     xi=cbind(A,B,C)
   } else {
     xi=cbind(A,B)

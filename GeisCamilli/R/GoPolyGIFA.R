@@ -11,9 +11,13 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   J=ncol(rp);N=nrow(rp);Q=settings$Adim
   # Starting values 
   theta = init$THat
-  A		= init$XI[,1:settings$Adim]
+  A		= init$XI[,1:Q]
   b		= init$XI[,ncol(init$XI)-settings$guess]	
   d		= init$D
+  if (settings$Adim==1) {
+    A<-as.matrix(A)
+    theta<-as.matrix(theta)
+  }
   ncat <- settings$ncat
   Aold1 <- matrix(runif(J*Q),J,Q)
   # Aold2 <- matrix(0,J,Q)
@@ -48,7 +52,17 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   MN = lapply(1:(dim(Y)[1]),function(x) (which(Y[x,,]!=9,arr.ind = TRUE)))
   R  = lapply(1:(dim(Y)[1]),function(x) Y[x,,])
   missList = lapply(MY,function(x) (list(miss = nrow(x),nmis = N*n1cat-nrow(x),mcol = (N*n1cat-nrow(x))/n1cat)))
-
+  if (!is.na(settings$simfile)) {
+    ifelse(grepl("\\.[Rr][Dd][Aa]",settings$simfile),
+           simfile<-settings$simfile,
+           simfile<-paste(settings$simfile,".rda",sep=""))
+    if (file.exists(simfile)) {
+      load(file=simfile)
+    } else {
+      print("settings$simfile does not exist.")
+      settings$simfile<-NA
+    }
+  }
   # Values for the double truncated WrapZ() function  
   indL<-list();indU<-list()
   for (j in 1:J) {
@@ -63,7 +77,6 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   }
   clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
   clusterEvalQ(cl,c("WrapX","WrapT","WrapZ"))
-  
   if (!settings$dbltrunc) {
     X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
     Z		<- apply(X2,c(2,3),mean) 
@@ -77,23 +90,27 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   } else {
     Q0<-Q
   }
-  atemp	<- DrawA(covZ,Q,a=NA)
-  A<-atemp$Atemp
+  atemp	<- DrawAEigen(covZ-diag(J),Q)
+  A<-as.matrix(atemp$Atemp)
   ATA 		<- t(A)%*%A #*4
   BTB_INV	<- solve(IQ + ATA)
-  theta	<- t(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+  if (Q==1) {
+    theta	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+  } else {
+    theta	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+  }
   meanX	<- 0; meanD <- 0; meanB <- 0
   # alpha <- ifelse(1:niter < (nEM+1),rep(1,niter),1/(1:niter-nEM)^(2/3))
-  
+
   # Now iterate
   if (settings$record) {
-    Aiter = array(0,dim=c(J,Q,niter+1))
+    Aiter = array(0,dim=c(J,Q,1))
     Aiter[,,1]<-A
-    Viter = array(0,dim=c(Q,niter+1)) 
+    Viter = array(0,dim=c(Q,1)) 
     Viter[,1]<-eigen(covZ)$values[1:Q]
-    Biter = array(0,dim=c(J,niter+1)) 
+    Biter = array(0,dim=c(J,1)) 
     Biter[,1]<-b
-    Diter = array(0,dim=c(J,n1cat,niter+1))
+    Diter = array(0,dim=c(J,n1cat,1))
     Diter[,,1]<-d
   }
   #Tstart<-Sys.time()
@@ -103,6 +120,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   pRotT<-NA
   pRotV<-NA
   itest<-(A-prevA)
+  
   while (max(abs(itest))>eps) {
     #if (i%%100==0) cat(nproc,i,"|")
     if (i%%10==1) cat(".")
@@ -143,22 +161,27 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     } else {
       atemp	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
     }
-    A <- Anew <- atemp$Atemp
+    A <- Anew <- as.matrix(atemp$Atemp)
     # print("A")
     # print(A)
     ATA 		<- t(A)%*%A
     BTB_INV	<- solve(IQ + ATA)
     # print("BTB_INV")
     # print(BTB_INV)
-    theta		<- thetanew	<- t(parSapply(cl,1:N,WrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    if (Q==1) {
+      theta		<- thetanew	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    } else {
+      theta		<- thetanew	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    }
+    # theta	<- t(parSapply(cl,1:N,WrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
     # print("theta")
     # print(theta)
-    
     if (settings$record) {
-      Aiter[,,i+1]<-A
-      Viter[,i+1]<-atemp$Avec[1:Q]
-      Biter[,i+1]<-b
-      Diter[,,i+1]<-d
+      Aiter<-abind(Aiter,as.matrix(A),along=3)    
+      #      Aiter[,,i+1]<-A
+      Viter<-cbind(Viter,atemp$Avec[1:Q])
+      Biter<-cbind(Biter,b)
+      Diter<-abind(Diter,as.matrix(d),along=3)
       if (settings$plots) {
         if (i%%settings$plotiter==0) {
           par(mfrow=c(ceiling((Q+2+ifelse(!is.na(TargetA)[1],Q,0))/5),5),mar=c(4,4,1,1))
@@ -284,16 +307,89 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                         prior=prior,setting=settings,R=AR,
                         TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
       ARot<-AR$loadings
-    } else {AR<-A}
+    } else {
+      AR<-list()
+      AR$loadings <- A
+      ARot <- A
+      THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
+                        prior=prior,setting=settings,R=AR,
+                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+    }
   } else {
-    AR <- A
+    AR<-list()
+    AR$loadings <- A
+    ARot <- A
+    THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
+                      prior=prior,setting=settings,R=AR,
+                      TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+  }
+  if (settings$Adim>1 & !is.na(AR)[1]) {
+    TROT<-cbind(THAT$THETA[,1:settings$Adim]%*%AR$Th,THAT$THETA[,settings$Adim+1:settings$Adim]%*%AR$Th,THAT$THETA[,2*settings$Adim+1:settings$Adim]%*%AR$Th)
+  } else {
+    TROT<-THAT$THETA
+  }
+  FitDATA<-list(RP=rp,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+                tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                EZ=Z,EZZ=covZ,settings=settings,That=THAT$THETA,Trot=TROT)
+  ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
+  if (settings$empiricalse) {
+    EmpSE<-GetPolyEmpiricalSE(FitDATA,rp=rp)
+  } else {
+    EmpSE<-NA
+  }
+  C<-NA
+  if (settings$record) {
+    Iterations<-list(Ait=Aiter,AVit=Viter,Bit=Biter,Dit=Diter)
+  } else {
+    Iterations<-NA
+  }
+  if (!is.na(settings$simfile)) {
+    if (Q>1 & !is.na(AR)[1]) {
+      FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+                    TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
+                    EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)#      }
+      # } else if (Q>1 & is.na(AR)[1]) {
+      #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+      #                 TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+      #                 xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+      #                 That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+      #                 Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
+    } else {
+      FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+                    TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)
+    }
+  } else {
+    if (Q>1 & !is.na(AR)[1]) {
+      FitDATA<-list(XI=NA,RP=rp,THETA=NA,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+                    TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
+                    EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)#      }
+      # } else if (Q>1 & is.na(AR)[1]) {
+      #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+      #                 TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+      #                 xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+      #                 That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+      #                 Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
+    } else {
+      FitDATA<-list(XI=NA,RP=rp,THETA=NA,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+                    TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)
+    }
   }
   #summaryRprof()
-  C<-NA
-  list(xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),RP=rp,
-       xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
-       That=theta,Tmap=NA,Tmaprot=NA,TRmap=NA,Trot=NA,
-       EmpSE=NA,ThetaFix=NA,settings=settings)
+  #     FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
+  #                   xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+  #                   That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
+  #                   Theta=TROT[,1:settings$Adim],Trot=TROT,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)
+  FitDATA
 }
 
   # for (i in 1:length(RTS)) {
