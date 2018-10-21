@@ -19,7 +19,7 @@ file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R 
 sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
 library(stringr)
 source("CreateSimulationStructure.R")
-set.seed(4321)
+set.seed(678)
 #CheckFiles
 for (d in names(sim.list)) {
   print(paste("Checking files for:",d))

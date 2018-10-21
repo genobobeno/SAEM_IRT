@@ -101,7 +101,7 @@ for (d in names(sim.list)) {
                     tsigma=1,        # Prior sigma, can be multivariate matrix(Adim x Adim)
                     eps=1e-4,        # Converged?
                     nesttheta=100,    # if esttheta="mcmc", how many random samples?
-                    thetamap=TRUE,   # do an MAP estimate of Theta?
+                    thetamap=FALSE,   # do an MAP estimate of Theta?
                     thetaGen=genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
                     impute=FALSE,    # Impute missing data?
                     plots=FALSE,     # Show plots for diagnostics
