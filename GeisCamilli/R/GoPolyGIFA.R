@@ -157,7 +157,11 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       covTZ		<- covTZ + alpha[i]*(covTZMC-covTZ)
       atemp	<- DrawALowerDiag(covT=covT,covTZ=covTZ,Q,J,N)
     } else if (settings$drawA=="eigen") {
-      atemp	<- DrawAEigen(covZ = covZ-diag(J),Q)
+      atemp	<- tryCatch({
+        DrawAEigen(covZ = covZ-diag(J),Q)
+      }, finally = {
+        atemp
+      })
     } else {
       atemp	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
     }
@@ -323,7 +327,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                       prior=prior,setting=settings,R=AR,
                       TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
   }
-  if (settings$Adim>1 & !is.na(AR)[1]) {
+  if (settings$Adim>1 & !is.na(AR)[1] & "Th" %in% names(AR)) {
     TROT<-cbind(THAT$THETA[,1:settings$Adim]%*%AR$Th,THAT$THETA[,settings$Adim+1:settings$Adim]%*%AR$Th,THAT$THETA[,2*settings$Adim+1:settings$Adim]%*%AR$Th)
   } else {
     TROT<-THAT$THETA
@@ -331,7 +335,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   FitDATA<-list(RP=rp,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
                 tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                 EZ=Z,EZZ=covZ,settings=settings,That=THAT$THETA,Trot=TROT)
-  ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
+  #ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
   if (settings$empiricalse) {
     EmpSE<-GetPolyEmpiricalSE(FitDATA,rp=rp)
   } else {
@@ -349,7 +353,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
-                    EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)#      }
+                    EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    settings=settings,Iterations=Iterations)#      }
       # } else if (Q>1 & is.na(AR)[1]) {
       #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
       #                 TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
@@ -361,7 +366,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)
+                    Trot=NA,EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    settings=settings,Iterations=Iterations)
     }
   } else {
     if (Q>1 & !is.na(AR)[1]) {
@@ -369,7 +375,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
-                    EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)#      }
+                    EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    settings=settings,Iterations=Iterations)#      }
       # } else if (Q>1 & is.na(AR)[1]) {
       #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
       #                 TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
@@ -381,7 +388,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings,Iterations=Iterations)
+                    Trot=NA,EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    settings=settings,Iterations=Iterations)
     }
   }
   #summaryRprof()

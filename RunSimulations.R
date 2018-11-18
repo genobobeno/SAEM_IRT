@@ -4,7 +4,7 @@ source("Hello.R", chdir = T)
 Hello()
 PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
          ifelse(get_os()=="windows","doSNOW","doParallel"),
-         "rlecuyer","GPArotation","mvnfast","psych","modeest","MASS",
+         "rlecuyer","GPArotation","mvnfast","psych","modeest","MASS","stringr",
          "Rcpp","RcppArmadillo","devtools","compiler","doRNG","abind",
          "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix","mcmc")
 
@@ -17,7 +17,6 @@ required<-lapply(PACK, require, character.only = TRUE)                       # C
 Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm Random (fast)
 file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
 sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
-library(stringr)
 source("CreateSimulationStructure.R")
 set.seed(4321)
 #CheckFiles

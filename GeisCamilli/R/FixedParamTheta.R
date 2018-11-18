@@ -2,12 +2,13 @@ FixedParamTheta <-
   function(FitDATA,rp,IT=settings$nesttheta) {
     cat("\n Running Fixed Parameter Theta Estimates \n")
     cat(paste(IT,"Draws \n"))
+    atemp	<- list()
     if (settings$Adim>1) {
       if (!is.na(FitDATA$AR)) {
-        A=as.matrix(FitDATA$AR$loadings)
+        atemp$Atemp<-A<-as.matrix(FitDATA$AR$loadings)
         THat=as.matrix(FitDATA$Trot[,1:settings$Adim])
       } else {
-        A=as.matrix(FitDATA$A)
+        atemp$Atemp<-as.matrix(FitDATA$A)
         THat=as.matrix(FitDATA$That[,1:settings$Adim])
       }
       B=FitDATA$B
@@ -72,7 +73,11 @@ FixedParamTheta <-
         #   atemp	<- DrawALowerDiag(covT=covT,covTZ=covTZ,Q,J,N)
         # } else 
         if (settings$drawA=="eigen") {
-          atemp	<- DrawAEigen(covZ = cov(zHat)-diag(J),settings$Adim)
+          atemp	<- tryCatch({
+            DrawAEigen(covZ = cov(zHat)-diag(J),settings$Adim)
+          }, finally = {
+            atemp
+          })
         } else {
           atemp	<- DrawA(cov(zHat)-diag(J)/n1cat,settings$Adim,a=A)
         }
