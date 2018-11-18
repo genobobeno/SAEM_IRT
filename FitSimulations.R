@@ -135,7 +135,7 @@ for (d in names(sim.list)) {
                       parallel=TRUE,  # True or false for parallel computation?
                       simfile=paste0(gfile,".rda"), # or NA
                       estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r)),
-                      thetamap=TRUE,
+                      thetamap=FALSE,
                       record=TRUE)
       settings<-CheckParams(parameters = settings,generate=FALSE)
       Fit2D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,TargetA = genlist$gen.xi[,1:sim.list[[d]]$Q]) 

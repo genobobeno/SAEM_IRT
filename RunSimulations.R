@@ -18,7 +18,7 @@ Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm
 file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
 sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
 source("CreateSimulationStructure.R")
-set.seed(4321)
+set.seed(789)
 #CheckFiles
 for (d in names(sim.list)) {
   print(paste("Checking files for:",d))

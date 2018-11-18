@@ -120,7 +120,14 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
       Aiter<-abind(Aiter,as.matrix(A),along=3)    
       Biter<-cbind(Biter,B)
     } else {
-      if (settings$guess) W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp)
+      if (settings$guess) {
+        W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp)
+        for (j in 1:J) {
+          indL[[j]] <- cbind(1:N,W[,j]+1)
+          indU[[j]] <- cbind(1:N,W[,j]+2)
+        }
+        clusterExport(cl,c("indL","indU"),envir=environment())
+      }
       # Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
       Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
       #print(Z)
