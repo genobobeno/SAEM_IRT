@@ -126,6 +126,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
           indL[[j]] <- cbind(1:N,W[,j]+1)
           indU[[j]] <- cbind(1:N,W[,j]+2)
         }
+        clusterExport(cl,c("indL","indU"),envir=environment())
       }
       # Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
       Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    

@@ -101,7 +101,7 @@ for (d in names(sim.list)) {
                     tsigma=1,        # Prior sigma, can be multivariate matrix(Adim x Adim)
                     eps=1e-4,        # Converged?
                     nesttheta=100,    # if esttheta="mcmc", how many random samples?
-                    thetamap=FALSE,   # do an MAP estimate of Theta?
+                    thetamap=TRUE,   # do an MAP estimate of Theta?
                     thetaGen=genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
                     impute=FALSE,    # Impute missing data?
                     plots=FALSE,     # Show plots for diagnostics
@@ -135,7 +135,7 @@ for (d in names(sim.list)) {
                       parallel=TRUE,  # True or false for parallel computation?
                       simfile=paste0(gfile,".rda"), # or NA
                       estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r)),
-                      thetamap=TRUE,
+                      thetamap=FALSE,
                       record=TRUE)
       settings<-CheckParams(parameters = settings,generate=FALSE)
       Fit2D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,TargetA = genlist$gen.xi[,1:sim.list[[d]]$Q]) 
