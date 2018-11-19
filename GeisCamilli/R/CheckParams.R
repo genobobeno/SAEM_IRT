@@ -43,6 +43,7 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                 fm="eigen",         # Factor analysis procedure (dichotomous): fa() methods=c("ml","minres","wls","gls") or "licai", "camilli", or "old"...etc?
                 rmethod="pstT",     # GPArotation method, currently "targetT" or "pstT"
                 empiricalse=TRUE,   # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                esttheta=TRUE,      # Estimate theta or ignore?
                 nesttheta=10,       # if esttheta="mcmc", how many random samples?
                 thinA=5,            # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
                 thinB=2,            # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE

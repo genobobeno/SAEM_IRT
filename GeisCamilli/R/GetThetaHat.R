@@ -35,8 +35,8 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
         tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=settings$dbltrunc))
       }
       X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,A=aa,b=bb,
-                                        d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat,
-                                        simplify=FALSE), higher=TRUE)	
+                                      d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat,
+                                      simplify=FALSE), higher=TRUE)	
       zHat	<- apply(X2,c(2,3),mean) 
       if (setting$Adim>1) {
         THAT<-abind(THAT,tHat,along=3)

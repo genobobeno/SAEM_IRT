@@ -1,5 +1,18 @@
 AnalyzeTestData <-
-function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
+function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE) {
+  if (simple) {
+    if (!is.na(TargetA)) {
+      settings$Adim<-ncol(TargetA)
+      settings$tmu<-rep(0,ncol(TargetA))
+      settings$tsigma<-diag(ncol(TargetA))
+    }
+    settings$esttheta<-FALSE
+    settings$nesttheta<-NA
+    settings$empiricalse<-FALSE
+    settings$thetamap<-FALSE
+    settings$record<-FALSE
+    settings$ncat<-length(unique(RP))
+  }
   stopwatch<-Timing()
   stopifnot(nrow(RP)>ncol(RP))
   if (settings$parallel & settings$cores>1) {
@@ -56,10 +69,10 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA) {
   cat("
       Model has been fit
       Time: ",Timing(stopwatch))
-#   if (!is.na(settings$simfile)) {
-#     ifelse(grepl("\\.[Rr][Dd][Aa]",settings$simfile),load(settings$simfile),load(paste(settings$simfile,".rda",sep="")))
-#     plot(as.vector(Estimates$xi-gen.xi),main="Parameter Estimate differences",ylab="XI_hat - XI_gen",xlab="A(1...J), B(1...J)")
-#     plot(as.vector(Estimates$theta-gen.theta),main="Theta Estimate differences",ylab="Theta_hat - Theta_gen",xlab="Theta (1...N)")  
-#   }
+  #   if (!is.na(settings$simfile)) {
+  #     ifelse(grepl("\\.[Rr][Dd][Aa]",settings$simfile),load(settings$simfile),load(paste(settings$simfile,".rda",sep="")))
+  #     plot(as.vector(Estimates$xi-gen.xi),main="Parameter Estimate differences",ylab="XI_hat - XI_gen",xlab="A(1...J), B(1...J)")
+  #     plot(as.vector(Estimates$theta-gen.theta),main="Theta Estimate differences",ylab="Theta_hat - Theta_gen",xlab="Theta (1...N)")  
+  #   }
   Estimates
 }

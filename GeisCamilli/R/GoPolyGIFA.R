@@ -90,7 +90,11 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   } else {
     Q0<-Q
   }
-  atemp	<- DrawAEigen(covZ-diag(J),Q)
+  atemp	<- tryCatch({
+    DrawAEigen(covZ = covZ-diag(J),Q)
+  }, error = {
+    list(Atemp=matrix(1,ncol=Q,nrow=J),Avec=rep(1,Q))
+  })
   A<-as.matrix(atemp$Atemp)
   ATA 		<- t(A)%*%A #*4
   BTB_INV	<- solve(IQ + ATA)
@@ -101,7 +105,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   }
   meanX	<- 0; meanD <- 0; meanB <- 0
   # alpha <- ifelse(1:niter < (nEM+1),rep(1,niter),1/(1:niter-nEM)^(2/3))
-
+  
   # Now iterate
   if (settings$record) {
     Aiter = array(0,dim=c(J,Q,1))
@@ -146,8 +150,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     # print(out)
     # print(out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q])))
     #if (i>20) {
-      prevA <- A 
-      Avec0 <- atemp$Avec[1:Q]
+    prevA <- A 
+    Avec0 <- atemp$Avec[1:Q]
     #}
     if (settings$drawA=="lowertriangular") {
       #compue covariances
@@ -159,7 +163,10 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     } else if (settings$drawA=="eigen") {
       atemp	<- tryCatch({
         DrawAEigen(covZ = covZ-diag(J),Q)
-      }, finally = {
+      }, error = {
+        atemp$Atemp<-atemp$Atemp+matrix(rnorm(length(atemp$Atemp),0,sd = 0.05),
+                                        nrow = nrow(atemp$Atemp),
+                                        ncol = ncol(atemp$Atemp))
         atemp
       })
     } else {
@@ -290,10 +297,11 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
           TestMat[SRot[i%%8+1],SRot[i]]<-ifelse(TestMat[SRot[i%%8+1],SRot[i]]==0,cos(-SAng[i]),cos(-SAng[i])*TestMat[SRot[i%%8+1],SRot[i]])
         }
         RotA = tryCatch({targetQ(TA, Tmat=TestMat, Target=Target, normalize=FALSE, 
-                       eps=1e-4, maxit=10000)},error=function(err) {
-                         print("Rotation Error with targetQ at end.")
-                         return(NA)
-                       })
+                                 eps=1e-4, maxit=10000)},
+                        error=function(err) {
+                          print("Rotation Error with targetQ at end.")
+                          return(NA)
+                        })
         if (is.na(RotA)) {
           RotA<-pRotA
           Rtest<-c(Rtest,100)
@@ -307,35 +315,49 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                      Target=Target, normalize=FALSE, 
                      eps=1e-4, maxit=10000)
       C<-NA;W<-NA
-      THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
-                        prior=prior,setting=settings,R=AR,
-                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+      if (settings$esttheta) {
+        THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
+                          prior=prior,setting=settings,R=AR,
+                          TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+      } else {THAT<-NA}
       ARot<-AR$loadings
     } else {
       AR<-list()
       AR$loadings <- A
       ARot <- A
-      THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
+      if (settings$esttheta) {
+        THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
                         prior=prior,setting=settings,R=AR,
                         TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+      } else {THAT<-NA}
     }
   } else {
     AR<-list()
     AR$loadings <- A
     ARot <- A
-    THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
+    if (settings$esttheta) {
+      THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
                       prior=prior,setting=settings,R=AR,
                       TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+    } else {
+      THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA)
+    }
   }
-  if (settings$Adim>1 & !is.na(AR)[1] & "Th" %in% names(AR)) {
-    TROT<-cbind(THAT$THETA[,1:settings$Adim]%*%AR$Th,THAT$THETA[,settings$Adim+1:settings$Adim]%*%AR$Th,THAT$THETA[,2*settings$Adim+1:settings$Adim]%*%AR$Th)
+  if (settings$esttheta) {
+    if (settings$Adim>1 & !is.na(AR)[1] & "Th" %in% names(AR)) {
+      TROT<-cbind(THAT$THETA[,1:settings$Adim]%*%AR$Th,THAT$THETA[,settings$Adim+1:settings$Adim]%*%AR$Th,THAT$THETA[,2*settings$Adim+1:settings$Adim]%*%AR$Th)
+    } else {
+      TROT<-THAT$THETA
+    }
   } else {
-    TROT<-THAT$THETA
+    TROT<-NA
   }
   FitDATA<-list(RP=rp,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
                 tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                 EZ=Z,EZZ=covZ,settings=settings,That=THAT$THETA,Trot=TROT)
-  #ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
+  if (settings$esttheta & !is.na(settings$nesttheta)) {
+    ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
+  } else {ThetaFix<-NA}
   if (settings$empiricalse) {
     EmpSE<-GetPolyEmpiricalSE(FitDATA,rp=rp)
   } else {
@@ -353,7 +375,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
-                    EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    EmpSE=EmpSE,ThetaFix=ThetaFix,
                     settings=settings,Iterations=Iterations)#      }
       # } else if (Q>1 & is.na(AR)[1]) {
       #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
@@ -366,7 +388,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Trot=NA,EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,
                     settings=settings,Iterations=Iterations)
     }
   } else {
@@ -375,7 +397,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
-                    EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    EmpSE=EmpSE,ThetaFix=ThetaFix,
                     settings=settings,Iterations=Iterations)#      }
       # } else if (Q>1 & is.na(AR)[1]) {
       #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
@@ -388,7 +410,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Trot=NA,EmpSE=EmpSE,#ThetaFix=ThetaFix,
+                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,
                     settings=settings,Iterations=Iterations)
     }
   }
