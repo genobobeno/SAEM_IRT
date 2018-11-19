@@ -87,7 +87,7 @@ for (genState in 1:length(priorTheta)) {
                                   priorTheta[[genState]]$mu, 
                                   priorTheta[[genState]]$sig)
   structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
-                 Adist="subscale",          # prior distribution of A's/loadings
+                 Adist="bifactor",          # prior distribution of A's/loadings
                  Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
                  Adim=ncol(final.list$gen.theta),               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
                  bdist="norm",         # distribution of B/intercept
@@ -107,6 +107,60 @@ for (genState in 1:length(priorTheta)) {
                                 structure = final.list$structure)
   saveRDS(final.list,paste0(dirName,"/",names(priorTheta)[genState],".rds"))
 }
+
+############################
+
+r0=diag(5)
+
+r2=diag(5)+
+  matrix(c(rep(c(0,0.5),c(1,4)),
+           rep(rep(c(0.5,0),c(1,4)),4)),5,5)
+
+priorTheta = list(g2=list(mu=rep(0,5),sig=r0,n=10000),
+                  h2=list(mu=rep(0.5,5),sig=r0,n=10000),
+                  i2=list(mu=rep(1,5),sig=r0,n=10000),
+                  j2=list(mu=rep(0,5),sig=r2,n=10000),
+                  k2=list(mu=rep(0.5,5),sig=r2,n=10000),
+                  l2=list(mu=rep(1,5),sig=r2,n=10000))
+
+# Name of saved file of generated data.
+sim.list<-readRDS(file = "Condition_g2_generatedData.rds")
+gen.list<-list()
+gen.list$gen.xi<-sim.list$gen.xi
+gen.list$gen.tau<-sim.list$gen.tau
+
+for (genState in 1:length(priorTheta)) {
+  # genState=1
+  final.list<-priorTheta[[genState]]
+  final.list$gen.xi<-gen.list$gen.xi
+  final.list$gen.tau<-gen.list$gen.tau
+  final.list$gen.theta<-GenMVNorm(priorTheta[[genState]]$n, 
+                                  priorTheta[[genState]]$mu, 
+                                  priorTheta[[genState]]$sig)
+  structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
+                 Adist="bifactor2",          # prior distribution of A's/loadings
+                 Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
+                 Adim=ncol(final.list$gen.theta),               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
+                 bdist="norm",         # distribution of B/intercept
+                 bparams=c(0,1),       # parameters of bdist
+                 guess=FALSE,          # guessing ? TRUE/FALSE
+                 ncat=ncol(final.list$gen.tau)+1,               # Ordinal Polythomous? Number of categories
+                 taudist="norm",       # sample distribution for categorical intercepts
+                 tauparams=c(0,1),     # parameters for taudist
+                 tmu=priorTheta[[genState]]$mu,         # Theta Prior... e.g. 0, or multivariate c(0,0) ... can be multidimensional
+                 tsigma=priorTheta[[genState]]$sig, # Latent factor orthogonal covariance
+                 simfile=paste0("Condition_",names(priorTheta)[genState],"_generatedData"))
+  structure<-CheckParams(parameters = structure,generate = TRUE)
+  final.list$structure<-structure
+  final.list$gen.rp<-GenerateRP(xi = final.list$gen.xi,
+                                theta = final.list$gen.theta,
+                                tau = final.list$gen.tau,
+                                structure = final.list$structure)
+  saveRDS(final.list,paste0(dirName,"/",names(priorTheta)[genState],".rds"))
+}
+
+###################################
+# Check stuff
 
 sim.list<-readRDS("ObliqueSims/g.rds")
 
@@ -132,3 +186,20 @@ par(mfrow=c(2,2))
 for (i in 1:ncol(sim.list$gen.tau)) plot(sim.list$gen.tau[,i],FIT.DATA$tau[,i],main=paste("Tau",i),
                                          ylab="Estimated",xlab="Simulated")
 
+######################
+# Simulate Bifactor2
+gen.structure=list(icc="ogive",          # Item Char Curve; "ogive" or "logistic" 
+                   Adist="bifactor2",          # prior distribution of A's/loadings
+                   Aparams=c(0.2,1.7),   # parameters of A's/loadings' prior distribution
+                   Adim=5,               # 1 (univariate) or 2, 3, etc. multiple dimensions for multivariate
+                   bdist="norm",         # distribution of B/intercept
+                   bparams=c(0,1),       # parameters of bdist
+                   guess=FALSE,          # guessing ? TRUE/FALSE
+                   ncat=5,               # Ordinal Polythomous? Number of categories
+                   taudist="norm",       # sample distribution for categorical intercepts
+                   tauparams=c(0,1),     # parameters for taudist
+                   tmu=priorTheta[[1]]$mu,         # Theta Prior... e.g. 0, or multivariate c(0,0) ... can be multidimensional
+                   tsigma=priorTheta[[1]]$sig, # Latent factor orthogonal covariance
+                   simfile=paste0("Condition_",names(priorTheta)[1],"_generatedData"))
+structure = CheckParams(parameters = gen.structure,generate = TRUE) # Explained in a hot minute.
+GEN<-GenerateTestData(j=100,n=10000,structure = structure)
