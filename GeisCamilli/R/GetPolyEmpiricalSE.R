@@ -146,7 +146,11 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
       covTZ		<- covTZMC
       atemp	<- DrawALowerDiag(covT=covT,covTZ=covTZ,Q,J,N)
     } else if (settings$drawA=="eigen") {
-      atemp	<- DrawAEigen(covZ = covZ-diag(J),Q)
+      atemp	<- tryCatch({
+        DrawAEigen(covZ = covZ-diag(J),Q)
+      }, error = {
+        atemp
+      })
     } else {
       atemp	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
     }
