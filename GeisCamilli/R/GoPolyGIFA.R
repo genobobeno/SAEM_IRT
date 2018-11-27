@@ -92,7 +92,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   }
   atemp	<- tryCatch({
     DrawAEigen(covZ = covZ-diag(J),Q)
-  }, error = {
+  }, error = function(e) {
     list(Atemp=matrix(1,ncol=Q,nrow=J),Avec=rep(1,Q))
   })
   A<-as.matrix(atemp$Atemp)

@@ -75,7 +75,7 @@ FixedParamTheta <-
         if (settings$drawA=="eigen") {
           atemp	<- tryCatch({
             DrawAEigen(covZ = cov(zHat)-diag(J),settings$Adim)
-          }, error = {
+          }, error = function(e) {
             atemp$Atemp<-atemp$Atemp+matrix(rnorm(length(atemp$Atemp),0,sd = 0.05),
                                             nrow = nrow(atemp$Atemp),
                                             ncol = ncol(atemp$Atemp))

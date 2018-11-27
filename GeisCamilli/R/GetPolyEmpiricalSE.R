@@ -148,7 +148,7 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     } else if (settings$drawA=="eigen") {
       atemp	<- tryCatch({
         DrawAEigen(covZ = covZ-diag(J),Q)
-      }, error = {
+      }, error = function(e) {
         atemp
       })
     } else {
