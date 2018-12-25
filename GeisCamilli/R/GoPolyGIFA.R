@@ -19,7 +19,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     theta<-as.matrix(theta)
   }
   ncat <- settings$ncat
-  Aold1 <- matrix(runif(J*Q),J,Q)
+  Aold1 <- matrix(runif(J*Q,0.5,1.5),J,Q)
   # Aold2 <- matrix(0,J,Q)
   niter<-ceiling(2/settings$eps)
   nEM<-settings$burnin	#number of burnin EM cycles < niter
@@ -84,17 +84,23 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     Z 		<- simplify2array(parSapply(cl,1:J,WrapZ,A=A,b=b,d=d,theta=theta,simplify=FALSE), 
                           higher=TRUE)
   }
+  # b[4]
+  # sort(theta%*%A[4,])[1:5]
+  # which(is.infinite(Z))
+  if (sum(is.infinite(Z))>0) Z[is.infinite(Z)]<-0
   covZ  <- cov(Z)
+  atemp	<- tryCatch({
+    DrawAEigen(covZ = covZ-diag(J),Q)
+  }, error = function(e) {
+    ev<-c(Q-sum(ev<-rnorm(Q-1,1,0.075)),ev)
+    list(Atemp=matrix(rnorm(Q*J,1,0.15),ncol=Q,nrow=J),Avec=ev)
+  })
   if (settings$exploreAdim) {
+    # Will have to fix.
     Q<-Q0<-sum(eigen(covZ)$values>MarcenkoPastur(J=J,N=N))
   } else {
     Q0<-Q
   }
-  atemp	<- tryCatch({
-    DrawAEigen(covZ = covZ-diag(J),Q)
-  }, error = function(e) {
-    list(Atemp=matrix(1,ncol=Q,nrow=J),Avec=rep(1,Q))
-  })
   A<-as.matrix(atemp$Atemp)
   ATA 		<- t(A)%*%A #*4
   BTB_INV	<- solve(IQ + ATA)
@@ -111,7 +117,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     Aiter = array(0,dim=c(J,Q,1))
     Aiter[,,1]<-A
     Viter = array(0,dim=c(Q,1)) 
-    Viter[,1]<-eigen(covZ)$values[1:Q]
+    Viter[,1]<-atemp$Avec[1:Q]
     Biter = array(0,dim=c(J,1)) 
     Biter[,1]<-b
     Diter = array(0,dim=c(J,n1cat,1))
@@ -163,11 +169,15 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     } else if (settings$drawA=="eigen") {
       atemp	<- tryCatch({
         DrawAEigen(covZ = covZ-diag(J),Q)
-      }, error = {
-        atemp$Atemp<-atemp$Atemp+matrix(rnorm(length(atemp$Atemp),0,sd = 0.05),
-                                        nrow = nrow(atemp$Atemp),
-                                        ncol = ncol(atemp$Atemp))
-        atemp
+      }, error = function(err) {
+        print(paste0("Error-Iteration:",i))
+        if (i<5) {
+          atemp$Atemp<-atemp$Atemp+matrix(rnorm(length(atemp$Atemp),0,sd = 0.05),
+                                          nrow = nrow(atemp$Atemp),
+                                          ncol = ncol(atemp$Atemp))
+          atemp$Avec[1:Q]<- atemp$Avec[1:Q]+rnorm(Q,0,sd = 0.05)
+        } 
+        return(atemp)
       })
     } else {
       atemp	<- DrawA(covZ-diag(J)/n1cat,Q,a=prevA)
@@ -195,8 +205,17 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       Diter<-abind(Diter,as.matrix(d),along=3)
       if (settings$plots) {
         if (i%%settings$plotiter==0) {
+          print("A")
+          print(as.matrix(A))    
+          print("EigenValues")
+          print(atemp$Avec[1:Q])
+          print("B")
+          print(b)
+          print("D")
+          print(as.matrix(d))
+          
           par(mfrow=c(ceiling((Q+2+ifelse(!is.na(TargetA)[1],Q,0))/5),5),mar=c(4,4,1,1))
-          plot(c(1,100*ceiling(i/100)),c(0,max(Viter[,i])*1.25),xlab="iteration",ylab="sqrt(eigenvalues)",type="n")
+          plot(c(1,100*ceiling(i/100)),c(0,max(Viter[-1,i])*1.25),xlab="iteration",ylab="sqrt(eigenvalues)",type="n")
           abline(h=rowMeans(sqrt(Viter[,max(1,i-20):i])),col=1:J,lwd=0.5,lty=3)
           for (qq in 1:Q) {lines(1:i,sqrt(Viter[qq,1:i]),col=qq)}
           for (qq in 1:Q) {
@@ -208,8 +227,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
             } 
             for (jj in 1:J) {lines(1:i,abs(Aiter[jj,qq,1:i]),col=jj)}
           }
-          plot(c(1,100*ceiling(i/100)),c(-max(Biter),max(Biter)),xlab="iteration",ylab="intercepts",type="n")
-          abline(h=rowMeans(Biter[,max(1,i-20):i]),col=1:J,lwd=0.5,lty=3)
+          print(head(Biter))
+          plot(c(1,100*ceiling(i/100)),c(-max(Biter,na.rm = TRUE),max(Biter,na.rm = TRUE)),ylim=c(-3.5,3.5),xlab="iteration",ylab="intercepts",type="n")
+          abline(h=rowMeans(Biter[,max(1,i-20):i],na.rm = TRUE),col=1:J,lwd=0.5,lty=3)
           for (jj in 1:J) {lines(1:i,Biter[jj,1:i],col=jj)}
           if (!is.na(TargetA)[1]) { # TargetA
             #plot(c(1,100*ceiling(i/100)),c(0,2*Q),xlab="iteration",ylab="eigenvalues",type="n")
@@ -260,13 +280,13 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     if (tolower(settings$converge)=="a"|grepl("slop",tolower(settings$converge))) {
       itest<-(A-prevA)
     } else if (grepl("eig.+val",tolower(settings$converge))|grepl("e?(.+)val",tolower(settings$converge))) {
-      itest<-(atemp$Avec[1:Q] - Avec0)
+      if (prod(atemp$Avec[1:Q]==Avec0)==1) {itest<-1} else {itest<-(atemp$Avec[1:Q] - Avec0)}
     } else {
       itest<-(A-prevA)
     }
   }
   # Time <- Sys.time()-Tstart;	print(paste(settings$cores,"processors:",Time))
-  
+  gc()
   if (settings$Adim>1 & !is.na(TargetA)[1]) {
     if (length(TargetA)==length(A)) {
       # get eigenvectors for A
@@ -352,6 +372,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   } else {
     TROT<-NA
   }
+  gc()
   FitDATA<-list(RP=rp,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
                 tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                 EZ=Z,EZZ=covZ,settings=settings,That=THAT$THETA,Trot=TROT)

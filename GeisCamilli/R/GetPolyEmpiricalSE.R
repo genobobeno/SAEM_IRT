@@ -35,7 +35,7 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   ASEiter<-array(A, dim=c(J,settings$Adim,1))    
   BSEiter<-matrix(B, nrow=J, ncol=1)
   DSEiter<-array(D, dim=c(J,ncat-1,1))
-  TSEiter<-array(THat, dim=c(N,settings$Adim,1))
+  #TSEiter<-array(THat, dim=c(N,settings$Adim,1))
   LLSEiter<-vector()
   #print(paste("Running Standard Errors using",IT,"iterations"))
   
@@ -169,35 +169,35 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     ASEiter<-abind(ASEiter,as.matrix(A),along=3)    
     BSEiter<-cbind(BSEiter,B)
     DSEiter<-abind(DSEiter,as.matrix(d),along=3)
-    TSEiter<-abind(TSEiter,as.matrix(THat),along=3)
+    #TSEiter<-abind(TSEiter,as.matrix(THat),along=3)
   }
   MCthin<-MCthinA<-1:floor(IT/thinA)*thinA
   MCthinB<-1:floor(IT/thinB)*thinB
   if (Q>1) {
     SEA<-as.matrix(apply(ASEiter[,,MCthinA],c(1,2),sd))
     MEA<-as.matrix(apply(ASEiter[,,MCthinA],c(1,2),mean))
-    MCSA<-sqrt(as.matrix(apply(ASEiter[,,MCthinA],c(1,2),function(x) (initseq(x)$var.pos))))
+    MCSA<-sqrt(as.matrix(apply(ASEiter[,,MCthinA],c(1,2),function(x) (initseq(x[is.finite(x)])$var.pos))))
   } else {
     SEA<-as.vector(apply(as.matrix(ASEiter[,1,MCthinA]),1,sd))
     MEA<-as.vector(apply(as.matrix(ASEiter[,1,MCthinA]),1,mean))
-    MCSA<-sqrt(as.vector(apply(ASEiter[,1,MCthinA],1,function(x) (initseq(x)$var.pos))))
+    MCSA<-sqrt(as.vector(apply(ASEiter[,1,MCthinA],1,function(x) (initseq(x[is.finite(x)])$var.pos))))
   } 
   SEB<-as.vector(apply(BSEiter[,MCthinB],1,sd))
   MEB<-as.vector(apply(BSEiter[,MCthinB],1,mean))
-  MCSB<-sqrt(as.vector(apply(BSEiter[,MCthinB],1,function(x) (initseq(x)$var.pos))))
+  MCSB<-sqrt(as.vector(apply(BSEiter[,MCthinB],1,function(x) (initseq(x[is.finite(x)])$var.pos))))
   SED<-as.vector(apply(as.matrix(DSEiter[,1,MCthinB]),1,sd))
   MED<-as.vector(apply(as.matrix(DSEiter[,1,MCthinB]),1,mean))
-  MCSD<-sqrt(as.vector(apply(DSEiter[,1,MCthinB],1,function(x) (initseq(x)$var.pos))))
+  MCSD<-sqrt(as.vector(apply(DSEiter[,1,MCthinB],1,function(x) (initseq(x[is.finite(x)])$var.pos))))
   
-  if (Q>1) {
-    SET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),sd))
-    MET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),mean))
-    MCST<-sqrt(as.matrix(apply(TSEiter[,,MCthin],c(1,2),function(x) (initseq(x)$var.pos))))
-  } else {
-    SET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,sd))
-    MET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,mean))
-    MCST<-sqrt(as.vector(apply(TSEiter[,1,MCthin],1,function(x) (initseq(x)$var.pos))))
-  } 
-  return(list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SED=SED,MED=MED,MCSD=MCSD,
-              SET=SET,MET=MET,MCST=MCST))
+  # if (Q>1) {
+  #   SET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),sd))
+  #   MET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),mean))
+  #   MCST<-sqrt(as.matrix(apply(TSEiter[,,MCthin],c(1,2),function(x) (initseq(x[is.finite(x)])$var.pos))))
+  # } else {
+  #   SET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,sd))
+  #   MET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,mean))
+  #   MCST<-sqrt(as.vector(apply(TSEiter[,1,MCthin],1,function(x) (initseq(x[is.finite(x)])$var.pos))))
+  # } 
+  return(list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SED=SED,MED=MED,MCSD=MCSD))#,
+              #SET=SET,MET=MET,MCST=MCST))
 }

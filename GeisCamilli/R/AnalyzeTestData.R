@@ -22,7 +22,7 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE) {
       #parallel::setDefaultCluster(cl)
       prl<-TRUE
     } else if (get_os()=="linux") {
-      cl <<- parallel::makeCluster(settings$cores,type="FORK")
+      cl <<- parallel::makeCluster(settings$cores,type="FORK",outfile="ClusterOutput.txt")
       doParallel::registerDoParallel(cl)
       parallel::clusterSetRNGStream(cl,iseed = round(runif(6)*1001))
       #parallel::setDefaultCluster(cl)

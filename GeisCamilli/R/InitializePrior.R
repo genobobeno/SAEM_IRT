@@ -37,7 +37,7 @@ function(rp,settings=settings) {
         THat<-qnorm(0.005+0.99*((rowSums(rp)/(settings$ncat-1))/J)) # Small squeeze to prevent infinities
       }
     } else {
-      A0 = matrix(c(rep(0.85,J),rep(0.45,J*(settings$Adim-1))),J,settings$Adim)+0.3*matrix(runif(J*settings$Adim),J,settings$Adim)
+      A0 = matrix(c(rep(0.5,J),rep(0.1,J*(settings$Adim-1))),J,settings$Adim)+0.1*matrix(runif(J*settings$Adim),J,settings$Adim)
       A<-mat.or.vec(J,settings$Adim)+A0
       if (POLY) {
         THat<-as.matrix(qnorm(0.005+0.99*((rowSums(rp)/(settings$ncat-1))/J))) # Small squeeze to prevent infinities
@@ -45,7 +45,7 @@ function(rp,settings=settings) {
         THat<-as.matrix(qnorm(0.005+0.99*(rowSums(rp)/J))) # Small squeeze to prevent infinities
       }
       for (i in 2:settings$Adim) {
-        THat<-cbind(THat,THat[,1])
+        THat<-cbind(THat,THat[,1]+rnorm(N,0,0.01)) #adding a little stochasticity...
       }
     }
     if (!is.na(settings$ncat) & settings$ncat>2) {

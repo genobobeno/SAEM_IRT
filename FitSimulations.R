@@ -127,12 +127,14 @@ for (d in names(sim.list)) {
                       burnin=as.integer(5000000/sim.list[[d]]$N),
                       ncat=sim.list[[d]]$K,
                       plots=FALSE,
+                      plotiter=10,
                       tmu=rep(0,sim.list[[d]]$Q),
                       tsigma=diag(sim.list[[d]]$Q),
                       eps=1e-4,
                       thetaGen=genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
                       nesttheta=100,    # if esttheta="mcmc", how many random samples?
                       parallel=TRUE,  # True or false for parallel computation?
+                      cores=8,
                       simfile=paste0(gfile,".rda"), # or NA
                       estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r)),
                       thetamap=FALSE,
