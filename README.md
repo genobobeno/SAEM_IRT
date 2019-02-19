@@ -7,12 +7,12 @@ Keywords: IRT, SAEM, MIRT, 2PNO, 3PNO
 
 The best way to create an environment for this code is to create a new R-project, cloning this github repo.
 
-    1. In RStudio, choose: File > New Project > Version Control > Git 
+1. In RStudio, choose: File > New Project > Version Control > Git 
 
-    2. The repository URL: https://github.com/genobobeno/SAEM_IRT
-      i) Project directory will auto-fill.
-      ii) Your choice of subdirectory is your prerogative.
+2. The repository URL: https://github.com/genobobeno/SAEM_IRT
+  i) Project directory will auto-fill.
+  ii) Your choice of subdirectory is your prerogative.
 
-    3. Once your session is initiated, open the "START_HERE.Rmd" file to follow the tutorial. If you're most interested in the polytomous fits, open the "START_HERE_POLY_DEMO.Rmd" file.
+3. Once your session is initiated, open the "START_HERE.Rmd" file to follow the tutorial. If you're most interested in the polytomous fits, open the "START_HERE_POLY_DEMO.Rmd" file.
 
 Hope you enjoy!!
