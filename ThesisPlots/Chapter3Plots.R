@@ -77,6 +77,45 @@ legend("topright",legend=c(expression(italic(theta)~"~"~ italic(N)(0,1)),express
 
 
 #3.1.4  Convergence
+
+burnin=1000;eps=0.001;estgain=1
+RMwindow<-ceiling(burnin*(0.2))
+GC<-c(rep(1,burnin-RMwindow),
+        runif(rep(1,ceiling(RMwindow/2)),
+              min = 1-(1:(RMwindow/2)/RMwindow)*cos(1:(RMwindow/2))*cos(1:(RMwindow/2)), 
+              max = 1.0),
+        runif(rep(1,ceiling(RMwindow/2)),
+              min = 0.5-(1:(RMwindow/2)/RMwindow)*cos(1:(RMwindow/2))*cos(1:(RMwindow/2)), 
+              max = 1-(1:(RMwindow/2)/RMwindow)*cos(1:(RMwindow/2))*cos(1:(RMwindow/2))),
+        1/(2:(ceiling(2/eps)))^estgain)
+GC.u<-c(rep(1,burnin-RMwindow),
+        rep(1,ceiling(RMwindow/2)),
+        1-(1:(RMwindow/2)/RMwindow)*cos(1:(RMwindow/2))*cos(1:(RMwindow/2)),
+        1/(2:(ceiling(2/eps)))^estgain)[1:(2*burnin)]
+backTrack<-sum(c(burnin-RMwindow,ceiling(RMwindow/2),RMwindow/2))
+
+GC.l<-c(rep(1,burnin-RMwindow),
+        1-(1:(RMwindow/2)/RMwindow)*cos(1:(RMwindow/2))*cos(1:(RMwindow/2)),
+        0.5-(1:(RMwindow/2)/RMwindow)*cos(1:(RMwindow/2))*cos(1:(RMwindow/2)),
+        1/(2:(ceiling(2/eps)))^estgain)[1:(2*burnin)]
+
+# plot(GC.u[700:1100])
+# lines(GC.l[1100:700])
+par(mfrow=c(2,1),mar=c(1,4,4,3))
+plot(750:1050,c(0:300)/300,type="n",main="Psuedo Annealing Gain Space : Burn-In = 1000 iterations",
+     xlab="iterations",ylab=expression(gamma[t]),xaxt="n")
+polygon(x = c(750:1050,1050:750,1),c(GC.u[750:1050],GC.l[1050:750],1),col="lightblue")
+#lines(750:1050,GC[750:1050],col=1)
+abline(v=c(800,1000),col=2)
+par(mar=c(5,4,1,3))
+plot(750:1050,c(0:300)/300,type="n",main=NULL,
+     xlab="iterations",ylab=expression(gamma[t]))
+lines(750:1050,GC[750:1050],col=1)
+abline(v=c(800,1000),col=2)
+
+
+
+
 source("CreateSimulationStructure.R")
 d = "S1"
 r = 1
