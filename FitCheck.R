@@ -4,7 +4,7 @@
 setwd("~/ParSAEM/SAEM_IRT")
 source("CreateSimulationStructure.R")
 
-d = "S9"
+d = "S6"
 r = 3
 
 simdir<-paste0(gen.dir,"/",d)

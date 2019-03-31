@@ -138,16 +138,16 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     if (i%%500==1) cat("\n",i,"\t : ")
     X2		<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=theta), higher=TRUE)	
     X3		<- t(apply(X2,c(1,3),mean))
-    meanB <- meanB + alpha[i]*(t(t(rowMeans(X3)))-meanB)
-    meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
-    b         <- -meanB;    d        <- -meanD   
-    #Z		<- apply(X2,c(2,3),mean)
     if (!settings$dbltrunc) {
       Z		<- colMeans(X2)
     } else {
       X1 		<- parSapply(cl,1:J,WrapZ,simplify=FALSE,A=A,b=b,d=d,theta=theta)
       Z		<- simplify2array(X1, higher=TRUE)	
     }
+    meanB <- meanB + alpha[i]*(t(t(rowMeans(X3)))-meanB)
+    meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
+    b         <- -meanB;    d        <- -meanD   
+    #Z		<- apply(X2,c(2,3),mean)
     covZ	<- covZ + alpha[i]*(cov(Z)-covZ)
     # print(i)
     # print("covZ")
