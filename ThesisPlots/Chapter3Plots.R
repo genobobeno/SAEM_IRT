@@ -76,4 +76,40 @@ legend("topright",legend=c(expression(italic(theta)~"~"~ italic(N)(0,1)),express
        col=c(4,1),lty=c(3,1))
 
 
-#3.1.3  Convergence
+#3.1.4  Convergence
+source("CreateSimulationStructure.R")
+d = "S1"
+r = 1
+simdir<-paste0(gen.dir,"/",d)
+SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_",r,".rds"))
+fitdir<-paste0(fit.dir,"/",d)
+FitList<-readRDS(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
+load(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rda"))
+J=12
+par(mfrow=c(2,1),mar=c(5,5,4,5))
+Xlim<-c(0,100*ceiling(dim(MCMCDATA$Biter)[2]/100))
+Ylim<-c(0,1.05*max(MCMCDATA$Biter[J,]))
+plot(1:dim(MCMCDATA$Biter)[2],MCMCDATA$Biter[J,],type="n",main=paste0("MCMC Chain: Gain Constant and Difficulty (item ",J,")"),
+     xlim=Xlim,ylim=Ylim,xlab="iterations",ylab=expression(italic(b)))
+lines(1:dim(MCMCDATA$Biter)[2],MCMCDATA$Biter[J,],lty=1,col=2)
+axis(4,at = c(0,0.25,0.5)*max(MCMCDATA$Biter[J,]),labels = c(0,0.5,1.0))
+lines(1:dim(MCMCDATA$Biter)[2],FitList$gain[1:dim(MCMCDATA$Biter)[2]])
+mtext(text = "RM gain constant",side = 4,padj = 3)
+abline(h=SimList$gen.xi[J,2],lty=2,col=4)
+text(70,2.2,expression(italic(hat(b))[9]),col=2)
+text(1300,1.55,expression(italic(b)[9]),col=4)
+text(770,0.7,expression(italic(gamma)[RM]),col=1)
+
+zoomX<-c(750,1050)
+Xlim<-zoomX
+Ylim<-c(1.1,1.95)
+plot(zoomX[1]:zoomX[2],MCMCDATA$Biter[J,zoomX[1]:zoomX[2]],type="n",main=paste0("Zoom In: Gain Constant and Difficulty (item ",J,")"),
+     xlim=Xlim,ylim=Ylim,xlab="iterations",ylab=expression(italic(b)))
+lines(zoomX[1]:zoomX[2],MCMCDATA$Biter[J,zoomX[1]:zoomX[2]],lty=1,col=2)
+axis(4,at = (1.1+c(0,0.5,1.0)*0.4),labels = c(0,0.5,1.0))
+lines(zoomX[1]:zoomX[2],1.1+0.4*FitList$gain[zoomX[1]:zoomX[2]])
+mtext(text = "RM gain constant",side = 4,padj = 3)
+abline(h=SimList$gen.xi[J,2],lty=2,col=4)
+text(755,1.875,expression(italic(hat(b))[9]),col=2)
+text(850,1.7,expression(italic(b)[9]),col=4)
+text(875,1.25,expression(italic(gamma)[RM]),col=1)
