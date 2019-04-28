@@ -58,7 +58,7 @@ QueryUser<-function(message,choices=NA,type="character",defaultchoice=NA) {
           return(NA)
         }
       } else {
-        if (!grepl("[A-Z|a-z]",x)) {
+        if (!grepl("[A-Z|a-z|,]",x)) {
           print("ERROR: Query was expecting a character, not a number. Please start again.")
           return(NA)
         }

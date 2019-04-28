@@ -1,5 +1,6 @@
 
-
+source("InitializeGeisCamilli.R")
+BenchmarkPlots("S1",basedir = "./")
 
 
 
