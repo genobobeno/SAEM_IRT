@@ -1,5 +1,6 @@
 GetEmpiricalSE <-
-function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$thinA,thinB=settings$thinB) {
+function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$thinA,thinB=settings$thinB,
+         recordChain=FALSE) {
   cat("\n")
   print(paste("Starting",IT,"iterations of Empirical SEs, Thinning A:",thinA,"; Thinning B:",thinB))
   settings=FitDATA$settings
@@ -167,6 +168,12 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   VARLMIi<-diag(ginv((-1)*iHk0))
   VARLMIo<-matrix(VARLMIo,J,settings$Adim+1,byrow=T)[,c(2:(settings$Adim+1),1)]
   VARLMIi<-matrix(VARLMIi,J,settings$Adim+1,byrow=T)[,c(2:(settings$Adim+1),1)]
-  return(list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SEC=SEC,MEC=MEC,MCSC=MCSC,
-              SET=SET,MET=MET,MCST=MCST,VARLMIi=VARLMIi,VARLMIo=VARLMIo))
+  if (!recordChain){
+    return(list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SEC=SEC,MEC=MEC,MCSC=MCSC,
+                SET=SET,MET=MET,MCST=MCST,VARLMIi=VARLMIi,VARLMIo=VARLMIo))
+  } else {
+    return(list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SEC=SEC,MEC=MEC,MCSC=MCSC,
+                SET=SET,MET=MET,MCST=MCST,VARLMIi=VARLMIi,VARLMIo=VARLMIo,Aiter=ASEiter,    
+                Biter=BSEiter,Citer=CSEiter,Liter=LLSEiter))
+  }
 }
