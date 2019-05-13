@@ -40,9 +40,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
         y.b[j,,i] <- rep(9,(ncat-1))
       } else {
         for (k in 0:(ncat-2))
-          {		
-            y.b[j,(k+1),i] <- ifelse(y.a[i,j]<=k,0,1) 
-          }
+        {		
+          y.b[j,(k+1),i] <- ifelse(y.a[i,j]<=k,0,1) 
+        }
       }
     }
   }
@@ -259,10 +259,10 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
               if (is.na(RotT)) RotT<-pRotT
               pRotT <- RotT
               RotV <- tryCatch({Varimax(RotT$loadings,Tmat=diag(Q),normalize=TRUE,eps=1e-4,maxit=100)},
-                                error = function(err) {
-                                cat("R")
-                                return(NA)
-                              })
+                               error = function(err) {
+                                 cat("R")
+                                 return(NA)
+                               })
               if (is.na(RotV)) RotV<-pRotV
               pRotV <- RotV
               A2 <- RotV$loadings
@@ -332,8 +332,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
         pRotA<-RotA
       }
       AR<- targetQ(TA, Tmat=RMAT[[which.min(Rtest)]], 
-                     Target=Target, normalize=FALSE, 
-                     eps=1e-4, maxit=10000)
+                   Target=Target, normalize=FALSE, 
+                   eps=1e-4, maxit=10000)
       C<-NA;W<-NA
       if (settings$esttheta) {
         THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
@@ -347,8 +347,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       ARot <- A
       if (settings$esttheta) {
         THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
-                        prior=prior,setting=settings,R=AR,
-                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+                          prior=prior,setting=settings,R=AR,
+                          TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
       } else {THAT<-NA}
     }
   } else {
@@ -357,8 +357,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     ARot <- A
     if (settings$esttheta) {
       THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
-                      prior=prior,setting=settings,R=AR,
-                      TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+                        prior=prior,setting=settings,R=AR,
+                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
     } else {
       THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA)
     }
@@ -443,28 +443,28 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   FitDATA
 }
 
-  # for (i in 1:length(RTS)) {
-  #   # A is A_gen
-  #   # B is estimated loading matrix
-  #   # W is a weight matrix. The rotation target is the bifactor 0’s
-  #   # pstT is partially specified target orthogonal rotation
-  #   WR <- matrix(0,J,settings$Adim)
-  #   WR[which(gen.xi[,1:settings$Adim]==0)] <- 1
-  #   Tmat <- matrix(-1,settings$Adim,settings$Adim)
-  #   Tmat[1,1] <-  1
-  #   rtest<-c(rtest,sum(abs(gen.xi[,RTS[[i]]]-abs(pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,RTS[[i]]]), normalize=TRUE, eps=1e-8, maxit=1000)$loadings))))
-  # }    
-  # Fctr<-RTS[[which.min(rtest)]]
-  # AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
-  # rits<-1
-  # while (min(apply((AR$loadings>0)+0,2,mean))<0.5) {
-  #   rots<-rep(-1,settings$Adim^2)
-  #   sr<-sample(1:settings$Adim^2)
-  #   rots[sr[1:(rits%%(settings$Adim^2)+1)]]<-1
-  #   Tmat<-matrix(rots,settings$Adim,settings$Adim)
-  #   AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
-  #   rits<-rits+1
-  # }
+# for (i in 1:length(RTS)) {
+#   # A is A_gen
+#   # B is estimated loading matrix
+#   # W is a weight matrix. The rotation target is the bifactor 0’s
+#   # pstT is partially specified target orthogonal rotation
+#   WR <- matrix(0,J,settings$Adim)
+#   WR[which(gen.xi[,1:settings$Adim]==0)] <- 1
+#   Tmat <- matrix(-1,settings$Adim,settings$Adim)
+#   Tmat[1,1] <-  1
+#   rtest<-c(rtest,sum(abs(gen.xi[,RTS[[i]]]-abs(pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,RTS[[i]]]), normalize=TRUE, eps=1e-8, maxit=1000)$loadings))))
+# }    
+# Fctr<-RTS[[which.min(rtest)]]
+# AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
+# rits<-1
+# while (min(apply((AR$loadings>0)+0,2,mean))<0.5) {
+#   rots<-rep(-1,settings$Adim^2)
+#   sr<-sample(1:settings$Adim^2)
+#   rots[sr[1:(rits%%(settings$Adim^2)+1)]]<-1
+#   Tmat<-matrix(rots,settings$Adim,settings$Adim)
+#   AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
+#   rits<-rits+1
+# }
   # AR$APermute<-Fctr
 
   ############## GREG's reconstruction

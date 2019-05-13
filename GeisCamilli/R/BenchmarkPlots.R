@@ -1,10 +1,10 @@
 BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IRT/") {
-  #condition="S1";repl=NA;all.reps=T;basedir="~/ParSAEM/SAEM_IRT/"
-  source(paste0(basedir,"CreateSimulationStructure.R"))
+  #condition="S3";repl=NA;all.reps=T;basedir="~/ParSAEM/SAEM_IRT/"
+  source(paste0(basedir,"/","CreateSimulationStructure.R"))
   d<-condition  
   simdir<-paste0(basedir,"/",gen.dir,"/",d)
   fitdir<-paste0(basedir,"/",fit.dir,"/",d)
-  if (!all.reps && !is.na(repl)) {
+  if (!all.reps && !is.na(repl)) { #r=1
     SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_",r,".rds"))
     FitList<-readRDS(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
     par(mfrow=c(1,2))
@@ -161,9 +161,11 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
       plot(SimList$gen.xi[,q],sXI[,q],pch=19,cex=1.5,xlim=c(-0.1,1.05*max(SimList$gen.xi[,q])),
            ylim=c(0,1.05*max(sXI[,q])),col=sCol, #bg=1,
            main=sTitle,xlab=ptx,ylab=pty)
-      text(SimList$gen.xi[order(-abs(SimList$gen.xi[,2]))[1:2],q]+0.13,
-           sXI[order(-abs(SimList$gen.xi[,2]))[1:2],q]-0.004,
-           paste0("j=",order(-abs(SimList$gen.xi[,2]))[1:2]))
+      if (d=="S1") {
+        text(SimList$gen.xi[order(-abs(SimList$gen.xi[,2]))[1:2],q]+0.13,
+             sXI[order(-abs(SimList$gen.xi[,2]))[1:2],q]-0.004,
+             paste0("j=",order(-abs(SimList$gen.xi[,2]))[1:2]))
+      }
       sFitA<-lm(sXI[,q]~poly(SimList$gen.xi[,q],degree = 3))
       # lines(seq(-0.1,1.05*max(SimList$gen.xi[,q]),length.out = 100),
       #       predict(sFitA, )),col=2,lty=2)
@@ -177,9 +179,11 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
       plot(SimList$gen.xi[,q],sXI[,q],pch=19,cex=1.5,xlim=c(-1.03,1.03)*max(abs(SimList$gen.xi[,q])),
            ylim=c(0,1.05*max(sXI[,q])),col=sCol, #bg=1,
            main=sTitle,xlab=ptx,ylab=pty)
-      text(SimList$gen.xi[order(-abs(SimList$gen.xi[,2]))[1:2],q]+0.5,
-           sXI[order(-abs(SimList$gen.xi[,2]))[1:2],q]-0.004,
-           paste0("j=",order(-abs(SimList$gen.xi[,2]))[1:2]))
+      if (d=="S1") {
+        text(SimList$gen.xi[order(-abs(SimList$gen.xi[,2]))[1:2],q]+0.5,
+             sXI[order(-abs(SimList$gen.xi[,2]))[1:2],q]-0.004,
+             paste0("j=",order(-abs(SimList$gen.xi[,2]))[1:2]))
+      }
       sFitb<-lm(sXI[,q]~poly(SimList$gen.xi[,q],degree = 3))
         #      ,col=2,lty=2)
       print("Slope RMSE b")
@@ -240,6 +244,51 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
       # arrows(SimList$gen.xi[,1],SimList$gen.xi[,2],SimList$gen.xi[,1],SimList$gen.xi[,2]+bias[,2],
       #        code=2,angle=30,length=0.04)
 
+    }
+  }
+  cat("\n")
+  for (q in 1:ncol(SimList$gen.xi)) {
+    ss<-summary(lm(bias[,q]~SimList$gen.xi[,q]))
+    if (q<=sim.list[[d]]$Q) {
+      first<-paste0("$A_",q,"$ & $")
+    } else if (q==sim.list[[d]]$Q+1) {
+      first<-paste0("$b$ & $")
+    } else {
+      first<-paste0("$g$ & $")
+    }
+    cat(paste0(first,signif(mean(bias[,q]),digits=3),ifelse(t.test(bias[,q])$p.value<0.001,"^{***}",
+                              ifelse(t.test(bias[,q])$p.value<0.01,"^{**}",
+                                     ifelse(t.test(bias[,q])$p.value<0.05,"^{*}",""))),"$ & $",
+                 signif(sd(bias[,q]),digits=3),"$ & $",
+                 signif(ss$coefficients[1,1],digits=3),
+                 ifelse(ss$coefficients[1,4]<0.001,"^{***}",
+                        ifelse(ss$coefficients[1,4]<0.01,"^{**}",
+                               ifelse(ss$coefficients[1,4]<0.05,"^{*}",""))),"$ & $",
+                 signif(ss$coefficients[1,2],digits=3),"$ & $",
+                 signif(ss$coefficients[2,1],digits=3),
+                 ifelse(ss$coefficients[2,4]<0.001,"^{***}",
+                        ifelse(ss$coefficients[2,4]<0.01,"^{**}",
+                               ifelse(ss$coefficients[2,4]<0.05,"^{*}",""))),"$ & $",
+                 signif(ss$coefficients[2,2],digits=3),"$ \\\\ \\hline \n"))
+  }
+  if (sim.list[[d]]$K>2) {
+    for (k in 1:ncol(SimList$gen.tau)) {
+      ss<-summary(lm(tau.bias[,k]~SimList$gen.tau[,k]))
+
+      cat(paste0("$\\tau_",k,"$ & $",signif(mean(tau.bias[,k]),digits=3),ifelse(t.test(tau.bias[,q])$p.value<0.001,"^{***}",
+                                             ifelse(t.test(tau.bias[,k])$p.value<0.01,"^{**}",
+                                                    ifelse(t.test(tau.bias[,k])$p.value<0.05,"^{*}",""))),"$ & $",
+                 signif(sd(tau.bias[,k]),digits=3),"$ & $",
+                 signif(ss$coefficients[1,1],digits=3),
+                 ifelse(ss$coefficients[1,4]<0.001,"^{***}",
+                        ifelse(ss$coefficients[1,4]<0.01,"^{**}",
+                               ifelse(ss$coefficients[1,4]<0.05,"^{*}",""))),"$ & $",
+                 signif(ss$coefficients[1,2],digits=3),"$ & $",
+                 signif(ss$coefficients[2,1],digits=3),
+                 ifelse(ss$coefficients[2,4]<0.001,"^{***}",
+                        ifelse(ss$coefficients[2,4]<0.01,"^{**}",
+                               ifelse(ss$coefficients[2,4]<0.05,"^{*}",""))),"$ & $",
+                 signif(ss$coefficients[2,2],digits=3),"$ \\\\ \\hline \n"))
     }
   }
 }

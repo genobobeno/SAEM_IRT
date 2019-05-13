@@ -273,16 +273,16 @@ YR<-range(c(stats1D$A1_ERR_CLT_Ann,
             stats1D$A1_ERR_MCMC_Emp)/stats1D$A1_RMSE)
 
 txt.labels<-c(expression("CLT"["Ann"]),
-                    expression("CLT"["Burn"]),
-                    expression("CLT"["Emp"]),
-                    expression("MCMC"["Ann"]),
-                    expression("MCMC"["Burn"]),
-                    expression("MCMC"["Emp"]),
-                    expression("ICE"),
-                    expression("IPCE"["2PL"]),
-                    expression("IPCE"["2PNO"]),
-                    expression("SPCE"["2PL"]),
-                    expression("SPCE"["2PNO"]))
+              expression("CLT"["Burn"]),
+              expression("CLT"["Emp"]),
+              expression("MCMC"["Ann"]),
+              expression("MCMC"["Burn"]),
+              expression("MCMC"["Emp"]),
+              expression("ICE"),
+              expression("IPCE"["2PL"]),
+              expression("IPCE"["2PNO"]),
+              expression("SPCE"["2PL"]),
+              expression("SPCE"["2PNO"]))
 
 ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]
 labels <- format(ticks, big.mark=",", scientific=FALSE)
@@ -292,8 +292,8 @@ par(mar=c(m.b,4,2,m.b))
 p=1
 ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
 plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-        main=expression("Slope Error Estimates : 2PNO"),ylim=YR,
-        xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+     main=expression("Slope Error Estimates : 2PNO"),ylim=YR,
+     xlab=NA,ylab=NA,xaxt="n",yaxt="n")
 axis(2,at=ticks,labels=labels,las=2)
 abline(h=1,lwd=2,lty=2)
 points(gen.xi[,p],stats1D$A1_ERR_CLT_Ann/stats1D$A1_RMSE,pch=0,col=1)

@@ -1,8 +1,10 @@
 ThetaMAP <-
-function(aa,bb,cc,rp,settings,TAU=NA,That=NA) {
+  function(aa,bb,cc,rp,settings,TAU=NA,That=NA) {
+  # aa=FitList$xi[,1];bb=FitList$xi[,2];cc<-NA;rp<-FitList$RP
+  # settings=FitList$settings;TAU=FitList$tau;That=FitList$That[,1]
   xi<-as.matrix(cbind(aa,bb))
   if (settings$Adim==1) {
-    tgrid<-seq(-3.3,3.3,length.out=761)
+    tgrid<-seq(-3.5,3.5,length.out=701)
     p<-ProbOgive(xi=xi,theta=tgrid,tau=TAU) # TQ x J
     THAT<-vector()
     if (is.na(TAU)[1]) {
@@ -16,11 +18,10 @@ function(aa,bb,cc,rp,settings,TAU=NA,That=NA) {
       #    RP[i,j]<-which(rmultinom(n = 1,size=1,prob=diff(-1*c(1,P[i,j,],0)))==1)
       for (n in 1:nrow(rp)) {
         y<-t(0+sapply(rp[n,],function(x) (0:ncol(TAU))==x))   # J X K
-        yA<-array(0,dim=c(length(tgrid),length(bb),ncol(TAU)+1))
+        yA<-array(0,dim=c(length(tgrid),length(bb),ncol(TAU)+1)) # TGrid X J X K
         for (tg in 1:length(tgrid))  yA[tg,,]<-y
-        
-         #y<-t(as.matrix(rp[n,])%*%t(as.matrix(rep(1,nrow(as.matrix(tgrid)))))) # TQ x J
-        THAT<-c(THAT,tgrid[which.max(rowSums(yA*MNParray))])
+        #y<-t(as.matrix(rp[n,])%*%t(as.matrix(rep(1,nrow(as.matrix(tgrid)))))) # TQ x J
+        THAT<-c(THAT,tgrid[which.max(rowSums(yA*log(MNParray)))])
       }
     }
   } else {
@@ -78,7 +79,7 @@ function(aa,bb,cc,rp,settings,TAU=NA,That=NA) {
             tsearch[,q]<-tgrid
             p<-ProbOgive(xi=xi,theta=tsearch,tau=TAU) # TQ x J
             for (i in 1:length(tgrid)) for (j in 1:length(bb)) MNParray[i,j,] <- diff(-1*c(1,p[i,j,],0))
-            xy[q]<-tgrid[which.max(rowSums(yA*MNParray))]
+            xy[q]<-tgrid[which.max(rowSums(yA*log(MNParray)))]
             tsearch[,q]<-xy[q]
             if (!prod(is.finite(xy))) xy<-xy0+rep(0.1,settings$Adim)
           }
