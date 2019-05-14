@@ -50,7 +50,8 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
   if (setting$Adim>1) {
     THETA<-apply(THAT,c(1,2),mean)
     THETA<-cbind(THETA,THETA-apply(THAT,c(1,2),sd),THETA+apply(THAT,c(1,2),sd))
-    colnames(THETA)<-paste(c("Theta","Theta-SE","Theta+SE"),rep(c(1:setting$Adim),rep(3,setting$Adim)))
+    colnames(THETA)<-paste(rep(c("Theta","Theta-SE","Theta+SE"),c(setting$Adim,setting$Adim,setting$Adim)),
+                           rep(c(1:setting$Adim),rep(3,setting$Adim)))
   } else {
     THETA<-rowMeans(THAT)
     THETA<-cbind(THETA,THETA-apply(THAT,1,sd),THETA+apply(THAT,1,sd))

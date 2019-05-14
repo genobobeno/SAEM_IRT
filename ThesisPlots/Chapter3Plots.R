@@ -152,3 +152,17 @@ abline(h=SimList$gen.xi[J,2],lty=2,col=4)
 text(755,1.875,expression(italic(hat(b))[12]),col=2)
 text(850,1.7,expression(italic(b)[12]),col=4)
 text(875,1.25,expression(italic(gamma)[RM]),col=1)
+######################
+
+
+BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
+
+RMProofPlots()
+
+
+source("ThesisPlots/TWFitTests.R")
+TWTestAndPlot("S1",extra.dimensions = TRUE,E = 7)
+
+BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
+
+CompareConditions("S1","S3",basedir = getwd())
