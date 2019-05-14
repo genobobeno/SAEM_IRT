@@ -21,14 +21,19 @@ sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # So
 library(stringr)
 source("CreateSimulationStructure.R")
 
+
 ## Check fit directories
 fit.dir<-"TWFits"
+TWFits<-c("Plus1","Times5")
 if (!fit.dir %in% dir()) dir.create(fit.dir)
 for (d in names(sim.list)) {
-  if (length(dir(fit.dir))==0 | !d %in% dir(fit.dir)) { 
-    dir.create(paste0(fit.dir,"/",d))
-  } else {
-    print(paste0(fit.dir,"/",d," already exists."))
+  twdir<-paste0(d,TWFits)
+  for (twd in twdir) {
+    if (length(dir(fit.dir))==0 | !twd %in% dir(fit.dir)) { 
+      dir.create(paste0(fit.dir,"/",twd))
+    } else {
+      print(paste0(fit.dir,"/",twd," already exists."))
+    }
   }
 }
 ##### START FITS
@@ -36,7 +41,7 @@ for (d in names(sim.list)) {
 #   if (grepl(,dir(paste0(gen.dir,"/",d))))
 #     
 #CheckSims
-for (d in names(sim.list)) {
+for (d in names(sim.list)[1:3]) {
   print(paste("Checking files for:",d))
   ## Check Generated files
   fs<-SFileString(sim.list[[d]],gen=TRUE)
@@ -63,20 +68,20 @@ for (d in names(sim.list)) {
 for (d in names(sim.list)) {
   cat(paste0("Starting Sim: ",d,"\n"))
   simdir<-paste0(gen.dir,"/",d)
-  for (tw in c("Plus1","Times5")) {
+  for (tw in TWFits) {
     # tw<-"Plus1"
     if (tw=="Plus1") {
       QQ<-sim.list[[d]]$Q+1
     } else {
       QQ<-5*sim.list[[d]]$Q
     }
-    fitdir<-paste0(fit.dir,"/",d,"_",tw)
+    fitdir<-paste0(fit.dir,"/",d,tw)
     #if (fit.dir %in% dir())
     gfiles<-dir(simdir)
     gfiles<-gfiles[grep("\\.rds",gfiles)]
     R<-sort(as.numeric(str_extract_all(gfiles,paste0("(?<=_R",sim.list[[d]]$Reps,"_)[0-9]+"))))
-    if (length(dir(paste0(fit.dir,"/",d)))>0) {
-      ffiles<-dir(paste0(fit.dir,"/",d))
+    if (length(dir(paste0(fit.dir,"/",d,tw)))>0) {
+      ffiles<-dir(paste0(fit.dir,"/",d,tw))
       fR<-sort(as.numeric(unique(str_extract_all(ffiles,paste0("(?<=_R",sim.list[[d]]$Reps,"_)[0-9]+")))))
       R<-R[!R %in% fR]
     }
@@ -116,7 +121,7 @@ for (d in names(sim.list)) {
                       initialize="best", # "best", "random"
                       record=TRUE,     # "off"
                       parallel=TRUE,  # True or false for parallel computation?
-                      simfile=paste0(gfile,".rda"), # or NA
+                      simfile=NA, #paste0(gfile,".rda"), # or NA
                       estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r))) 
         settings<-CheckParams(parameters = settings,generate = FALSE)
         Fit1D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings)
@@ -142,7 +147,7 @@ for (d in names(sim.list)) {
                         nesttheta=100,    # if esttheta="mcmc", how many random samples?
                         parallel=TRUE,  # True or false for parallel computation?
                         cores=8,
-                        simfile=paste0(gfile,".rda"), # or NA
+                        simfile=NA, #paste0(gfile,".rda"), # or NA
                         estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r)),
                         thetamap=FALSE,
                         record=TRUE)

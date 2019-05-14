@@ -337,12 +337,22 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     print("Doing a Infomax rotation")
     ARI<-infomaxT(A, Tmat=diag(ncol(A)), normalize=FALSE, eps=1e-5, maxit=1000)
     print(ARI)
+    if (settings$record) {
+      if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
+        rfilename=paste0("ROT_",settings$estfile)
+      } else { 
+        rfilename=paste0("ROT_",settings$estfile,".rda",sep="") 
+      }
+      ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
+      save(ROT.Data,settings,file=rfilename)
+    }
     AR<-NA
+    
   } else {
     AR<-NA
   }
   if (settings$guess & settings$Adim>1) {
-    C<-rowMeans(Citer[,It-50:0])
+    #C<-rowMeans(Citer[,It-50:0])
     if (!is.na(AR)[1]) {
       xi=cbind(AR$loadings,B,C)
       } else {xi=cbind(A,B,C)}
@@ -353,7 +363,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
       xi=cbind(A,B)
     }
   } else if (settings$guess & settings$Adim==1) {
-    C<-rowMeans(Citer[,It-50:0])
+    #C<-rowMeans(Citer[,It-50:0])
     xi=cbind(A,B,C)
   } else {
     xi=cbind(A,B)
