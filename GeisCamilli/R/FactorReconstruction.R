@@ -105,6 +105,7 @@ FactorReconstruction<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/S
            code=3,angle=90,length=0.04)
     print("Percentiles")
     print(cbind(xT,yT1,yT2))
+    print(cbind(xT,yFT1,yFT2))
     print(t.test(yT1[40:60],mu = 0))
     
     if (ThetaFix) {

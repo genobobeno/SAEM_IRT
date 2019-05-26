@@ -1,13 +1,19 @@
 RMProofPlots<-function(condition,items=NA,basedir="~/ParSAEM/SAEM_IRT/") {
-  source(paste0(basedir,"CreateSimulationStructure.R"))
-  d<-condition  
+  source(paste0(basedir,"/CreateSimulationStructure.R"))
+  d<-condition 
   simdir<-paste0(basedir,"/",gen.dir,"/",d)
   fitdir<-paste0(basedir,"/",fit.dir,"/",d)
   SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_1.rds"))
   FitList<-readRDS(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = 1),".rds"))
   par(mfrow=c(1,1))
   plot(c(0.4,1.7),c(-5,3),type="n",xlab="A",ylab="b",main=expression("Item Parameter Space"),xlim=c(0.3,1.55),ylim=c(-3.3,3.0))
-  points(SimList$gen.xi[,1],SimList$gen.xi[,2],pch=16,col=1)
+  if (d=="S2") {
+    sCol<-rainbow(sim.list$S1$J,start = 0.2,end=0.71)
+    sCol[order(SimList$gen.xi[,3])]<-sCol
+    points(SimList$gen.xi[,1],SimList$gen.xi[,2],pch=16,col=sCol)
+  } else {
+    points(SimList$gen.xi[,1],SimList$gen.xi[,2],pch=16,col=1)
+    }
   text(SimList$gen.xi[,1]+0.03,SimList$gen.xi[,2]+0.15,1:sim.list[[d]]$J,cex=0.8)
   if (is.na(items)[1]) {
     items<-QueryUser("Pick Your Favorite Six items, separated by commas:",choices = NA,type = "character",defaultchoice = "1:6")

@@ -2,10 +2,15 @@ ThetaMAP <-
   function(aa,bb,cc,rp,settings,TAU=NA,That=NA) {
   # aa=FitList$xi[,1];bb=FitList$xi[,2];cc<-NA;rp<-FitList$RP
   # settings=FitList$settings;TAU=FitList$tau;That=FitList$That[,1]
-  xi<-as.matrix(cbind(aa,bb))
+    
+  if (settings$guess) {
+    xi<-as.matrix(cbind(aa,bb,cc))
+  } else {  
+    xi<-as.matrix(cbind(aa,bb))
+  }
   if (settings$Adim==1) {
     tgrid<-seq(-3.5,3.5,length.out=701)
-    p<-ProbOgive(xi=xi,theta=tgrid,tau=TAU) # TQ x J
+    p<-ProbOgive(xi=xi,theta=tgrid,tau=TAU,guess = settings$guess) # TQ x J
     THAT<-vector()
     if (is.na(TAU)[1]) {
       for (n in 1:nrow(rp)) {

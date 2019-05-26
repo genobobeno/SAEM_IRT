@@ -30,14 +30,20 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     BTB_INV	<- solve(diag(setting$Adim) + ATA)
     for (i in 1:setting$nesttheta) {
       if (setting$Adim==1) {
-        tHat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=settings$dbltrunc))
+        tHat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
       } else {
-        tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=settings$dbltrunc))
+        tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
       }
-      X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,A=aa,b=bb,
-                                      d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat,
-                                      simplify=FALSE), higher=TRUE)	
-      zHat	<- apply(X2,c(2,3),mean) 
+      X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,simplify=FALSE,A=aa,b=bb,
+                                      d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat), higher=TRUE)	
+      X3		<- t(apply(X2,c(1,3),mean))
+      if (!setting$dbltrunc) {
+        zHat		<- colMeans(X2)
+      } else {
+        X1 		<- parSapply(cl,1:length(bb),WrapZ,simplify=FALSE,A=aa,b=bb,
+                          d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat)
+        zHat		<- simplify2array(X1, higher=TRUE)	
+      }
       if (setting$Adim>1) {
         THAT<-abind(THAT,tHat,along=3)
       } else {
