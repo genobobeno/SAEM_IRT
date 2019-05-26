@@ -1,6 +1,6 @@
 GIFAEstimate <-
 function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
-  if (is.na(gain)) gain<-1
+  if (is.na(gain)[1]) gain<-1
   ttt<-Sys.time()
   C<-NA
   mT<-colMeans(as.matrix(tt))   # D x 1
@@ -117,7 +117,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
     }        
     B<-as.vector(A%*%as.matrix(mT)-EZ)  
   } else if (tolower(settings$fm)=="pca") {
-    if (is.na(ez)) {
+    if (is.na(ez)[1]) {
       #  zz is J x N
       zb<-zz+bb%*%rep(1,ncol(zz))
       SZB<-zb%*%t(zb)/(nrow(zz)-1)  # J x J
@@ -168,7 +168,7 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
     }             
     B<-EZ*(-1)
   }
-  if (!is.na(w)&!is.na(rp)[1]) {
+  if (!is.na(w)[1]&!is.na(rp)[1]) {
     C<-rep(0,ncol(w))
     s<-rep(0,ncol(w))
     t<-rep(0,ncol(w))
@@ -177,8 +177,9 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
       s[j]<-sum(rp[which(w[,j]==0),j])
       C[j]<-rbeta(1,s[j]+1,t[j]-s[j]+1)
       if (C[j]>0.45)  { 
-        C[j]<-runif(1,min=0.05,max=0.3)
+        C[j]<-runif(1,min=0.01,max=0.4)
       }
+      C[j]<-s[j]/t[j]+(C[j]-s[j]/t[j])*gain
     }
   }
   return(list(A=A,B=B,C=C,EZ=EZ,EZZ=EZZ))

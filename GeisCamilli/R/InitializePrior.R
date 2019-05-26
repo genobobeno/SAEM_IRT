@@ -58,7 +58,8 @@ function(rp,settings=settings) {
       if (settings$Adim==1) {
         rpGuess0 = rp[THat<quantile(THat,probs=0.12),]; rpGuess1 = rp[THat>quantile(THat,probs=0.88),]
       } else {
-        rpGuess0 = rp[THat<quantile(THat[,1],probs=0.12),]; rpGuess1 = rp[THat>quantile(THat[,1],probs=0.88),]
+        rpGuess0 = rp[apply(THat,1,sum)/settings$Adim<quantile(apply(THat,1,sum)/settings$Adim,probs=0.12),]
+        rpGuess1 = rp[apply(THat,1,sum)/settings$Adim>quantile(apply(THat,1,sum)/settings$Adim,probs=0.88),]
       }
       Gap = apply(rpGuess1,2,mean,na.rm=TRUE) - apply(rpGuess0,2,mean,na.rm=TRUE)
       C<-apply(rpGuess0,2,mean,na.rm=TRUE)
