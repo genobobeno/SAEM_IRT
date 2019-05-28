@@ -1,6 +1,11 @@
 GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refList=NA) {
   #print("Theta Estimation GO!")
-  #if (!is.na(R)) aa=R$loadings
+  if (!is.na(R) & "Th" %in% names(R) & setting$Adim>1) {
+    for (i in 1:ncol(R$loadings)) {
+      if (sum(R$loadings[,i])<0) R$loadings[,i]<- (-1)*R$loadings[,i]
+    }
+    aa<-R$loadings
+  }
   ZHAT<-zHat  # N x J
   if (setting$Adim>1) {
     THAT<-array(tHat,dim=c(nrow(rp),setting$Adim,1))
@@ -29,11 +34,6 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
     ATA 		<- t(aa)%*%aa #*4
     BTB_INV	<- solve(diag(setting$Adim) + ATA)
     for (i in 1:setting$nesttheta) {
-      if (setting$Adim==1) {
-        tHat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
-      } else {
-        tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
-      }
       X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,simplify=FALSE,A=aa,b=bb,
                                       d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat), higher=TRUE)	
       X3		<- t(apply(X2,c(1,3),mean))
@@ -44,6 +44,12 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,R=NA,TAU=NA,refLi
                           d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat)
         zHat		<- simplify2array(X1, higher=TRUE)	
       }
+      if (setting$Adim==1) {
+        tHat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
+      } else {
+        tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
+      }
+
       if (setting$Adim>1) {
         THAT<-abind(THAT,tHat,along=3)
       } else {

@@ -1,0 +1,151 @@
+##### INITIALIZE
+if (!"knitr" %in% installed.packages()[,1]) { install.packages("knitr",dependencies = TRUE)} 
+knitr::opts_chunk$set(echo=FALSE,warning = FALSE)
+source("Hello.R", chdir = T)
+Hello()
+PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
+         ifelse(get_os()=="windows","doSNOW","doParallel"),
+         "rlecuyer","GPArotation","mvnfast","psych","modeest","MASS",
+         "Rcpp","RcppArmadillo","devtools","compiler","doRNG","abind",
+         "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix","mcmc")
+
+### Install packages not already installed ###
+for (i in 1:length(PACK)){
+  if(PACK[i] %in% rownames(installed.packages()) == FALSE) {
+    install.packages(PACK[i],dependencies = TRUE)}
+}
+required<-lapply(PACK, require, character.only = TRUE)                       # Call the libraries (will deprecate)
+Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm Random (fast)
+file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
+sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
+library(stringr)
+source("CreateSimulationStructure.R")
+
+
+## Check fit directories
+fit.dir<-"CPUTests"
+if (!fit.dir %in% dir()) dir.create(fit.dir)
+
+##### START FITS
+# for (r in 1:sim.list[[d]]$Reps) {
+#   if (grepl(,dir(paste0(gen.dir,"/",d))))
+#     
+#CheckSims
+  # for (d in names(sim.list)[1:3]) {
+  #   print(paste("Checking files for:",d))
+  #   ## Check Generated files
+  #   fs<-SFileString(sim.list[[d]],gen=TRUE)
+  #   simdir<-paste0(gen.dir,"/",d)
+  #   files<-dir(simdir)
+  #   files<-files[grep("\\.rda",files)]
+  #   if (length(files)==0) {
+  #     nf<-1:sim.list[[d]]$Reps
+  #   } else {
+  #     nf<-str_replace(files,paste0(fs,"_"),"")
+  #     nf<-as.integer(str_replace(nf,"\\.rda",""))
+  #     if (sum(1:sim.list[[d]]$Reps %in% nf)==sim.list[[d]]$Reps) {
+  #       print(paste0(d,": All Simulations Accounted for."))
+  #     } else {
+  #       print(paste0(d,": Simulations not adding up."))
+  #       nf<-c(1:sim.list[[d]]$Reps)[!1:sim.list[[d]]$Reps %in% nf]
+  #       print(paste(length(nf),"Files to generate. Files missing:"))
+  #       print(paste(nf,collapse=","))
+  #     }
+  #   }
+  # }
+
+  #BeginFits
+for (d in names(sim.list)) {
+  filename<-paste0(d,".rds")
+  if (!filename %in% dir(fit.dir)) {
+    CPU.r<-data.frame(cores=c(1,2,4,6),avg.time=NA,avg.tpi=NA,avg.iter=NA)
+    for (cpu in c(1,2,4,6)) {
+      cat(paste0("Starting Sim: ",d,"\n"))
+      simdir<-paste0(gen.dir,"/",d)
+      gfiles<-dir(simdir)
+      gfiles<-gfiles[grep("\\.rds",gfiles)]
+      R<-sort(as.numeric(str_extract_all(gfiles,paste0("(?<=_R",sim.list[[d]]$Reps,"_)[0-9]+"))))
+      if (max(R)>5) R<-1:10 else R<-1:5
+      fs<-SFileString(sim.list[[d]],gen=TRUE)
+      cat(paste0("Gotta fit: ",paste(R,collapse=" "),"\n"))
+      for (r in R) {
+        gc()
+        gfile<-paste0(simdir,"/",fs,"_",r)
+        cat(paste0("\n\nFitting ",gfile,": ",r,"\n"))
+        genlist<-readRDS(paste0(gfile,".rds"))
+        if (is.na(sim.list[[d]]$K) | sim.list[[d]]$K<3) {
+          settings=list(model="gifa",    # Or "irt" = Analytical EM model
+                        icc="ogive",     # Probability model... logistic? ogive? 
+                        Adim=sim.list[[d]]$Q,          # Multidimensional?
+                        guess=sim.list[[d]]$Guessing,     # Geussing ? TRUE
+                        fm="eigen",    # Factor analysis procedure: fa() methods=c("ml","minres","wls","gls") or "licai", "camilli", or "old"...etc?
+                        rmethod="pstT",  # GPArotation method, currently "targetT" or "pstT"
+                        empiricalse=FALSE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                        thinA=7, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                        thinB=5, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                        EmpIT=2000, # Iterations of Empirical Errors
+                        est="rm",        # Estimation method? model("gifa) -> "off"=mean, "rm"=robbinsmonro, "sa"=simannealing; model("irt") -> "anr"=analytical newton-raphson, "nnr"=numerical newton-raphson #Convergence procedure
+                        estgain=1,       # Constant to slow down(decrease to decimal)/speed up(increase) newton cycles, or exponent on denominator in rm-squeeze
+                        burnin=as.integer(5000000/sim.list[[d]]$N),      # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
+                        quad="manual",   # gauss-hermite
+                        nodes=15,        # nodes for quadrature
+                        gridbounds=c(-3.5,3.5), #manual quadrature bounds
+                        tmu=rep(0,sim.list[[d]]$Q),
+                        tsigma=diag(sim.list[[d]]$Q),        # Prior sigma, can be multivariate matrix(Adim x Adim)
+                        eps=1e-4,        # Converged?
+                        nesttheta=10,    # if esttheta="mcmc", how many random samples?
+                        thetamap=FALSE,   # do an MAP estimate of Theta?
+                        thetaGen=NA, #genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
+                        impute=FALSE,    # Impute missing data?
+                        plots=FALSE,     # Show plots for diagnostics
+                        chains=5,        # How many chains to build? Diagnose convergence? Simultaneous MCMC chains?
+                        initialize="best", # "best", "random"
+                        record=FALSE,     # "off"
+                        parallel=TRUE,  # True or false for parallel computation?
+                        cores=cpu,
+                        simfile=NA, #paste0(gfile,".rda"), # or NA
+                        estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r))) 
+          settings<-CheckParams(parameters = settings,generate = FALSE)
+          sink(paste0(fit.dir,"/",d,"_output.txt"))
+          Fit1D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,timed=TRUE)
+          sink()
+          saveRDS(Fit1D,paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
+        } else {
+          settings = list(Adim=QQ,
+                          guess=FALSE,
+                          empiricalse=FALSE,
+                          est="rm",
+                          estgain=1,
+                          empiricalse=FALSE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                          thinA=10, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                          thinB=7, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                          EmpIT=2000, # Iterations of Empirical Errors
+                          burnin=as.integer(5000000/sim.list[[d]]$N),
+                          ncat=sim.list[[d]]$K,
+                          plots=FALSE,
+                          plotiter=10,
+                          tmu=rep(0,QQ),
+                          tsigma=diag(QQ),
+                          eps=1e-4,
+                          thetaGen=NA, #genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
+                          nesttheta=100,    # if esttheta="mcmc", how many random samples?
+                          parallel=TRUE,  # True or false for parallel computation?
+                          cores=8,
+                          simfile=NA, #paste0(gfile,".rda"), # or NA
+                          estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r)),
+                          thetamap=FALSE,
+                          record=TRUE)
+          settings<-CheckParams(parameters = settings,generate=FALSE)
+          sink(paste0(fit.dir,"/",d,"_output.txt"))
+          Fit2D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,timed=TRUE) #,TargetA = genlist$gen.xi[,1:sim.list[[d]]$Q]) 
+          sink()
+        }
+      }
+    }
+  } else {
+    print(paste(filename,"already created."))
+  }
+  saveRDS(CPU.r,paste0(fit.dir,"/",filename))
+}
+
+  

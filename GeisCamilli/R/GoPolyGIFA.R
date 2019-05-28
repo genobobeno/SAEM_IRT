@@ -76,7 +76,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     indL[[j]] <- cbind(1:N,yL); 		indU[[j]] <- cbind(1:N,yL + 1)
   }
   clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
-  clusterEvalQ(cl,c("WrapX","WrapT","WrapZ"))
+  clusterEvalQ(cl,c("WrapX","WrapT","WrapTmv","WrapZ"))
   if (!settings$dbltrunc) {
     X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
     Z		<- apply(X2,c(2,3),mean) 

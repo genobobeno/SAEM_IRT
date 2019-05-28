@@ -1,4 +1,4 @@
-FixTHatSamples<-function(fitFile) {
+FixTHatSamples<-function(fitFile,gen.theta=NA) {
   FitList<-readRDS(fitFile)
   if (FitList$settings$parallel & FitList$settings$cores>1) {
     if (get_os()=="windows") {
@@ -67,17 +67,35 @@ FixTHatSamples<-function(fitFile) {
   }
   clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
   clusterEvalQ(cl,c("WrapX","WrapT","WrapZ","WrapTmv"))
-  
+
+  if ("AR" %in% names(FitList)) {
+    AR<-FitList$AR
+    for (i in 1:ncol(AR$loadings)) {
+      if (sum(AR$loadings[,i])<0) AR$loadings[,i]<- (-1)*AR$loadings[,i]
+    }
+  } else {AR<-NA}
   if ("tau" %in% names(FitList)) {
     FitList$settings$thetamap<-FALSE
-    That<-GetThetaHat(aa=FitList$A,bb=FitList$B,cc=FitList$C,rp=FitList$RP,tHat=FitList$That,zHat=FitList$EZ,w=NA,
-                      prior=prior,setting=FitList$settings,R=NA,
-                      TAU=FitList$TAU)
+    if (!is.na(gen.theta)) {
+      That<-GetThetaHat(aa=FitList$A,bb=FitList$B,cc=FitList$C,rp=FitList$RP,tHat=gen.theta,zHat=FitList$EZ,w=NA,
+                        prior=prior,setting=FitList$settings,R=AR,
+                        TAU=FitList$TAU)
+    } else{  
+      That<-GetThetaHat(aa=FitList$A,bb=FitList$B,cc=FitList$C,rp=FitList$RP,tHat=FitList$That,zHat=FitList$EZ,w=NA,
+                               prior=prior,setting=FitList$settings,R=AR,
+                               TAU=FitList$TAU)
+    }
   } else {
     FitList$settings$thetamap<-FALSE
-    That<-GetThetaHat(aa=FitList$A,bb=FitList$B,cc=FitList$C,rp=FitList$RP,tHat=FitList$That,zHat=FitList$EZ,w=NA,
-                      prior=prior,setting=FitList$settings,R=NA,
+    if (!is.na(gen.theta)) {
+      That<-GetThetaHat(aa=FitList$A,bb=FitList$B,cc=FitList$C,rp=FitList$RP,tHat=gen.theta,zHat=FitList$EZ,w=NA,
+                      prior=prior,setting=FitList$settings,R=AR,
                       TAU=NA)
+    } else {
+      That<-GetThetaHat(aa=FitList$A,bb=FitList$B,cc=FitList$C,rp=FitList$RP,tHat=FitList$That,zHat=FitList$EZ,w=NA,
+                        prior=prior,setting=FitList$settings,R=AR,
+                        TAU=NA)
+    }
   }
   parallel::stopCluster(cl)
   FitList$That<-That$THETA

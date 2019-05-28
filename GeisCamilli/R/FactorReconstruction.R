@@ -1,5 +1,5 @@
 FactorReconstruction<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IRT/",ThetaFix=FALSE,...) {
-  #condition="S3";repl=NA;all.reps=T;basedir=getwd()
+  #condition="S5";repl=NA;all.reps=T;basedir=getwd()
   source(paste0(basedir,"/","CreateSimulationStructure.R"))
   library(Hmisc)
   d<-condition  
@@ -32,21 +32,21 @@ FactorReconstruction<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/S
   gThat[1:sim.list[[d]]$N,]<-SimList$gen.theta
   if (sim.list[[d]]$Q>1) {
     vA<-colSums(FitList$xi[,1:sim.list[[d]]$Q])
-    That[1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]
-    dThat[1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]-SimList$gen.theta
+    if (!d %in% c("S5","S6","S7","S8","S9")) {
+      That[1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]
+      dThat[1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]-SimList$gen.theta
+    }
+    FThat[1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]
+    dFThat[1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]-SimList$gen.theta
   } else {
     vA<-sum(FitList$xi[,1])
     That[1:sim.list[[d]]$N,]<-FitList$Tmap
     dThat[1:sim.list[[d]]$N,]<-FitList$Tmap-SimList$gen.theta
-  }
-  if (sim.list[[d]]$Q>1) {
-    FThat[1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]
-    dFThat[1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]-SimList$gen.theta
-  } else {
     FThat[1:sim.list[[d]]$N,]<-FitList$That[,1]
     dFThat[1:sim.list[[d]]$N,]<-FitList$That[,1]-SimList$gen.theta
   }
   for (i in 2:sim.list[[d]]$Reps) {
+    cat(paste0(i," : "))
     sc2<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_",i,".rds"))
     if (sum(abs(sc2$gen.xi[,1:sim.list[[d]]$Q] - SimList$gen.xi[,1:sim.list[[d]]$Q]))>0.00001) {
       print(paste("Check replication",i,"of condition",d,
@@ -55,16 +55,15 @@ FactorReconstruction<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/S
     FitList<-readRDS(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = i),".rds"))
     gThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-sc2$gen.theta
     if (sim.list[[d]]$Q>1) {
-      That[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]
-      dThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]-sc2$gen.theta
+      if (!d %in% c("S5","S6","S7","S8","S9")) {
+        That[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]
+        dThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$Tmap[,1:sim.list[[d]]$Q]-sc2$gen.theta
+      }
+      FThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]
+      dFThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]-sc2$gen.theta
     } else {
       That[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$Tmap
       dThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$Tmap-sc2$gen.theta
-    }
-    if (sim.list[[d]]$Q>1) {
-      FThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]
-      dFThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$That[,1:sim.list[[d]]$Q]-SimList$gen.theta
-    } else {
       FThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$That[,1]
       dFThat[sim.list[[d]]$N*(i-1)+1:sim.list[[d]]$N,]<-FitList$That[,1]-sc2$gen.theta
     }
@@ -73,40 +72,53 @@ FactorReconstruction<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/S
   if (sim.list[[d]]$Q==1) {
     par(mfrow=c(1,2+ThetaFix),mar=c(5,5,3,1),...)
   } else if (sim.list[[d]]$Q==3) {
-    par(mfrow=c(1,2),mar=c(5,4,3,1),...)
+    par(mfrow=c(3,2),mar=c(5,5,3,1),...)
   } else if (sim.list[[d]]$Q==5) {
-    par(mfrow=c(5,1),mar=c(5,5,3,2),...)
+    par(mfrow=c(5,2),mar=c(5,5,3,1),...)
   } else if (sim.list[[d]]$Q==10) {
-    par(mfrow=c(5,2),mar=c(5,5,3,2),...)
+    par(mfrow=c(5,2),mar=c(5,5,3,1),...)
   } else {
     print(paste("Check condition",d,
                 "cause there is a discrepancy in expectations of parameter plots."))
   }
   for (q in 1:sim.list[[d]]$Q) {
-    dThat$VTiles<-cut2(gThat[[paste0("T",q)]],g=100)
-    xT<-as.vector(by(That[[paste0("T",q)]],INDICES = dThat$VTiles,mean))
-    yT1<-as.vector(by(dThat[[paste0("T",q)]],INDICES = dThat$VTiles,mean))
-    yT2<-as.vector(by(dThat[[paste0("T",q)]],INDICES = dThat$VTiles,sd))
-    yFT1<-as.vector(by(dFThat[[paste0("T",q)]],INDICES = dThat$VTiles,mean))
-    yFT2<-as.vector(by(dFThat[[paste0("T",q)]],INDICES = dThat$VTiles,sd))
+    gThat$VTiles<-cut2(gThat[[paste0("T",q)]],g=100)
+    xT<-as.vector(by(gThat[[paste0("T",q)]],INDICES = gThat$VTiles,mean))
+    if (!d %in% c("S5","S6","S7","S8","S9")) {
+      yT1<-as.vector(by(dThat[[paste0("T",q)]],INDICES = gThat$VTiles,mean))
+      yT2<-as.vector(by(dThat[[paste0("T",q)]],INDICES = gThat$VTiles,sd))
+    }
+    yFT1<-as.vector(by(dFThat[[paste0("T",q)]],INDICES = gThat$VTiles,mean))
+    yFT2<-as.vector(by(dFThat[[paste0("T",q)]],INDICES = gThat$VTiles,sd))
     ptx<-eval(parse(text=paste0("expression(italic(Theta[",q,"]))")))
     pty<-eval(parse(text=paste0("expression(hat(italic(Theta))[",q,"])")))
     #       as.integer(5000000/sim.list[[d]]$N)," burn-in iterations")
     sTitle<-eval(parse(text=paste0('expression("Condition"~"',gsub("S","",d),
                                    ' : "~hat(italic(Theta))[',q,']~": Heatmap")')))
-    ContourPlot(var1 = gThat[[paste0("T",q)]],var2 = That[[paste0("T",q)]],
-                xlab=ptx,ylab=pty,main=sTitle)
+    if (sim.list[[d]]$Q==1) {
+        ContourPlot(var1 = gThat[[paste0("T",q)]],var2 = That[[paste0("T",q)]],
+              xlab=ptx,ylab=pty,main=sTitle)
+    } else {
+      ContourPlot(var1 = gThat[[paste0("T",q)]],var2 = FThat[[paste0("T",q)]],
+                  xlab=ptx,ylab=pty,main=sTitle)
+    }
     pty<-eval(parse(text=paste0("expression(hat(italic(Theta))[",q,"] - italic(Theta)[",q,"])")))
-    sTitle<-eval(parse(text=paste0('expression("Percentiles of"~italic(Theta)[',q,']~": EAP")')))
-    plot(xT,yT1,pch=16,xlim=0.8*range(gThat[,q]),ylim=1.05*range(c(yT1-1.96*yT2,yT1+1.96*yT2)),
-         main=sTitle,xlab=ptx,ylab=pty)
-    points(xT,yT1,pch=16)
-    arrows(xT,yT1-1.96*yT2,xT,yT1+1.96*yT2,
-           code=3,angle=90,length=0.04)
-    print("Percentiles")
-    print(cbind(xT,yT1,yT2))
-    print(cbind(xT,yFT1,yFT2))
-    print(t.test(yT1[40:60],mu = 0))
+    if (sim.list[[d]]$Q==1) {
+      sTitle<-eval(parse(text=paste0('expression("Percentiles of"~italic(Theta)[',q,']~": EAP")')))
+      plot(xT,yT1,pch=16,xlim=0.8*range(gThat[,q]),ylim=1.05*range(c(yT1-1.96*yT2,yT1+1.96*yT2)),
+           main=sTitle,xlab=ptx,ylab=pty)
+      points(xT,yT1,pch=16)
+      arrows(xT,yT1-1.96*yT2,xT,yT1+1.96*yT2,
+             code=3,angle=90,length=0.04)
+    }
+      print("Percentiles")
+      if (!d %in% c("S5","S6","S7","S8","S9")) {
+        print(cbind(xT,yT1,yT2))
+      }
+      print(cbind(xT,yFT1,yFT2))
+      if (!d %in% c("S5","S6","S7","S8","S9")) {
+        print(t.test(yT1[40:60],mu = 0))
+      }
     
     if (ThetaFix) {
       sTitle<-eval(parse(text=paste0('expression("Percentiles of"~italic(Theta)[',q,']~": 100 Samples")')))
@@ -116,6 +128,9 @@ FactorReconstruction<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/S
       arrows(xT,yFT1-1.96*yFT2,xT,yFT1+1.96*yFT2,
              code=3,angle=90,length=0.04)
     }
+    print(paste("Regression:",d))
+    print(lm(yFT1~xT))
+      
     
   }
   

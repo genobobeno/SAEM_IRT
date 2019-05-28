@@ -166,3 +166,18 @@ TWTestAndPlot("S1",extra.dimensions = TRUE,E = 7)
 BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
 
 CompareConditions("S1","S3",basedir = getwd())
+
+
+TWTestAndPlot(c("S4","S5"),extra.dimensions = TRUE,E=8,ratios=TRUE)
+
+BenchmarkPlots(condition = "S6",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
+BenchmarkPlots(condition = "S7",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
+
+TWTestAndPlot(c("S6","S7"),extra.dimensions = TRUE,E=8,ratios=TRUE)
+
+BenchmarkPlots(condition = "S8",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
+BenchmarkPlots(condition = "S9",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
+
+
+TWTestAndPlot("S8",extra.dimensions = TRUE,E=14,ratios=TRUE)
+

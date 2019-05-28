@@ -1,5 +1,5 @@
-BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IRT/") {
-  #condition="S3";repl=NA;all.reps=T;basedir="~/ParSAEM/SAEM_IRT/"
+BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IRT/",...) {
+  #condition="S9";repl=NA;all.reps=T;basedir=getwd()
   source(paste0(basedir,"/","CreateSimulationStructure.R"))
   d<-condition  
   simdir<-paste0(basedir,"/",gen.dir,"/",d)
@@ -70,17 +70,17 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
                c(1,2),sd)
     if (sim.list[[d]]$Q==1 & !sim.list[[d]]$Guessing & 
         (is.na(sim.list[[d]]$K) | sim.list[[d]]$K!=4)) {
-      par(mfrow=c(2,1),mar=c(5,5,3,2))
+      par(mfrow=c(2,1),mar=c(5,5,3,2),...)
     } else if (sim.list[[d]]$Q==1 & sim.list[[d]]$Guessing) {
-      par(mfrow=c(3,1),mar=c(5,5,3,2))
+      par(mfrow=c(3,1),mar=c(5,5,3,2),...)
     } else if (sim.list[[d]]$Q==1 & sim.list[[d]]$K==4) {
-      par(mfrow=c(5,1),mar=c(5,5,3,2))
+      par(mfrow=c(5,1),mar=c(5,5,3,2),...)
     } else if (sim.list[[d]]$Q==3) {
-      par(mfrow=c(3,1),mar=c(5,5,3,2))
+      par(mfrow=c(3,1),mar=c(5,5,3,2),...)
     } else if (sim.list[[d]]$Q==5) {
-      par(mfrow=c(5,1),mar=c(5,5,3,2))
+      par(mfrow=c(5,1),mar=c(5,5,3,2),...)
     } else if (sim.list[[d]]$Q==10) {
-      par(mfrow=c(5,2),mar=c(5,5,3,2))
+      par(mfrow=c(5,2),mar=c(5,5,3,2),...)
     } else {
       print(paste("Check condition",d,
                   "cause there is a discrepancy in expectations of parameter plots."))
@@ -91,8 +91,17 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
       sTitle<-eval(parse(text=paste0('expression("Condition"~"',gsub("S","",d),
                                      ' : "~italic(A)[',q,']~": Bias & Error")')))
       #       as.integer(5000000/sim.list[[d]]$N)," burn-in iterations")
-      plot(SimList$gen.xi[,q],bias[,q],pch=19,cex=1.5,xlim=c(-0.1,1.05*max(SimList$gen.xi[,q])),
-           ylim=1.05*range(c(bias[,q]-2*sXI[,q],bias[,q]+2*sXI[,q])),
+      # if (d %in% c("S8","S9")){
+      #   pCH.col<-ifelse(abs(SimList$gen.xi[,11]) | abs(SimList$gen.tau[,1])>2 | abs(SimList$gen.tau[,3])>2,5,1)
+      #   pCH.s<-1.5
+      #   pCH<-ifelse(abs(SimList$gen.xi[,11])>1 | abs(SimList$gen.tau[,1])>2 | abs(SimList$gen.tau[,3])>2,22,19)
+      # } else {
+        pCH.col<-1
+        pCH.s<-1.5
+        pCH<-19
+      #}
+      plot(SimList$gen.xi[,q],bias[,q],pch=pCH,cex=pCH.s,xlim=c(-0.1,1.05*max(SimList$gen.xi[,q])),
+           ylim=1.05*range(c(bias[,q]-2*sXI[,q],bias[,q]+2*sXI[,q])),bg=pCH.col,
            main=sTitle,xlab=ptx,ylab=pty)
       arrows(SimList$gen.xi[,q],bias[,q]-2*sXI[,q],SimList$gen.xi[,q],bias[,q]+2*sXI[,q],
              code=3,angle=90,length=0.07)
@@ -100,7 +109,7 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
       print(paste0("Fit of bias: A",q, " ::: Mean bias = ",mean(bias[,q])," : sigma = ",sd(bias[,q])))
       print(summary(lm(bias[,q]~SimList$gen.xi[,q])))
     }
-    if (!is.na(sim.list[[d]]$K) & sim.list[[d]]$K>2 & sim.list[[d]]$Q>1) {par(mfrow=c(4,1),mar=c(5,5,3,2))}
+    if (!is.na(sim.list[[d]]$K) & sim.list[[d]]$K>2 & sim.list[[d]]$Q>1) {par(mfrow=c(4,1),mar=c(5,5,3,2),...)}
     pty<-expression(hat(italic(b)) - italic(b))
     ptx<-expression(italic(b))
     sTitle<-eval(parse(text=paste0('expression("Condition"~"',gsub("S","",d),
@@ -130,7 +139,7 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
              main=sTitle,xlab=ptx,ylab=pty)
         arrows(SimList$gen.tau[,k],tau.bias[,k]-2*sTau[,k],SimList$gen.tau[,k],tau.bias[,k]+2*sTau[,k],code=3,angle=90,length=0.07)
         abline(lm(tau.bias[,k]~SimList$gen.tau[,k]),col=2,lty=2)
-        print(paste0("Fit of bias: tau",k, " ::: Mean bias = ",mean(tau.bias[,k])," : sigma = ",sd(tau.bias[,q])))
+        print(paste0("Fit of bias: tau",k, " ::: Mean bias = ",mean(tau.bias[,k])," : sigma = ",sd(tau.bias[,k])))
         print(summary(lm(tau.bias[,k]~SimList$gen.tau[,k])))      }
     }
     if (sim.list[[d]]$Guessing) {
@@ -151,7 +160,7 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
     if (sim.list[[d]]$Q==1) {
       sCol<-rainbow(sim.list$S1$J,start = 0.2,end=0.71)
       sCol[order(abs(SimList$gen.xi[,2]))]<-sCol
-      par(mfrow=c(2,2),mar=c(5,5,4,4))
+      par(mfrow=c(2,2),mar=c(5,5,4,4),...)
       q=1
       pty<-eval(parse(text=paste0("expression(hat(italic(sigma[A])))")))
       ptx<-eval(parse(text=paste0("expression(italic(A[",q,"]))")))
@@ -426,7 +435,7 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
     for (k in 1:ncol(SimList$gen.tau)) {
       ss<-summary(lm(tau.bias[,k]~SimList$gen.tau[,k]))
 
-      cat(paste0("$\\tau_",k,"$ & $",signif(mean(tau.bias[,k]),digits=3),ifelse(t.test(tau.bias[,q])$p.value<0.001,"^{***}",
+      cat(paste0("$\\tau_",k,"$ & $",signif(mean(tau.bias[,k]),digits=3),ifelse(t.test(tau.bias[,k])$p.value<0.001,"^{***}",
                                              ifelse(t.test(tau.bias[,k])$p.value<0.01,"^{**}",
                                                     ifelse(t.test(tau.bias[,k])$p.value<0.05,"^{*}",""))),"$ & $",
                  signif(sd(tau.bias[,k]),digits=3),"$ & $",
