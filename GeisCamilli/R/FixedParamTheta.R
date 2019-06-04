@@ -1,5 +1,5 @@
 FixedParamTheta <-
-  function(FitDATA,rp,IT=settings$nesttheta) {
+  function(FitDATA,rp,IT=settings$nesttheta,indL,indU) {
     cat("\n Running Fixed Parameter Theta Estimates \n")
     cat(paste(IT,"Draws \n"))
     atemp	<- list()
@@ -7,8 +7,9 @@ FixedParamTheta <-
       if (!is.na(FitDATA$AR)) {
         atemp$Atemp<-A<-as.matrix(FitDATA$AR$loadings)
         THat=as.matrix(FitDATA$Trot[,1:settings$Adim])
+        A=FitDATA$AR$loadings
       } else {
-        atemp$Atemp<-as.matrix(FitDATA$A)
+        atemp$Atemp<-A<-as.matrix(FitDATA$A)
         THat=as.matrix(FitDATA$That[,1:settings$Adim])
       }
       B=FitDATA$B
@@ -38,7 +39,7 @@ FixedParamTheta <-
       for (it in 1:IT) {
         ifelse(settings$guess,W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp),W<-NA)
         #if(it%%10==0) print(paste(it,"th Iteration",sep=""))
-        Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
+        Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W)    
         LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
         if (settings$guess) {
           PSI<-GIFAEstimate(aa=A,bb=B,zz=Z,tt=THat,settings=settings,w=W,rp=rp)    

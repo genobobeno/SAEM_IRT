@@ -1,12 +1,12 @@
 GetEmpiricalSE <-
 function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$thinA,thinB=settings$thinB,
-         recordChain=FALSE) {
+         recordChain=FALSE,indL,indU) {
   cat("\n")
   print(paste("Starting",IT,"iterations of Empirical SEs, Thinning A:",thinA,"; Thinning B:",thinB))
   settings=FitDATA$settings
   settings$fm<-"camilli"
   if (settings$Adim>1) {
-    if (!is.na(FitDATA$AR)) {
+    if (!is.na(FitDATA$AR)[1]) {
       A=as.matrix(FitDATA$AR$loadings)
       THat=as.matrix(FitDATA$Trot[,1:settings$Adim])
     } else {
@@ -45,7 +45,7 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   
   ifelse(settings$guess,W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp),W<-NA)  
   #Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
-  Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
+  Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W)    
   ASEiter<-array(A, dim=c(J,settings$Adim,1))    
   BSEiter<-matrix(B, nrow=J, ncol=1)
   ifelse(settings$guess,CSEiter<-matrix(C, nrow=J, ncol=1),CSEiter<-NA)
@@ -64,7 +64,7 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
       W<-NA  
     }
     #Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
-    Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
+    Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W)    
     LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
     if (settings$guess) {
       PSI<-GIFAEstimate(aa=A,bb=B,zz=Z,tt=THat,settings=settings,w=W,rp=rp,EmpT=TRUE)    

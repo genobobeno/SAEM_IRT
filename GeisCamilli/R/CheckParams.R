@@ -31,6 +31,7 @@ CheckParams = function(parameters=NA,generate = TRUE) {
                 Adim=2,             # Multidimensional?
                 drawA="eigen",      # eigen or lowertriangular
                 exploreAdim=FALSE,  # Run Marcenko Pasteur trimming starting from much higher dimensions
+                target.rotate.slopes = FALSE, #TargetRotate() function; requires target slopes and Adim>1
                 ncat=NA,            # Ordinal Polythomous? Number of categories
                 guess=FALSE,        # Guessing ? TRUE
                 quad="manual",      # gauss-hermite

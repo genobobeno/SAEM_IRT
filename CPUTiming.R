@@ -55,11 +55,20 @@ if (!fit.dir %in% dir()) dir.create(fit.dir)
   # }
 
   #BeginFits
-for (d in names(sim.list)) {
+for (d in names(sim.list)[1:3]) {
   filename<-paste0(d,".rds")
   if (!filename %in% dir(fit.dir)) {
-    CPU.r<-data.frame(cores=c(1,2,4,6),avg.time=NA,avg.tpi=NA,avg.iter=NA)
+    CPU.d<-list()
+    CPU.r<-data.frame(cores=c(1,2,4,6),avg.init=NA,avg.saeminit=NA,avg.time=NA,avg.iter=NA,avg.tpi=NA)
+    print(paste("Sim",d))
     for (cpu in c(1,2,4,6)) {
+      print(paste("CPU",cpu))
+      sink(paste0(fit.dir,"/",d,"_",cpu,"_output.txt"))
+      avg.init<-c()
+      avg.saeminit<-c()
+      avg.time<-c()
+      avg.iter<-c()
+      avg.tpi<-c()
       cat(paste0("Starting Sim: ",d,"\n"))
       simdir<-paste0(gen.dir,"/",d)
       gfiles<-dir(simdir)
@@ -93,7 +102,7 @@ for (d in names(sim.list)) {
                         tmu=rep(0,sim.list[[d]]$Q),
                         tsigma=diag(sim.list[[d]]$Q),        # Prior sigma, can be multivariate matrix(Adim x Adim)
                         eps=1e-4,        # Converged?
-                        nesttheta=10,    # if esttheta="mcmc", how many random samples?
+                        nesttheta=NA,    # if esttheta="mcmc", how many random samples?
                         thetamap=FALSE,   # do an MAP estimate of Theta?
                         thetaGen=NA, #genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
                         impute=FALSE,    # Impute missing data?
@@ -103,17 +112,19 @@ for (d in names(sim.list)) {
                         record=FALSE,     # "off"
                         parallel=TRUE,  # True or false for parallel computation?
                         cores=cpu,
+                        esttheta=FALSE,
                         simfile=NA, #paste0(gfile,".rda"), # or NA
-                        estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r))) 
+                        estfile=NA) 
           settings<-CheckParams(parameters = settings,generate = FALSE)
-          sink(paste0(fit.dir,"/",d,"_output.txt"))
           Fit1D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,timed=TRUE)
-          sink()
-          saveRDS(Fit1D,paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
+          avg.init<-c(avg.init,Fit1D$settings$timed.initialize)
+          avg.saeminit<-c(avg.saeminit,Fit1D$settings$timed.SAEM_Init)
+          avg.time<-c(avg.time,Fit1D$settings$timed.SAEM_Cycles)
+          avg.iter<-c(avg.iter,Fit1D$settings$timed.Iterations)
+          avg.tpi<-c(avg.tpi,Fit1D$settings$timed.SAEM_Cycles/Fit1D$settings$timed.Iterations)
         } else {
-          settings = list(Adim=QQ,
+          settings = list(Adim=sim.list[[d]]$Q,
                           guess=FALSE,
-                          empiricalse=FALSE,
                           est="rm",
                           estgain=1,
                           empiricalse=FALSE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
@@ -124,28 +135,43 @@ for (d in names(sim.list)) {
                           ncat=sim.list[[d]]$K,
                           plots=FALSE,
                           plotiter=10,
-                          tmu=rep(0,QQ),
-                          tsigma=diag(QQ),
+                          tmu=rep(0,sim.list[[d]]$Q),
+                          tsigma=diag(sim.list[[d]]$Q),
                           eps=1e-4,
                           thetaGen=NA, #genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
-                          nesttheta=100,    # if esttheta="mcmc", how many random samples?
+                          esttheta=FALSE,
+                          nesttheta=NA,    # if esttheta="mcmc", how many random samples?
                           parallel=TRUE,  # True or false for parallel computation?
-                          cores=8,
+                          cores=cpu,
                           simfile=NA, #paste0(gfile,".rda"), # or NA
-                          estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r)),
+                          estfile=NA,
                           thetamap=FALSE,
-                          record=TRUE)
+                          record=FALSE)
           settings<-CheckParams(parameters = settings,generate=FALSE)
-          sink(paste0(fit.dir,"/",d,"_output.txt"))
           Fit2D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,timed=TRUE) #,TargetA = genlist$gen.xi[,1:sim.list[[d]]$Q]) 
-          sink()
+          avg.init<-c(avg.init,Fit2D$settings$timed.initialize)
+          avg.saeminit<-c(avg.saeminit,Fit2D$settings$timed.SAEM_Init)
+          avg.time<-c(avg.time,Fit2D$settings$timed.SAEM_Cycles)
+          avg.iter<-c(avg.iter,Fit2D$settings$timed.Iterations)
+          avg.tpi<-c(avg.tpi,Fit2D$settings$timed.SAEM_Cycles/Fit2D$settings$timed.Iterations)
         }
       }
+      sink(NULL)
+      CPU.r$avg.init[CPU.r$cores==cpu]<-mean(avg.init)
+      CPU.r$avg.saeminit[CPU.r$cores==cpu]<-mean(avg.saeminit)
+      CPU.r$avg.time[CPU.r$cores==cpu]<-mean(avg.time)
+      CPU.r$avg.iter[CPU.r$cores==cpu]<-mean(avg.iter)
+      CPU.r$avg.tpi[CPU.r$cores==cpu]<-mean(avg.tpi)
+      CPU.d[[paste0(d,"_",cpu)]]<-list(avg.init=avg.init,
+                                       avg.saeminit=avg.saeminit,
+                                       avg.time=avg.time,
+                                       avg.iter=avg.iter,
+                                       avg.tpi=avg.tpi)
     }
+    saveRDS(list(Averages=CPU.r,Data=CPU.d),paste0(fit.dir,"/",filename))
   } else {
     print(paste(filename,"already created."))
   }
-  saveRDS(CPU.r,paste0(fit.dir,"/",filename))
 }
-
+# parallel::stopCluster(cl)
   

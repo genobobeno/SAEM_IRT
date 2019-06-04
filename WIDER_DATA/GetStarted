@@ -1,0 +1,46 @@
+
+This is the help file to get you started running the code to analyze the RU Baseline data.
+Do all steps in order if you do not have the software.
+*********** FOR ALL THE STEPS 1-10, YOU SHOULD ONLY HAVE TO DO THESE ONCE ************
+
+1: Download and install R at http://www.r-project.org/
+
+2: Download and install RStudio at http://www.rstudio.com/ide/download/
+
+3: Locate the folder "Eugenes_Work" that you copied from Dropbox, ya know, where you just opened this file? Take note of the location .../.../../Eugenes_Work/ 
+
+4: Start RStudio and notice the console on the left column and the two windows in the second column on the right. 
+    On top of the console is a small toolbar that includes little blue disks and a folder button. Click the folder button.
+    
+5: Find "Eugenes_Work," open it, and open the file Analyze.R
+
+5a: The left column should now consist of two windows, the script window (with its own small toolbar on top) and the console below it. 
+    Note: You can do simple math and simple commands in the console. Try typing > 4*223 [Enter] in the console. Anyway...
+      
+6: On the top Menu is the drop down menu "Session". Click on Session -> Set Working Directory -> To Source File Location.
+    Notice that it runs a command 'setwd(".../.../.../Eugenes_Work/")' in the console on the bottom left. 
+
+6a: Replace the string named "WorkingDirectory" in the fourth line of the Analyze.R code with the string that was just 
+    called in the setwd(WorkingDirectoryString) command in the console.
+
+7: In the code Analyze.R, take note of the library("NameOfCodePackage") commands from lines 8-15. 
+    On the top of the bottom right box, there is tab called "Packages." Click on it.
+    
+8: Now click on "Install Packages," which is directly below the Tabs. A new dialog should have just opened and there's a box awaiting your input.
+
+9: You are going to install all of the packages that are being read into the window. It does not matter the order, so just start at the top
+    and type in the name of the first package "maptools" -> Install (notice console window processing). "quantreg" -> Install... etc.
+    Note: It should tell you that "MASS" and "parallel" are already installed. Not a big deal.
+
+10: On the top of the script window (top left), there's a set of arrows, a shaded disk (save script), a box "Source on Save", etc. 
+    Click on the box, enabling "Source on Save," then click on the disk to just that: "source" or RUN the script. 
+    Note: You've just initiated all of the data and the functions. 
+        It will load all the libraries you just installed, the data files in their directories, 
+        and the functions whose descriptions just printed in the Console window. 
+        
+11: Read those directions and run the functions in the Console. Type ItemScript(24,yearcut=16) [Enter] and see what happens
+    
+    
+12: Quit RStudio and Save the .RData (which means that you're saving the whole platform's layout right now)
+
+13: Restart your RStudio and the script should be in the top left window. Source it again by clicking on the disk. You're all set to go again.

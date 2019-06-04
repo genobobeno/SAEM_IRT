@@ -1,0 +1,33 @@
+Starting Sim: S8
+Gotta fit: 1 2 3 4 5
+
+
+Fitting GeneratedFiles/S8/Gen_GFALSE_J100_K4_N100000_Q10_mbifactor_R5_1: 1
+Initialized:0.758445978164673.:
+ 1 	 : ..........:..........:Initialized:2.08040617472596
+      Model has been fit
+      Time:  2.080417
+
+Fitting GeneratedFiles/S8/Gen_GFALSE_J100_K4_N100000_Q10_mbifactor_R5_2: 2
+Initialized:0.740593910217285.:
+ 1 	 : ..........:........Initialized:1.86161410967509
+      Model has been fit
+      Time:  1.861626
+
+Fitting GeneratedFiles/S8/Gen_GFALSE_J100_K4_N100000_Q10_mbifactor_R5_3: 3
+Initialized:0.640864849090576.:
+ 1 	 : ..........:..........:......Initialized:2.74096011857192
+      Model has been fit
+      Time:  2.74096
+
+Fitting GeneratedFiles/S8/Gen_GFALSE_J100_K4_N100000_Q10_mbifactor_R5_4: 4
+Initialized:0.722301006317139.:
+ 1 	 : ..........:..Initialized:1.27166669421726
+      Model has been fit
+      Time:  1.271678
+
+Fitting GeneratedFiles/S8/Gen_GFALSE_J100_K4_N100000_Q10_mbifactor_R5_5: 5
+Initialized:0.669236898422241.:
+ 1 	 : ..........:.........Initialized:2.02341784245438
+      Model has been fit
+      Time:  2.023429

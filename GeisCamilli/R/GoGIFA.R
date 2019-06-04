@@ -1,10 +1,18 @@
 GoGIFA <-
-function(rp,init=Init,settings=settings,TargetA=NA) {
+function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
+  library(rlecuyer)		# for rand num generation
+  if (get_os()=="windows") library(snow)			# for parallel processing
+  library(GPArotation)	# for rotations
+  library(mvnfast)		# for function mvrnorm
+  library(psych)			# for ML factor analysis
+  library(foreach)
   ttt<-Sys.time()
+  if (!is.na(timed)[1] && timed$TF) clock<-Timing()
   stopifnot(length(settings$tmu)==settings$Adim,ncol(init$XI)==(1+settings$Adim+(settings$guess+0)))
   prior<-list(tmu=settings$tmu,tsigma=settings$tsigma)
   J<-ncol(rp)
   N<-nrow(rp)
+  rp<-data.matrix(rp)
   CV<-mat.or.vec(J,J)+1
   pxi<-J*(1+settings$Adim)
   indL<-indU<-list()
@@ -12,8 +20,10 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     indL[[j]] <- cbind(1:N,rp[,j]+1)
     indU[[j]] <- cbind(1:N,rp[,j]+2)
   }
-  
-  clusterExport(cl,c("J","N","rp","indL","indU"),envir=environment())
+  if (settings$parallel) {
+    clusterExport(cl,c("J","N","rp","indL","indU"),envir=environment())
+    clusterEvalQ(cl,c("mvrnormArma"))
+  }
   if (settings$plots) {
     ItCC<-vector() 
     ItAC<-vector() 
@@ -74,6 +84,7 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
   GammaT=matrix(rep(0,(pxi)^2),pxi,pxi) 
   W<-NA
   cat("Iterations")
+  if (!is.na(timed)[1] && timed$TF) settings$timed.SAEM_Init<-Timing(clock)
   while (max(abs(test))>settings$eps) {    
     #print(paste(It,"Next Iteration"))
     if (It%%10==1) cat(".")
@@ -126,11 +137,13 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
           indL[[j]] <- cbind(1:N,W[,j]+1)
           indU[[j]] <- cbind(1:N,W[,j]+2)
         }
-        clusterExport(cl,c("indL","indU"),envir=environment())
+        if (settings$parallel) {
+          clusterExport(cl,c("indL","indU"),envir=environment())
+        }
       }
       # Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
-      Z<-SampZFast(aa=A,bb=B,that=THat,srp=rp,w=W)    
-      #print(Z)
+      print(THat)
+      Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W,prl=settings$parallel)    
       LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
       if (It<=settings$burnin | tolower(settings$est)!="rm") {
         if (settings$guess) {
@@ -154,85 +167,11 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
       B<-PSI$B
       C<-PSI$C
       ####################### inserting the occasional target rotation ######################
-      #     if (settings$Adim>1 & !is.na(settings$simfile) & It%%100==0) {
-      #       ifelse(grepl("\\.[Rr][Dd][Aa]",settings$simfile),
-      #              load(file=settings$simfile),
-      #              load(file=paste(settings$simfile,".rda",sep="")))
-      #       #gen.rp, gen.xi, gen.theta, gen.structure
-      #       RTS<-permn(1:settings$Adim)
-      #       rtest<-vector()
-      #       if (tolower(settings$fm)=="pca") {
-      #         AparPCA<-princomp(gen.xi[,1:settings$Adim]) 
-      #         Apar = AparPCA$scores
-      #         print("PCA Scored A matrix")
-      #         print(Apar)
-      #         print("Theta Covariance Structure")
-      #         print(cov(THat))
-      #         print("A matrix as currently estimated")
-      #         print(A)
-      #       } else {
-      #         Apar<-gen.xi
-      #       }
-      #       if (settings$rmethod=="targetT" & tolower(settings$fm)!="pca") {
-      #         for (i in 1:length(RTS)) {
-      #           ATest<-Apar[,RTS[[i]]]
-      #           rtest<-c(rtest,sum(abs(ATest-targetT(A, Tmat=diag(ncol(A)), Target=ATest, normalize=FALSE, eps=1e-5, maxit=1000)$loadings)))
-      #           print("Rotating A, permuting:")
-      #           print(RTS[[i]])
-      #           print("Generated:")
-      #           print(ATest)
-      #           print("Rotated A:")
-      #           print(targetT(A, Tmat=diag(ncol(A)), Target=ATest, normalize=FALSE, eps=1e-5, maxit=1000)$loadings)
-      #           print(rtest)
-      #         }    
-      #         Fctr<-RTS[[which.min(rtest)]]
-      #         AR<-targetT(A, Tmat=diag(ncol(A)), Target=Apar[,Fctr], normalize=FALSE, eps=1e-5, maxit=1000)
-      #         AR$APermute<-Fctr
-      #         A<-AR$loadings
-      #         #Rotate Theta via %*%t(Th)
-      #       } else if (settings$rmethod=="pstT" & tolower(settings$fm)!="pca") {
-      #         print("starting pstT rotation")
-      #         for (i in 1:length(RTS)) {
-      #           # A is A_gen
-      #           # B is estimated loading matrix
-      #           # W is a weight matrix. The rotation target is the bifactor 0’s
-      #           # pstT is partially specified target orthogonal rotation
-      #           ATest<-Apar[,RTS[[i]]]
-      #           WR <- matrix(0,J,settings$Adim)
-      #           WR[which(gen.xi[,1:settings$Adim]==0)] <- 1
-      #           Tmat <- matrix(-1,settings$Adim,settings$Adim)
-      #           Tmat[1,1] <-  1
-      #           print("Created WR and Tmat")
-      #           print(WR)
-      #           print(Tmat)
-      #           rtest<-c(rtest,sum(abs(ATest-abs(pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(ATest), normalize=TRUE, eps=1e-8, maxit=1000)$loadings))))
-      #           # examine mean square residual of loadings. Not too shabby.
-      #           print("Partially specified target rotation, MSE:")
-      #         }    
-      #         Fctr<-RTS[[which.min(rtest)]]
-      #         AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(Apar[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
-      #         rits<-1
-      #         while (min(apply((AR$loadings>0)+0,2,mean))<0.5) {
-      #           rots<-rep(-1,settings$Adim^2)
-      #           sr<-sample(1:settings$Adim^2)
-      #           rots[sr[1:(rits%%(settings$Adim^2)+1)]]<-1
-      #           Tmat<-matrix(rots,settings$Adim,settings$Adim)
-      #           AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(Apar[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
-      #           rits<-rits+1
-      #         }
-      #         print("Rotated")
-      #         print(AR$loadings)
-      #         print(Apar[,Fctr])
-      #         AR$APermute<-Fctr
-      #         print(sqrt(sum((Apar[,Fctr]-AR$loadings)^2/(settings$Adim*J))))
-      #         A<-AR$loadings
-      #       } else if (tolower(settings$rmethod)=="explore") {#what is the proper rotation when there's no TARGET loading?
-      #         AR<-bifactor(A, Tmat=diag(ncol(A)), normalize=FALSE, eps=1e-5, maxit=1000)
-      #         A<-AR$loadings
-      #       } else {
-      #         AR<-NA
-      #       }
-      #     }
+      if (settings$target.rotate.slopes) {
+        targR<-TargetRotate(settings,TargetA,aa,that,it,mod.it=100)
+        A<-targR$A; AR<-targR$AR; r.matrix<-targR$rotate.matrix
+      }
+      ##################################
       if (settings$record) {
         Aiter<-abind(Aiter,as.matrix(A),along=3)    
         Biter<-cbind(Biter,B)
@@ -267,9 +206,13 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
       } else {
         print("You haven't chosen a valid estimation method... set settings$est='off' or 'rm'")
       }
-      THat<-SampT(aa=A,bb=B,zz=Z,rp=rp,prior=prior) 
+      THat<-SampT(aa=A,bb=B,zz=Z,rp=rp,prior=prior,prl=settings$parallel,cores=settings$cores) 
     }
     It<-It+1
+  }
+  if (!is.na(timed)[1] && timed$TF) {
+    settings$timed.SAEM_Cycles<-Timing(clock)-settings$timed.SAEM_Init
+    settings$timed.Iterations<-It
   }
   if (tolower(settings$est)=="off") {
     ifelse(settings$Adim==1,A<-mA,A<-matrix(mA,nrow=J,ncol=settings$Adim))
@@ -339,9 +282,9 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     print(ARI)
     if (settings$record) {
       if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
-        rfilename=paste0("ROT_",settings$estfile)
+        rfilename=paste0(gsub("\\.[Rr][Dd][Aa]","",settings$estfile),"_ROT.rda")
       } else { 
-        rfilename=paste0("ROT_",settings$estfile,".rda",sep="") 
+        rfilename=paste0(settings$estfile,"_ROT.rda") 
       }
       ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
       save(ROT.Data,settings,file=rfilename)
@@ -368,16 +311,24 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
   } else {
     xi=cbind(A,B)
   }
-  THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,prior=prior,setting=settings,R=AR)
-  if (settings$Adim>1 & tolower(settings$fm)!="licai" & !is.na(AR)[1]) {
-    TROT<-cbind(THAT$THETA[,Fctr]%*%AR$Th,THAT$THETA[,settings$Adim+Fctr]%*%AR$Th,THAT$THETA[,2*settings$Adim+Fctr]%*%AR$Th)
+  THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,prior=prior,setting=settings,
+                    indU=indU,indL=indL,R=AR)
+  if (settings$Adim>1 & tolower(settings$fm)!="licai" & !is.na(AR)[1] & 
+      (!is.na(settings$nesttheta) | settings$thetamap)) {
+    if (!is.na(settings$nesttheta)) {
+      TROT<-cbind(THAT$THETA[,Fctr]%*%AR$Th,THAT$THETA[,settings$Adim+Fctr]%*%AR$Th,THAT$THETA[,2*settings$Adim+Fctr]%*%AR$Th)
+      Z<-SampZFast(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
+    } else {
+      TROT<-NA
+    }
     if (settings$thetamap) {
       TMAPROT<-THAT$TMAP[,Fctr]%*%AR$Th
+      Z<-SampZFast(aa=AR$loadings,bb=B,that=TMAPROT[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
     } else {
       TMAPROT<-NA
     }
     # Z<-SampZ(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],rp=rp,w=W) 
-    Z<-SampZFast(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],srp=rp,w=W) 
+    Z<-SampZFast(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
     oJH<-GetErrorOgive(A=AR$loadings,B=B,C=C,TH=TROT[,1:settings$Adim],Z=Z,RP=rp)
     oJacob <- oJH$Jacob
     oHess  <- oJH$Hess
@@ -404,14 +355,25 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
                   xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
                   That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
                   Theta=TROT[,1:settings$Adim],Trot=TROT,settings=settings)
-  } else if (settings$Adim>1 & is.na(AR)[1]) {
+  } else if (settings$Adim>1 & is.na(AR)[1] & 
+             (!is.na(settings$nesttheta) | settings$thetamap)) {
     #Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],rp=rp,w=W) 
-    Z<-SampZFast(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],srp=rp,w=W) 
-    oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],Z=Z,RP=rp)
+    if (!is.na(settings$nesttheta) & settings$target.rotate.slopes) {
+      Z<-SampZFast(aa=AR$loadings,bb=B,that=THAT$THETA[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
+      oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],Z=Z,RP=rp)
+      iJH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],RP=rp)
+    } else if (!is.na(settings$nesttheta)) {
+      Z<-SampZFast(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
+      oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],Z=Z,RP=rp)
+      iJH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],RP=rp)
+    } else {
+      Z<-SampZFast(aa=AR$loadings,bb=B,that=THAT$TMAP[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
+      oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$TMAP[,1:settings$Adim],Z=Z,RP=rp)
+      iJH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THAT$TMAP[,1:settings$Adim],RP=rp)
+    }
     oJacob <- oJH$Jacob
     oHess  <- oJH$Hess
     oHk0<-oHess-as.matrix(oJacob)%*%t(as.matrix(oJacob))
-    iJH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THAT$THETA[,1:settings$Adim],RP=rp)
     iJacob <- iJH$Jacob
     iHess  <- iJH$Hess
     iHk0<-iHess-as.matrix(iJacob)%*%t(as.matrix(iJacob))
@@ -431,12 +393,12 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
                   Theta=NA,Trot=NA,settings=settings)
   } else {
     #Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1],rp=rp,w=W)
-    Z<-SampZFast(aa=A,bb=B,that=THAT$THETA[,1],srp=rp,w=W)
-    oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THAT$THETA[,1],Z=Z,RP=rp)
+    Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W)
+    oJH<-GetErrorOgive(A=A,B=B,C=C,TH=THat,Z=Z,RP=rp)
     oJacob <- oJH$Jacob
     oHess  <- oJH$Hess
     oHk0<-oHess-as.matrix(oJacob)%*%t(as.matrix(oJacob))
-    iJH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THAT$THETA[,1],RP=rp)
+    iJH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THat,RP=rp)
     iJacob <- iJH$Jacob
     iHess  <- iJH$Hess
     iHk0<-iHess-as.matrix(iJacob)%*%t(as.matrix(iJacob))
@@ -447,17 +409,18 @@ function(rp,init=Init,settings=settings,TargetA=NA) {
     if (is.na(settings$simfile)) {
       gen.xi=NA
       gen.theta=NA
-    } else if (length(settings$thetaGen)==length(THAT$THETA[,1:(ncol(THAT$THETA)-2)])) {
+    } else if (length(settings$thetaGen)==length(THat)) {
       gen.theta=settings$thetaGen
     }
     FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
                   xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-                  That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+                  That=as.matrix(THat),Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
                   Theta=NA,Trot=NA,settings=settings)    
   }
   if (settings$empiricalse) {
-    EmpSE<-GetEmpiricalSE(FitDATA,rp=rp)
-    ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
+    EmpSE<-GetEmpiricalSE(FitDATA,rp=rp,indL=indL,indU=indU)
+    print(FitDATA$A)
+    ThetaFix<-FixedParamTheta(FitDATA,rp=rp,indL=indL,indU=indU)
     if (settings$Adim>1 & !is.na(AR)[1]) {
       FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
                     xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,

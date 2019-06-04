@@ -179,5 +179,5 @@ BenchmarkPlots(condition = "S8",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c
 BenchmarkPlots(condition = "S9",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
 
 
-TWTestAndPlot("S8",extra.dimensions = TRUE,E=14,ratios=TRUE)
+TWTestAndPlot(c("S8","S9"),extra.dimensions = TRUE,E=17,ratios=TRUE)
 

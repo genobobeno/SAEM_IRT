@@ -1,5 +1,6 @@
 AnalyzeTestData <-
-function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE) {
+function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE,timed=FALSE) {
+  timed<-list(TF=timed)
   if (simple) {
     if (!is.na(TargetA)) {
       settings$Adim<-ncol(TargetA)
@@ -15,7 +16,7 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE) {
   }
   stopwatch<-Timing()
   stopifnot(nrow(RP)>ncol(RP))
-  if (settings$parallel & settings$cores>1) {
+  if (settings$parallel) { # & settings$cores>1) {
     if (get_os()=="windows") {
       cl <<- parallel::makePSOCKcluster(settings$cores)
       parallel::clusterSetRNGStream(cl, iseed = round(runif(6)*1001))
@@ -31,8 +32,12 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE) {
       cat("\nI have only been testing for 'linux' and 'windows' operating systems. 
         Please feel free to edit the code in StartParallel() to add yours.\n")
       prl<-FALSE
+      settings$cores<-1
     } 
-  }
+  } else {
+    prl<-FALSE
+    settings$cores<-1
+  } 
   ### From this ifelse statement on, all missing data should have a value of 9
   if (sum(is.na(RP))>0 | sum(RP==settings$missing,na.rm = TRUE)>0) {
     rp<-CodeMissing(rp=RP,settings=settings)
@@ -41,11 +46,11 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE) {
   }
   J<-ncol(rp)
   N<-nrow(rp)
-  #if (!is.na(settings$missing)[1]) {
-  #  K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x) | x!=9])))))
-  #} else {
-  K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
-  #}
+  if (!is.na(settings$missing)[1]) {
+    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x) & x!=settings$missing])))))
+  } else {
+    K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
+  }
 
   if (K>2) settings$ncat <- K
   if (verbose) {
@@ -53,15 +58,23 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE) {
                 J,";  N =",N,"; Output =",settings$estfile,"  *************"))
   }
   Init<-InitializePrior(rp,settings=settings) # returns XI and THat
+  if (timed$TF) {
+    cat(paste0("Initialized:", Timing(stopwatch)))    
+    settings$timed.initialize<-Timing(stopwatch)
+  } 
   if (tolower(settings$model)=="gifa" & (is.na(settings$ncat)|settings$ncat==2)) {
-    Estimates<-GoGIFA(rp,init=Init,settings=settings,TargetA=TargetA) # returns xi, that, xiErr, thatErr, Arot
+    Estimates<-GoGIFA(rp,init=Init,settings=settings,TargetA=TargetA,timed=timed) # returns xi, that, xiErr, thatErr, Arot
   } else if (tolower(settings$model)=="gifa" | (!is.na(settings$ncat)&settings$ncat>2)) {
-    Estimates<-GoPolyGIFA(rp,init=Init,settings=settings,TargetA=TargetA) # returns xi, that, xiErr, thatErr, Arot
+    Estimates<-GoPolyGIFA(rp,init=Init,settings=settings,TargetA=TargetA,timed=timed) # returns xi, that, xiErr, thatErr, Arot
   } else if (tolower(settings$model)=="irt") {
     Estimates<-GoIRT(rp,init=Init,settings=settings) # returns xi, that, xiErr, thatErr
   } else {
     print(paste("Model",settings$model,"not implemented yet"))
   }
+  if (timed$TF) {
+    cat(paste0("Initialized:", Timing(stopwatch)))    
+    settings$timed.Total<-Timing(stopwatch)
+  } 
   if (prl) {
     # cl <- parallel::getDefaultCluster()
     parallel::stopCluster(cl)

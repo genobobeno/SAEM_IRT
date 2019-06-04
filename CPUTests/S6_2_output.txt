@@ -1,0 +1,38 @@
+Starting Sim: S6
+Gotta fit: 1 2 3 4 5
+
+
+Fitting GeneratedFiles/S6/Gen_GFALSE_J100_K4_N10000_Q5_mbifactor_R5_1: 1
+Initialized:1.78080320358276.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:.........Initialized:28.1069274028142
+      Model has been fit
+      Time:  28.11364
+
+Fitting GeneratedFiles/S6/Gen_GFALSE_J100_K4_N10000_Q5_mbifactor_R5_2: 2
+Initialized:0.351533889770508.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:....Initialized:25.8337438305219
+      Model has been fit
+      Time:  25.83445
+
+Fitting GeneratedFiles/S6/Gen_GFALSE_J100_K4_N10000_Q5_mbifactor_R5_3: 3
+Initialized:0.394985914230347.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:...Initialized:29.7368694821993
+      Model has been fit
+      Time:  29.73757
+
+Fitting GeneratedFiles/S6/Gen_GFALSE_J100_K4_N10000_Q5_mbifactor_R5_4: 4
+Initialized:0.356426000595093.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:.....Initialized:30.334806450208
+      Model has been fit
+      Time:  30.33552
+
+Fitting GeneratedFiles/S6/Gen_GFALSE_J100_K4_N10000_Q5_mbifactor_R5_5: 5
+Initialized:0.408595085144043.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:..........:.......Initialized:35.4784717003504
+      Model has been fit
+      Time:  35.47849

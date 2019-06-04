@@ -1,0 +1,41 @@
+Starting Sim: S7
+Gotta fit: 1 2 3 4 5
+
+
+Fitting GeneratedFiles/S7/Gen_GFALSE_J100_K4_N10000_Q5_msubscale_R5_1: 1
+Initialized:0.604529857635498.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:..........:..........:..........:
+ 1001 	 : .....Initialized:1.13837861968411
+      Model has been fit
+      Time:  1.138391
+
+Fitting GeneratedFiles/S7/Gen_GFALSE_J100_K4_N10000_Q5_msubscale_R5_2: 2
+Initialized:0.174749851226807.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:..........:..........:..........:
+ 1001 	 : Initialized:1.09504879746172
+      Model has been fit
+      Time:  1.095049
+
+Fitting GeneratedFiles/S7/Gen_GFALSE_J100_K4_N10000_Q5_msubscale_R5_3: 3
+Initialized:0.74425196647644.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:..........:.........Initialized:58.1110204339027
+      Model has been fit
+      Time:  58.11174
+
+Fitting GeneratedFiles/S7/Gen_GFALSE_J100_K4_N10000_Q5_msubscale_R5_4: 4
+Initialized:0.685743808746338.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:..........:..........:..........:
+ 1001 	 : ..........:.Initialized:1.20390391833252
+      Model has been fit
+      Time:  1.203904
+
+Fitting GeneratedFiles/S7/Gen_GFALSE_J100_K4_N10000_Q5_msubscale_R5_5: 5
+Initialized:0.219069004058838.:
+ 1 	 : ..........:..........:..........:..........:..........:
+ 501 	 : ..........:..........:..........:..........:.......Initialized:1.06176794780625
+      Model has been fit
+      Time:  1.06178

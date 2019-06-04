@@ -1,13 +1,15 @@
 
-GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
+GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
+  if (!is.na(timed)[1] && timed$TF) clock<-Timing()
   library(rlecuyer)		# for rand num generation
   if (get_os()=="windows") library(snow)			# for parallel processing
   library(GPArotation)	# for rotations
   library(mvnfast)		# for function mvrnorm
   library(psych)			# for ML factor analysis
   library(foreach)
-  clusterEvalQ(cl,library(mvnfast))
-  
+  if (settings$parallel) {
+    clusterEvalQ(cl,library(mvnfast))
+  }
   J=ncol(rp);N=nrow(rp);Q=settings$Adim
   # Starting values 
   theta = init$THat
@@ -75,8 +77,12 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
     yL <- matrix(yA+1,N,1)
     indL[[j]] <- cbind(1:N,yL); 		indU[[j]] <- cbind(1:N,yL + 1)
   }
-  clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
-  clusterEvalQ(cl,c("WrapX","WrapT","WrapTmv","WrapZ"))
+  
+  if (settings$parallel) {
+    clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
+    clusterEvalQ(cl,c("WrapX","WrapT","WrapTmv","WrapZ"))
+  }
+  
   if (!settings$dbltrunc) {
     X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
     Z		<- apply(X2,c(2,3),mean) 
@@ -130,7 +136,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
   pRotT<-NA
   pRotV<-NA
   itest<-(A-prevA)
-  
+  if (!is.na(timed)[1] && timed$TF) settings$timed.SAEM_Init<-Timing(clock)
   while (max(abs(itest))>eps) {
     #if (i%%100==0) cat(nproc,i,"|")
     if (i%%10==1) cat(".")
@@ -285,6 +291,10 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
       itest<-(A-prevA)
     }
   }
+  if (!is.na(timed)[1] && timed$TF) {
+    settings$timed.SAEM_Cycles<-Timing(clock)-settings$timed.SAEM_Init
+    settings$timed.Iterations<-i
+  }
   # Time <- Sys.time()-Tstart;	print(paste(settings$cores,"processors:",Time))
   gc()
   if (settings$Adim>1 & !is.na(TargetA)[1]) {
@@ -397,13 +407,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
                     EmpSE=EmpSE,ThetaFix=ThetaFix,
-                    settings=settings,Iterations=Iterations)#      }
-      # } else if (Q>1 & is.na(AR)[1]) {
-      #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
-      #                 TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
-      #                 xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
-      #                 That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-      #                 Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
+                    settings=settings,Iterations=Iterations)
     } else {
       FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
                     TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
@@ -419,13 +423,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
                     That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
                     EmpSE=EmpSE,ThetaFix=ThetaFix,
-                    settings=settings,Iterations=Iterations)#      }
-      # } else if (Q>1 & is.na(AR)[1]) {
-      #    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
-      #                 TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
-      #                 xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
-      #                 That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-      #                 Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
+                    settings=settings,Iterations=Iterations)
     } else {
       FitDATA<-list(XI=NA,RP=rp,THETA=NA,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
                     TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
@@ -435,53 +433,6 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA) {
                     settings=settings,Iterations=Iterations)
     }
   }
-  #summaryRprof()
-  #     FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
-  #                   xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-  #                   That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
-  #                   Theta=TROT[,1:settings$Adim],Trot=TROT,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)
   FitDATA
 }
 
-# for (i in 1:length(RTS)) {
-#   # A is A_gen
-#   # B is estimated loading matrix
-#   # W is a weight matrix. The rotation target is the bifactor 0’s
-#   # pstT is partially specified target orthogonal rotation
-#   WR <- matrix(0,J,settings$Adim)
-#   WR[which(gen.xi[,1:settings$Adim]==0)] <- 1
-#   Tmat <- matrix(-1,settings$Adim,settings$Adim)
-#   Tmat[1,1] <-  1
-#   rtest<-c(rtest,sum(abs(gen.xi[,RTS[[i]]]-abs(pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,RTS[[i]]]), normalize=TRUE, eps=1e-8, maxit=1000)$loadings))))
-# }    
-# Fctr<-RTS[[which.min(rtest)]]
-# AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
-# rits<-1
-# while (min(apply((AR$loadings>0)+0,2,mean))<0.5) {
-#   rots<-rep(-1,settings$Adim^2)
-#   sr<-sample(1:settings$Adim^2)
-#   rots[sr[1:(rits%%(settings$Adim^2)+1)]]<-1
-#   Tmat<-matrix(rots,settings$Adim,settings$Adim)
-#   AR <- pstT(A, Tmat=Tmat, W=WR, Target=as.matrix(gen.xi[,Fctr]), normalize=TRUE, eps=1e-8, maxit=1000)
-#   rits<-rits+1
-# }
-  # AR$APermute<-Fctr
-
-  ############## GREG's reconstruction
-  # B.TMS <- A
-  # B.TMS <- data.matrix(B.TMS)
-  # #B  <- Varimax(B.TMS,Tmat=diag(ncol(B.TMS)),normalize=TRUE,eps=1e-5, maxit=10000)
-  # B <- oblimin(B.TMS,Tmat=diag(ncol(B.TMS)),normalize=TRUE,eps=1e-5, maxit=10000,gam=0)
-  # mla <- fa(covZ,nfactors=Q,covar=TRUE,rotate="oblimin",fm="ml")
-  # covar     <- covZ - diag(m)
-  # out         <- eigen( covar, symmetric=TRUE)
-  # Avec     <- out$values
-  
-  # par(mfrow=c(2,Q/2))
-  # for (qq in 1:Q) {
-  #   RotA$loadings[,qq]<-ifelse(sum(RotA$loadings[,qq])<0,-1,1)*RotA$loadings[,qq]
-  #   plot(cbind(GEN.DATA$XI[,qq],RotA$loadings[,qq]),xlab="Actual",ylab="Fit",main=paste0("Q",qq))
-  #   abline(0,1)
-  #   cor(-RotA$loadings[,qq],GEN.DATA$XI[,qq])
-  #   lm(-RotA$loadings[,qq]~GEN.DATA$XI[,qq])
-  # }

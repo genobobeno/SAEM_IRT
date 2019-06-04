@@ -45,7 +45,12 @@ function(A,B,C=NA,TH,Z,RP,setting=settings) {
         Hess[(j-1)*2+i,(j-1)*2+1:2] <-HJ[i,]     
     }
   } else {
+    # print(str(Phi))
+    # print(str(P))
+    # print(str(RP))
+    # print(str(dP))
     dB = Phi*(P-RP)/dP
+    #print(str(dB))
     dB[is.nan(dB)] = 0
     dB = colSums(dB)
     ddB = Phi/dP*(Z*(P-RP)+Phi*(1-2*P)*(P-RP)/dP - Phi)

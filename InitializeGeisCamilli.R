@@ -6,7 +6,9 @@ PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
          ifelse(get_os()=="windows","doSNOW","doParallel"),
          "rlecuyer","GPArotation","mvnfast","psych","modeest","MASS","stringr",
          "Rcpp","RcppArmadillo","devtools","compiler","doRNG","abind",
-         "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix","mcmc")
+         "truncdist","truncnorm","modeest","combinat","fastGHQuad","bdsmatrix","mcmc",
+         "RMTstat","maptools","quantreg","plyr","ggplot2","Hmisc","fields","gplots",
+         "mvtnorm","psych","binom")
 
 ### Install packages not already installed ###
 for (i in 1:length(PACK)){

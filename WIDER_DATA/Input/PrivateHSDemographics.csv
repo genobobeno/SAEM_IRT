@@ -1,0 +1,319 @@
+school_name,county_id,school_county,9_grade_students,10_grade_students,11_grade_students,12_grade_students,total_students,total_american_indian_alaskan,total_asian,total_hispanic,total_black,total_white,fte_teachers,student_teacher_ratio,coed,school_type,school_level,religious_affiliation,library,high_grade,low_grade
+HOLY SPIRIT HIGH SCHOOL,1,ATLANTIC,187,194,187,183,751,0,55,23,45,608,47,16,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+HIGHLAND ACADEMY,1,ATLANTIC,1,1,2,-1,78,0,1,1,3,29,3,11,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 11,Pre-K
+JERSEY SHORE BAPTIST ACADEMY,1,ATLANTIC,-1,-1,-1,2,17,0,0,2,12,0,5,3,Coed,Alternative,Combined elementary and secondary,Other religious,No,Grade 12,Pre-K
+CHAMPION BAPTIST ACADEMY,1,ATLANTIC,4,3,5,-1,64,0,0,8,18,23,10,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 11,Pre-K
+TALMUDICAL ACADEMY OF NEW JERSEY,25,MONMOUTH,10,8,12,10,40,0,0,0,0,40,8,5,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+STRANG SCHOOL/RANCH HOPE INC,33,SALEM,12,21,9,7,55,0,0,7,20,21,11,5,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 7
+THE ARCHWAY SCHOOL,7,CAMDEN,-1,-1,-1,-1,220,0,0,25,61,134,39,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+CASTLE ACADEMY,7,CAMDEN,3,-1,-1,1,234,0,2,25,25,92,26,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+LORD STIRLING SCHOOL,35,SOMERSET,-1,-1,-1,-1,38,0,0,6,31,0,9,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+MARIST HIGH SCHOOL,17,HUDSON,87,137,114,106,444,0,110,86,181,50,30,15,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+HOLY FAMILY ACADEMY,17,HUDSON,50,20,53,50,173,0,10,26,2,135,29,6,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+YESHIVA GEDOLAH OF BAYONNE,17,HUDSON,14,20,14,20,68,0,0,0,0,68,11,6,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+OCEAN ACADEMY,29,OCEAN,6,6,7,8,38,0,0,0,4,34,6,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 2
+SOMERSET HILLS LEARNING INSTITUT,35,SOMERSET,-1,-1,-1,-1,28,0,3,1,0,21,8,3,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+EAST MOUNTAIN SCHOOL,35,SOMERSET,21,27,30,22,103,0,2,13,49,33,24,4,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 8
+1ST CEREBRAL PALSY OF NJ,13,ESSEX,-1,-1,-1,-1,60,0,1,24,23,6,12,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Pre-K,Pre-K
+ST ROSE HIGH SCHOOL,25,MONMOUTH,146,140,150,126,562,2,5,15,21,509,41,14,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+BLAIR ACADEMY,41,WARREN,85,103,129,131,448,3,61,14,20,334,60,8,Coed,Regular elementary or secondary,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+STEPPING STONE SCHOOL,41,WARREN,4,2,6,4,42,0,0,2,4,36,7,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 2
+SAGE DAY AT BOONTON,27,MORRIS,8,8,13,10,39,0,0,2,6,31,6,6,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+GREEN BROOK ACADEMY,35,SOMERSET,7,7,16,11,43,0,1,7,30,5,8,5,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 8
+DEVEREUX-NJCA,11,CUMBERLAND,1,6,4,12,29,0,1,1,11,16,6,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 6
+DOANE ACADEMY,5,BURLINGTON,21,19,26,18,187,0,1,4,58,119,31,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+LIFE CENTER ACADEMY,5,BURLINGTON,29,31,30,31,301,0,2,15,130,154,23,13,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Kingergarten
+MOUNT SAINT DOMINIC ACADEMY,13,ESSEX,63,98,66,99,326,0,26,18,15,255,34,10,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+URBAN PROMISE ACADEMY,7,CAMDEN,7,12,11,11,41,0,0,13,28,0,6,7,Coed,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+CAPE CHRISTIAN ACADEMY,9,CAPE MAY,9,2,5,4,88,0,0,8,4,72,13,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Pre-K
+NEWMARK HIGH SCHOOL,23,MIDDLESEX,8,12,13,17,50,0,0,4,6,40,8,6,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+GATEWAY SCHOOL,23,MIDDLESEX,-1,-1,-1,-1,92,0,2,19,59,12,14,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+WASHINGTON ACADEMY,13,ESSEX,13,18,20,21,135,0,0,31,87,17,34,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Kingergarten
+PG CHAMBERS SCHOOL,27,MORRIS,-1,-1,-1,-1,112,0,5,6,3,76,14,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Pre-K,Pre-K
+ECLC OF NEW JERSEY,27,MORRIS,-1,-1,-1,-1,226,0,13,14,39,157,30,8,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+CAMDEN CATHOLIC HIGH SCHOOL,7,CAMDEN,216,218,199,214,847,0,55,103,160,529,57,15,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+DELAWARE VALLEY TORAH INSTITUTE,7,CAMDEN,3,3,2,-1,8,0,0,0,0,8,3,3,All-Male,Special program emphasis,Secondary,Other religious,No,Grade 11,Grade 9
+BANCROFT PRESCHOOL,7,CAMDEN,-1,-1,-1,-1,29,0,2,1,4,22,5,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+THE KING'S CHRISTIAN SCHOOL,7,CAMDEN,30,29,25,29,274,25,20,15,46,156,27,10,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+MONTESSORI LEARNING CENTER,7,CAMDEN,-1,-1,-1,-1,85,0,4,1,3,12,4,5,Coed,Montessori,Combined elementary and secondary,Nonsectarian,No,Pre-K,Pre-K
+BROOKFIELD SCHOOLS,7,CAMDEN,-1,-1,-1,-1,133,0,0,14,40,79,20,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+MEADOW VIEW JUNIOR ACADEMY,5,BURLINGTON,5,5,3,-1,94,0,4,19,11,33,5,14,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 11,Pre-K
+MOTHER SETON REGIONAL HIGH SCHOOL,39,UNION,87,111,97,77,372,0,62,55,64,173,29,13,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+PIONEER ACADEMY OF SCIENCE,31,PASSAIC,36,19,11,14,179,0,7,10,0,161,21,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 1
+MESIVTA OF CLIFTON,31,PASSAIC,22,20,16,-1,58,0,0,0,0,58,8,7,All-Male,Regular elementary or secondary,Secondary,Other religious,No,Grade 11,Grade 9
+PASSAIC COUNTY ELKS CP CENTER &,31,PASSAIC,-1,-1,-1,-1,113,22,22,23,23,23,9,13,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+THE LEARNING CENTER FOR EXCEPTIO,31,PASSAIC,13,6,13,15,190,0,19,56,37,75,17,11,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Pre-K
+VOYAGERS' COMMUNITY SCHOOL,25,MONMOUTH,3,2,-1,-1,30,1,0,0,3,26,4,7,Coed,Alternative,Combined elementary and secondary,Nonsectarian,Yes,Grade 10,Kingergarten
+CRESTVIEW EDUCATIONAL TRUST,39,UNION,8,12,3,6,62,0,0,0,0,62,9,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Grade 5
+JARDINE ACADEMY,39,UNION,6,9,6,23,89,0,2,29,47,7,11,8,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+NEW JERSEY UNITED CHRISTIAN ACADEMY,25,MONMOUTH,12,24,24,22,93,0,25,3,6,59,16,6,Coed,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 7
+HOLY CROSS HIGH SCHOOL,5,BURLINGTON,143,194,184,178,699,0,10,21,49,593,45,16,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+MONTESSORI ACADEMY - DELRAN,5,BURLINGTON,-1,-1,-1,-1,110,0,25,10,4,65,6,18,Coed,Montessori,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+ACADEMY OF THE HOLY ANGELS,3,BERGEN,145,135,134,125,539,2,90,62,18,360,47,12,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+MORRIS CATHOLIC HIGH SCHOOL,27,MORRIS,121,105,98,134,458,0,26,37,19,373,34,13,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+BETHANY BAPTIST CHRISTIAN SCHOOL,15,GLOUCESTER,-1,2,1,-1,15,0,0,0,1,9,3,5,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 11,Pre-K
+NEW LIFE CHRISTIAN SCHOOL,23,MIDDLESEX,1,-1,-1,-1,38,0,0,1,18,8,3,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 9,Pre-K
+MADRASATU AHLIS SUNNAH,13,ESSEX,14,12,2,-1,203,0,0,7,153,18,22,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 11,Pre-K
+JAMAS CHILDREN'S UNIVERSITY,13,ESSEX,8,10,12,4,101,0,0,0,91,0,5,18,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+TIMOTHY CHRISTIAN ACADEMY,5,BURLINGTON,2,2,-1,-1,196,0,3,8,30,65,16,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 10,Pre-K
+HARBOR SCHOOL,25,MONMOUTH,-1,-1,-1,-1,95,0,2,8,20,65,15,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+SCHOOL FOR CHILDREN,25,MONMOUTH,-1,-1,-1,-1,149,0,0,13,9,125,17,9,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+BISHOP GEORGE AHR HIGH SCHOOL,23,MIDDLESEX,239,253,211,243,946,17,90,87,114,610,59,16,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+RABBI JACOB JOSEPH YESHIVA,23,MIDDLESEX,19,18,13,22,72,0,0,0,0,72,9,8,All-Male,Special program emphasis,Secondary,Other religious,No,Grade 12,Grade 9
+YOU & ME SCHOOL,23,MIDDLESEX,-1,-1,-1,-1,12,0,0,0,0,4,1,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Pre-K,Pre-K
+LAKEVIEW SCHOOL,23,MIDDLESEX,-1,-1,-1,-1,163,0,22,51,23,59,22,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Pre-K,Pre-K
+WARDLAW-HARTRIDGE SCHOOL,23,MIDDLESEX,49,46,36,29,414,2,110,34,73,183,55,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+THE PILGRIM ACADEMY,1,ATLANTIC,35,25,37,32,357,2,30,20,31,249,31,11,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+ATLANTIC CHRISTIAN SCHOOL,1,ATLANTIC,38,24,37,24,397,0,29,12,52,268,33,11,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+ST PATRICK HIGH SCHOOL,39,UNION,49,51,50,60,210,0,0,74,128,8,17,12,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+ST MARY OF THE ASSUMPTION HIGH S,39,UNION,57,70,52,56,235,0,4,89,112,16,22,11,Coed,Regular elementary or secondary,Secondary,Catholic,No,Grade 12,Grade 9
+BENEDICTINE ACADEMY,39,UNION,39,37,43,47,166,0,13,49,73,25,17,10,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+RAV TEITZ MESIVTA ACADEMY,39,UNION,42,34,48,53,233,0,0,0,0,233,25,9,All-Male,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Grade 6
+BRURIAH HIGH SCHOOL FOR GIRLS,39,UNION,81,84,84,98,377,0,0,-1,0,-1,60,6,All-Female,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 7
+TRINITY CHRISTIAN ACADEMY,39,UNION,14,10,14,8,111,0,8,53,30,14,12,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Pre-K
+DWIGHT-ENGLEWOOD SCHOOL,3,BERGEN,122,112,109,111,932,0,152,50,49,646,126,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+YESHIVA OHR HATALMUD OF ENGLEWOO,3,BERGEN,17,10,18,11,56,0,0,0,0,56,6,9,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+SISTER GEORGINE SCHOOL,21,MERCER,-1,-1,-1,-1,15,0,1,4,9,1,3,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+VILLA VICTORIA ACADEMYN LOWER,21,MERCER,20,22,17,11,192,0,6,4,20,162,25,8,All-Female,Regular elementary or secondary,Combined elementary and secondary,Catholic,Yes,Grade 12,Kingergarten
+NEW BEGINNINGS,13,ESSEX,-1,-1,-1,-1,191,0,14,25,24,121,24,8,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Pre-K,Pre-K
+THE GRAMON SCHOOL & GLENVIEW ACA,13,ESSEX,-1,-1,-1,-1,42,0,0,17,24,1,5,8,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+FIRST CHILDREN,39,UNION,-1,-1,-1,-1,64,0,0,22,30,11,10,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+CENTER FOR EDUC ADVANCEMENT-SPRI,19,HUNTERDON,3,1,6,6,17,0,0,4,1,12,3,5,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 8
+Y C S FORT LEE EDUCATION CENTER,3,BERGEN,6,19,16,20,65,0,0,20,35,10,10,6,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 7
+NORTHEAST CHRISTIAN ACADEMY,3,BERGEN,3,2,1,-1,45,0,0,8,4,13,4,11,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 11,Pre-K
+GILL ST BERNARD S SCHOOL,27,MORRIS,79,71,76,47,679,0,229,105,124,0,91,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+MONTGOMERY ACADEMY,27,MORRIS,10,8,13,12,74,0,1,3,1,69,28,3,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 1
+GLOUCESTER CATHOLIC HIGH SCHOOL,7,CAMDEN,185,190,169,185,729,0,0,5,10,714,40,18,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+HACKENSACK CHRISTIAN SCHOOLS,3,BERGEN,12,10,8,6,133,0,17,36,36,18,17,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+YCS GEORGE WASHINGTON SCHOOL,3,BERGEN,-1,-1,-1,-1,83,0,2,20,46,15,12,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+BAPTIST REGIONAL SCHOOL,7,CAMDEN,29,25,41,34,249,0,14,4,59,169,25,10,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Kingergarten
+PAUL VI HIGH SCHOOL,7,CAMDEN,263,335,328,266,1192,0,22,35,87,1004,77,16,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+TRENTON CATHOLIC SCHOOL UPPER SCHOOL,21,MERCER,55,63,50,38,206,0,0,36,123,41,22,9,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+DELAWARE VALLEY SCHOOL FOR EXCEP,21,MERCER,7,7,3,9,28,1,0,4,15,7,4,7,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 7
+ST JOSEPH REGIONAL HIGH SCHOOL,1,ATLANTIC,-1,110,101,126,337,0,1,16,14,302,42,8,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 10
+LIFE MISSION TRAINING CENTER INC,1,ATLANTIC,3,-1,-1,-1,10,0,0,0,0,10,5,2,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 9,Kingergarten
+BERGEN CENTER FOR CHILD DEVELOPM,3,BERGEN,-1,-1,-1,-1,49,0,1,17,10,21,10,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+HAWTHORNE CHRISTIAN ACADEMY,3,BERGEN,36,34,30,41,441,0,53,48,76,220,45,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+MONMOUTH CHRISTIAN ACADEMY,25,MONMOUTH,3,1,3,-1,17,0,0,0,0,13,1,17,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 11,Grade 3
+REENAS BAIS YAAKOV,23,MIDDLESEX,13,15,14,-1,42,0,0,0,0,42,4,11,All-Female,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 11,Grade 9
+THE PEDDIE SCHOOL,21,MERCER,118,146,134,141,539,0,31,12,39,457,93,6,Coed,Regular elementary or secondary,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+THE HUDSON SCHOOL,17,HUDSON,26,21,24,16,195,0,24,14,18,128,36,5,Coed,Special program emphasis,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 5
+ST JOHN VIANNEY REGIONAL HIGH SCHOOL,25,MONMOUTH,254,261,238,256,1009,0,17,22,15,915,59,17,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+COASTAL LEARNING CENTER,25,MONMOUTH,11,14,14,16,86,0,0,14,57,15,12,7,Coed,Alternative,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 2
+MONMOUTH ACADEMY,25,MONMOUTH,9,3,10,7,93,0,3,5,9,63,21,4,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+INDEPENDENCE HIGH SCHOOL,13,ESSEX,8,6,9,8,31,0,0,1,30,0,6,5,Coed,Alternative,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+ALPHA SCHOOL,29,OCEAN,-1,-1,-1,-1,61,0,1,1,8,51,10,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+YESHIVA TIFERES NAFTOLI OF CENTR,23,MIDDLESEX,5,8,8,10,31,0,0,0,0,31,13,2,All-Male,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+ST PETERS PREPARATORY SCHOOL,17,HUDSON,232,247,192,220,891,2,104,108,64,565,62,14,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+ST MARY HIGH SCHOOL,17,HUDSON,35,41,68,59,203,0,20,128,45,7,13,16,Coed,Regular elementary or secondary,Secondary,Catholic,No,Grade 12,Grade 9
+HUDSON CATHOLIC REGIONAL HIGH SCHOOL,17,HUDSON,125,69,96,106,396,2,62,135,60,101,29,14,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+ST ANTHONY HIGH SCHOOL,17,HUDSON,57,63,59,59,238,0,13,34,185,5,21,11,Coed,Regular elementary or secondary,Secondary,Catholic,No,Grade 12,Grade 9
+ST DOMINIC ACADEMY,17,HUDSON,77,114,132,128,451,0,115,102,51,122,34,13,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+CONCORDIA LEARNING CENTER AT SJS,17,HUDSON,-1,-1,-1,-1,152,0,2,28,14,11,11,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Pre-K,Pre-K
+FULL WILL OF GOD CHRISTIAN ACADE,17,HUDSON,-1,1,2,-1,7,0,0,0,7,0,4,2,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 11,Grade 2
+KENMARE ALTERNATIVE HIGH SCHOOL,17,HUDSON,-1,-1,-1,-1,75,-1,-1,-1,-1,-1,6,12,All-Female,Alternative,Combined elementary and secondary,Catholic,Yes,All Ungraded,All Ungraded
+TET CHRISTIAN ACADEMY,17,HUDSON,3,2,-1,-1,15,0,0,1,14,0,2,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 10,Grade 1
+YCS MAY ACADEMY,17,HUDSON,-1,-1,-1,-1,43,0,1,11,27,4,7,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+LAKELAND-ANDOVER SCHOOL,37,SUSSEX,5,7,11,12,37,0,0,4,5,28,6,6,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 8
+BAIS KAILA TORAH PREPARATORY HIG,29,OCEAN,68,84,62,63,277,0,0,0,0,277,42,7,All-Female,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+NEW ROAD SCHOOL,29,OCEAN,3,3,4,8,56,0,0,2,4,49,10,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Kingergarten
+MESIVTA KESER TORAH,25,MONMOUTH,9,12,17,16,54,0,2,0,0,52,14,4,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+YESHIVA BIRCHAS CHAIM,29,OCEAN,18,21,17,20,76,0,0,0,0,76,7,12,All-Male,Alternative,Secondary,Other religious,No,Grade 12,Grade 9
+YESHIVA TORAS CHAIM,29,OCEAN,33,35,35,-1,103,0,0,0,0,103,7,15,All-Male,Special program emphasis,Secondary,Other religious,Yes,Grade 11,Grade 9
+YESHIVA KETER TORAH,29,OCEAN,12,12,14,15,197,0,0,0,0,197,21,10,All-Male,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Kingergarten
+YESHIVA KEREN HATORAH,29,OCEAN,30,30,30,30,120,0,0,0,0,120,8,14,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+YESHIVAS OHR YISSOCHOR,29,OCEAN,14,10,18,28,70,0,0,0,0,70,11,7,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+BAIS YAAKOV ELEMENTARY SCHOOL,29,OCEAN,50,26,50,53,179,0,0,0,0,179,31,6,All-Female,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+CALVARY ACADEMY,29,OCEAN,21,27,27,31,298,0,12,35,41,175,24,12,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+BAIS SHAINDEL HIGH SCHOOL FOR GI,29,OCEAN,118,130,110,108,466,0,0,0,0,466,44,10,All-Female,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+LEHMANN SCHOOL & TECH ED CENTER,29,OCEAN,-1,-1,-1,-1,44,0,1,7,4,27,8,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Pre-K,Pre-K
+BAIS YAAKOV HIGH SCHOOL OF LAKEW,29,OCEAN,110,103,120,110,443,0,0,0,0,443,27,17,All-Female,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+YESHIVA K'TANA OF LAKEWOOD,29,OCEAN,30,30,30,30,849,0,0,0,0,849,53,16,All-Male,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Kingergarten
+YESHIVA BAIS AHARON,29,OCEAN,14,17,14,17,62,0,0,0,0,62,5,12,All-Male,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+NEW JERSEY CENTER FOR JUDAIC STU,29,OCEAN,30,40,43,50,163,0,0,0,0,163,19,9,All-Male,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+BNOS BAIS YAAKOV HIGH SCHOOL,29,OCEAN,50,26,50,53,179,0,0,0,0,179,28,6,All-Female,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+YESHIVA BAIS YISROEL HIGH SCHOOL,29,OCEAN,11,9,11,-1,31,0,0,0,0,31,5,6,All-Male,Regular elementary or secondary,Secondary,Other religious,No,Grade 11,Grade 9
+YESHIVAS EMEK HATORAH,29,OCEAN,17,10,-1,-1,27,0,0,0,0,27,5,5,All-Male,Regular elementary or secondary,Secondary,Other religious,No,Grade 10,Grade 9
+YESHIVA GEDOLA OF WOODLAKE VILLA,29,OCEAN,16,11,8,-1,35,0,0,0,0,35,7,5,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 11,Grade 9
+YESHIVA OF BROOKLYN,29,OCEAN,72,47,61,48,924,0,0,0,0,909,80,11,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+YESHIVA YESODEI HATORAH,29,OCEAN,12,7,-1,-1,19,0,0,0,0,19,5,4,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 10,Grade 9
+VALLEY BIBLE WORD OF FAITH CHURC,7,CAMDEN,3,4,5,6,62,0,0,0,62,0,5,12,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Grade 1
+NOTRE DAME HIGH SCHOOL,21,MERCER,331,302,328,315,1276,82,29,30,58,1077,89,14,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+THE LAWRENCEVILLE SCHOOL,21,MERCER,159,207,213,230,809,1,109,27,81,535,97,8,Coed,Regular elementary or secondary,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+BONNIE BRAE SCHOOL,35,SOMERSET,19,25,18,15,89,0,1,10,42,29,22,4,All-Male,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 5
+CHAPEL HILL ACADEMY,27,MORRIS,6,5,-1,1,100,0,0,25,25,50,14,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Kingergarten
+CHRISTIAN BROTHERS ACADEMY,25,MONMOUTH,258,245,224,229,956,1,24,37,11,883,63,15,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+NEWARK ACADEMY,13,ESSEX,111,95,96,98,565,0,87,11,39,407,65,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 6
+JOSEPH KUSHNER HEBREW ACADEMY RA,13,ESSEX,59,67,-1,55,751,0,0,0,0,736,97,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+THE MILTON SCHOOL,13,ESSEX,2,2,4,9,19,0,0,7,7,5,6,3,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+HORIZON SCHOOL,13,ESSEX,-1,-1,-1,-1,79,0,4,13,23,36,11,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+IMMACULATE CONCEPTION HIGH SCHOOL,3,BERGEN,46,37,45,39,167,0,6,20,5,136,17,10,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+HIGH POINT SCHOOL OF BERGEN COUN,3,BERGEN,6,13,9,9,37,0,0,16,13,8,8,5,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 9
+ILAN HIGH SCHOOL,25,MONMOUTH,23,22,20,30,95,0,0,0,95,0,18,5,All-Female,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+CENTER FOR EDUCATION,5,BURLINGTON,3,5,6,4,30,0,0,0,3,26,4,7,Coed,Alternative,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 6
+THE PINGRY SCHOOL,35,SOMERSET,135,129,129,144,1027,-1,-1,-1,-1,-1,177,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Kingergarten
+BAYTUL-IMAN ACADEMY,23,MIDDLESEX,1,-1,-1,1,56,0,53,0,1,2,9,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 1
+DAYTOP PREPARATORY SCHOOL,27,MORRIS,-1,-1,15,45,60,0,0,6,7,45,10,6,Coed,Regular elementary or secondary,Secondary,Nonsectarian,Yes,Grade 12,Grade 11
+ST JOSEPH HIGH SCHOOL,23,MIDDLESEX,227,185,191,195,798,0,96,47,43,592,49,16,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+CHILDREN FIRST CHRISTIAN MONTESS,23,MIDDLESEX,-1,-1,-1,-1,33,0,28,1,1,3,3,10,Coed,Montessori,Combined elementary and secondary,Other religious,No,All Ungraded,All Ungraded
+SOMERSET HILLS SCHOOL,35,SOMERSET,-1,-1,-1,-1,95,0,5,15,0,25,20,5,All-Male,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+NOOR-UL-IMAN SCHOOL,23,MIDDLESEX,15,27,18,14,498,0,268,6,3,147,42,10,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+IMMACULATE CONCEPTION HIGH SCHOOL,13,ESSEX,35,57,45,44,181,0,1,18,149,3,17,11,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+DERON SCHOOL II,13,ESSEX,-1,-1,-1,-1,150,0,2,45,99,4,21,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+THE MONTCLAIR KIMBERLEY ACADEMY,13,ESSEX,109,104,106,97,992,0,68,44,107,678,156,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+ST JOSEPH REGIONAL HIGH SCHOOL,3,BERGEN,138,125,112,109,484,2,11,53,47,352,29,17,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+ST PIUS X ELEMENTARY SCHOOL,27,MORRIS,26,-1,-1,-1,263,0,14,5,1,176,11,17,Coed,Regular elementary or secondary,Combined elementary and secondary,Catholic,Yes,Grade 9,Pre-K
+MOORESTOWN FRIENDS SCHOOL,5,BURLINGTON,73,73,75,72,700,0,58,20,60,477,81,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+KINGSWAY LEARNING CENTER-SECONDA,5,BURLINGTON,12,26,14,26,99,0,2,3,9,85,14,7,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+HARBOR BAPTIST ACADEMY,5,BURLINGTON,4,1,3,3,34,0,3,4,5,19,6,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Kingergarten
+COASTAL LEARNING CENTER MORGANVI,25,MONMOUTH,8,12,7,8,55,0,0,3,45,7,9,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 3
+CPC HIGH POINT SCHOOL,25,MONMOUTH,-1,-1,-1,-1,196,0,4,25,68,99,35,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+VILLA WALSH ACADEMY,27,MORRIS,59,54,54,57,254,0,3,7,1,243,27,10,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 7
+SHEPARD HIGH SCHOOL,27,MORRIS,15,15,15,30,84,0,0,9,11,64,15,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 6
+DELBARTON SCHOOL,27,MORRIS,120,122,113,118,540,1,35,25,22,451,68,8,All-Male,Regular elementary or secondary,Secondary,Nonsectarian,Yes,Grade 12,Grade 7
+SHEPARD ACADEMY,27,MORRIS,10,10,9,9,40,-1,-1,-1,-1,-1,6,7,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+MARY A DOBBINS SCHOOL,5,BURLINGTON,8,20,8,11,62,0,0,10,37,15,10,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 6
+GITHENS CENTER-BURLINGTON COUNTY CER,5,BURLINGTON,-1,-1,-1,-1,25,0,1,1,10,13,5,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+HERITAGE CHRISTIAN ACADEMY,5,BURLINGTON,5,6,4,3,87,-1,-1,-1,-1,-1,10,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+THE CRAIG SCHOOL,27,MORRIS,15,7,15,7,145,0,1,2,3,139,37,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 3
+CORNERSTONE DAY SCHOOL,39,UNION,3,13,11,12,45,0,0,3,5,36,7,6,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 7
+CHILDRENS CENTER OF MONMOUTH COU,25,MONMOUTH,-1,-1,-1,-1,395,0,15,17,62,301,42,10,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+INSTITUTE FOR EDUCATIONAL ACHIEV,3,BERGEN,-1,-1,-1,-1,28,0,0,1,1,23,11,3,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+ST VINCENT ACADEMY,13,ESSEX,81,83,76,70,310,0,11,76,201,16,27,11,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+ST BENEDICT'S PREPARATORY SCHOOL,13,ESSEX,132,113,108,129,554,0,4,119,346,54,40,14,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 7
+ALPHA & OMEGA CHRISTIAN SCHOOL,13,ESSEX,1,-1,1,1,29,0,0,24,0,0,3,8,Coed,Special program emphasis,Combined elementary and secondary,Other religious,No,Grade 12,Pre-K
+NEW TESTAMENT CHURCH SCHOOL,13,ESSEX,3,3,2,-1,39,0,11,10,18,0,9,4,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 11,Kingergarten
+SR CLARA MUHAMMAD SCHOOL,13,ESSEX,-1,-1,-1,-1,4,0,0,0,4,0,-1,-1,Coed,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 8,Grade 7
+AL-MUSLIMAAT ACADEMY,13,ESSEX,3,1,2,1,14,-1,-1,-1,-1,-1,4,3,All-Female,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Grade 6
+ALIF MUHAMMAD'S NIA SCHOOL,13,ESSEX,4,5,30,130,169,0,0,4,150,15,7,25,Coed,Regular elementary or secondary,Secondary,Nonsectarian,No,Grade 12,Grade 9
+DR THOMAS CHRISTIAN ACADEMY,13,ESSEX,1,1,1,1,18,0,0,0,18,0,4,5,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Kingergarten
+BETHEL CHRISTIAN ACADEMY,13,ESSEX,14,7,8,7,129,2,0,69,49,9,10,13,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Kingergarten
+LINK COMMUNITY SCHOOL,13,ESSEX,-1,-1,-1,-1,135,0,0,7,128,0,12,11,Coed,Regular elementary or secondary,Secondary,Nonsectarian,No,Grade 8,Grade 7
+OUR LADY OF MERCY ACADEMY,15,GLOUCESTER,39,40,50,49,178,0,2,2,5,167,22,8,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+QUEEN OF PEACE HIGH SCHOOL,3,BERGEN,109,107,127,174,517,0,70,145,34,268,46,11,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+MARY HELP OF CHRISTIANS ACADEMY,31,PASSAIC,50,63,56,59,314,0,10,155,43,82,27,12,All-Female,Regular elementary or secondary,Combined elementary and secondary,Catholic,Yes,Grade 12,Grade 6
+EASTERN CHRISTIAN HIGH SCHOOL,31,PASSAIC,72,73,97,93,335,0,48,26,13,241,30,11,Coed,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+WILDWOOD CATHOLIC HIGH SCHOOL,9,CAPE MAY,37,48,44,65,194,0,6,6,3,174,17,11,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+CENTRAL BIBLE ACADEMY,9,CAPE MAY,-1,1,-1,-1,2,0,0,0,0,2,1,2,Coed,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 10,Grade 8
+YALE SCHOOL EAST,1,ATLANTIC,11,6,9,4,49,0,1,3,8,37,9,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 4
+ABUNDANT LIFE ACADEMY,13,ESSEX,9,6,6,9,356,0,16,135,73,47,26,11,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+THE PHOENIX CENTER INC,13,ESSEX,-1,-1,-1,-1,146,0,0,29,37,80,16,9,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+BARNSTABLE ACADEMY,3,BERGEN,16,17,25,23,103,0,8,3,5,84,14,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 5
+THE NEW JERSEY JAPANESE SCHOOL,3,BERGEN,7,-1,-1,-1,89,0,87,0,0,0,16,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 9,Grade 1
+HILLEL YESHIVA SCHOOL,25,MONMOUTH,47,41,45,39,591,0,0,0,0,591,44,13,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Kingergarten
+SCHROTH SCHOOL,25,MONMOUTH,8,5,3,9,96,0,1,7,17,30,13,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+FAMILIES UNITED NETWORK ACADEMY,9,CAPE MAY,6,4,1,4,42,0,3,3,0,36,17,2,Coed,Alternative,Combined elementary and secondary,Other religious,Yes,Grade 12,Kingergarten
+CALVARY CHRISTIAN SCHOOL,23,MIDDLESEX,18,-1,-1,-1,229,0,14,17,13,170,17,13,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 9,Pre-K
+BERGEN CATHOLIC HIGH SCHOOL,3,BERGEN,175,182,191,190,738,4,97,59,31,542,43,17,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+THE LAKESIDE SCHOOL,13,ESSEX,1,3,8,10,22,0,0,6,10,6,2,11,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 9
+PARAMUS CATHOLIC HIGH SCHOOL,3,BERGEN,342,389,418,402,1551,2,189,345,141,683,106,15,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+THE FRISCH SCHOOL,3,BERGEN,153,169,162,166,650,0,0,0,0,650,81,8,Coed,Alternative,Secondary,Other religious,Yes,Grade 12,Grade 9
+PALISADES REGIONAL CENTER,3,BERGEN,12,9,13,20,58,0,3,13,16,26,9,6,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 8
+EDUCATIONAL PARTNERSHIP FOR INST,3,BERGEN,-1,-1,-1,-1,24,0,1,1,0,18,25,1,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Pre-K,Pre-K
+ALPINE LEARNING GROUP INC,3,BERGEN,-1,-1,-1,-1,29,0,1,8,0,20,8,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+DAVID GREGORY SCHOOL INC,3,BERGEN,-1,-1,-1,-1,34,0,3,15,4,12,12,3,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+PARSIPPANY CHRISTIAN SCHOOL,27,MORRIS,21,8,20,10,202,0,47,48,48,51,14,14,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+COLLEGIATE SCHOOL,31,PASSAIC,12,8,8,8,133,-1,-1,-1,-1,-1,14,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+MESIVTA TIFERES RAV ZVI ARYEH ZE,31,PASSAIC,29,30,31,26,116,0,0,0,0,116,11,11,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+BAIS YAAKOV OF PASSAIC HIGH SCHOOL,31,PASSAIC,71,54,46,37,208,0,0,0,0,208,11,19,All-Female,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+PATERSON CATHOLIC HIGH SCHOOL,31,PASSAIC,62,70,65,106,303,0,1,135,155,2,23,13,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+AL-HUDA SCHOOL,31,PASSAIC,9,8,6,5,116,0,14,6,9,69,12,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+MATHENY SCHOOL,35,SOMERSET,2,4,10,30,74,0,1,7,12,54,16,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Kingergarten
+THE PENNINGTON SCHOOL,21,MERCER,89,104,95,100,485,0,4,8,28,217,89,5,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Grade 6
+BISHOP EUSTACE PREP SCHOOL,7,CAMDEN,193,219,185,185,782,-1,-1,-1,-1,-1,55,14,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+CRESCENT HILL ACADEMY,7,CAMDEN,-1,-1,-1,-1,31,0,1,15,4,11,8,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+JDT CHRISTIAN ACADEMY,7,CAMDEN,-1,1,2,2,26,0,0,2,18,4,11,2,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Pre-K
+SALEM COUNTY CHRISTIAN ACADEMY,33,SALEM,9,9,8,8,110,0,1,3,4,90,19,5,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+TIMOTHY CHRISTIAN SCHOOL,23,MIDDLESEX,47,52,57,63,546,0,62,24,129,276,57,10,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Kingergarten
+AN-NOOR ACADEMY & DARUL HUDA INS,23,MIDDLESEX,7,-1,2,1,197,-1,-1,-1,-1,-1,25,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Pre-K
+KOINONIA ACADEMY,39,UNION,21,20,22,23,213,-1,-1,-1,-1,-1,22,10,Coed,Regular elementary or secondary,Combined elementary and secondary,Catholic,No,Grade 12,Kingergarten
+CHANCELLOR ACADEMY,27,MORRIS,12,30,28,31,108,0,1,20,9,78,34,3,Coed,Alternative,Secondary,Other religious,Yes,Grade 12,Grade 7
+PURNELL SCHOOL,35,SOMERSET,11,30,31,22,94,0,6,2,8,78,18,5,All-Female,Regular elementary or secondary,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+PRINCETON DAY SCHOOL,21,MERCER,104,94,97,88,919,310,38,26,73,456,111,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+EDEN INSTITUTE,21,MERCER,-1,-1,-1,-1,55,0,11,3,1,40,11,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+PRINCETON CHILD DEVELOPMENT INST,21,MERCER,-1,-1,-1,-1,27,0,3,0,1,23,5,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+THE HUN SCHOOL OF PRINCETON,21,MERCER,100,108,107,103,500,2,50,10,37,401,90,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 6
+STUART COUNTRY DAY SCHOOL,21,MERCER,36,35,30,33,488,0,30,24,42,268,70,6,All-Female,Regular elementary or secondary,Combined elementary and secondary,Catholic,Yes,Grade 12,Pre-K
+DON BOSCO PREP HIGH SCHOOL,3,BERGEN,217,236,218,202,873,2,37,41,39,749,63,14,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+RED BANK CATHOLIC HIGH SCHOOL,25,MONMOUTH,275,258,261,240,1034,4,38,16,32,928,82,13,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+WEST SIDE CHRISTIAN ACADEMY,25,MONMOUTH,1,1,-1,1,33,0,0,4,27,2,4,8,Coed,Alternative,Combined elementary and secondary,Other religious,Yes,Grade 12,Kingergarten
+ST AUGUSTINE PREPARATORY SCHOOL,1,ATLANTIC,193,166,181,153,693,0,15,15,26,627,53,13,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+HOLMSTEAD SCHOOL,3,BERGEN,3,20,22,30,77,0,0,3,3,71,15,5,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 8
+SAGE DAY AT ROCHELLE PARK,3,BERGEN,16,26,24,23,89,0,2,1,3,83,13,7,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 9
+ROSELLE CATHOLIC HIGH SCHOOL,39,UNION,137,130,149,156,572,0,25,121,141,251,45,13,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+ST MARY HIGH SCHOOL,3,BERGEN,79,73,79,70,301,0,34,70,22,171,25,12,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+SADDLE RIVER DAY SCHOOL,3,BERGEN,31,36,28,45,273,0,16,14,17,221,42,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Kingergarten
+UNION CATHOLIC REGIONAL HIGH SCHOOL,39,UNION,170,187,198,203,758,3,48,163,127,330,52,15,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+GLOUCESTER COUNTY CHRISTIAN SCHOOL,15,GLOUCESTER,31,31,43,31,368,0,15,13,32,294,18,20,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+BETHEL PREPARATORY BIBLICAL-CLAS,15,GLOUCESTER,6,3,-1,-1,141,0,2,10,14,115,12,11,Coed,Alternative,Combined elementary and secondary,Other religious,Yes,Grade 10,Kingergarten
+ARCHWAY PROGRAM/WASHINGTON TOWNS,15,GLOUCESTER,3,1,-1,-1,50,0,0,5,23,22,7,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 10,Grade 1
+HOLLYDELL SCHOOL,15,GLOUCESTER,-1,-1,-1,-1,79,0,2,10,11,56,10,8,Coed,Alternative,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+ROCK BROOK SCHOOL INC,35,SOMERSET,-1,-1,-1,-1,45,0,5,3,7,30,6,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+RUTGERS PREPARATORY SCHOOL,35,SOMERSET,76,85,92,85,681,-1,-1,-1,-1,-1,102,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+SOMERSET BIBLE BAPTIST CHRISTIAN,35,SOMERSET,5,4,1,1,56,0,4,9,3,36,6,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Kingergarten
+NEW ROAD SCHOOL OF SOMERSET,35,SOMERSET,15,28,28,102,179,0,0,38,55,84,17,10,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 7
+IMMACULATA HIGH SCHOOL,35,SOMERSET,211,204,228,203,846,0,41,48,21,714,77,11,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+CARDINAL MCCARRICK HIGH SCHOOL,23,MIDDLESEX,65,74,100,89,328,0,8,63,33,216,26,13,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+MARYLAWN OF THE ORANGES ACADEMY,13,ESSEX,40,40,40,40,160,0,4,8,145,3,22,7,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+DARUL ARQAM SCHOOL,23,MIDDLESEX,16,6,3,-1,301,-1,-1,-1,-1,-1,19,12,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 11,Pre-K
+MOSHE AARON YESHIVA HIGH SCHOOL,23,MIDDLESEX,23,28,32,36,119,0,0,0,0,119,22,5,Coed,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+POPE JOHN XXIII HIGH SCHOOL,37,SUSSEX,217,257,236,194,916,0,4,23,11,840,66,14,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 8
+VERITAS CHRISTIAN ACADEMY,37,SUSSEX,18,28,10,15,71,0,3,0,1,67,7,11,Coed,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 9
+WILLOWGLEN ACADEMY,37,SUSSEX,17,19,18,32,101,0,0,16,28,57,22,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 2
+STRATFORD CLASSICAL CHRISTIAN AC,7,CAMDEN,3,1,-1,-1,118,2,5,21,60,30,15,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 10,Kingergarten
+AMERICAN CHRISTIAN SCHOOL,27,MORRIS,2,-1,-1,-1,157,0,17,14,14,92,11,13,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 9,Pre-K
+ORATORY PREPARATORY SCHOOL,39,UNION,58,55,52,46,259,0,6,11,13,213,28,9,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 7
+OAK KNOLL SCHOOL OF THE HOLY CHI,39,UNION,64,52,63,58,550,0,12,15,22,501,81,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Catholic,Yes,Grade 12,Kingergarten
+SINAI SCHOOL AT MA'AYANOT,3,BERGEN,-1,-1,-1,-1,2,0,0,0,0,2,2,1,All-Female,Special Education,Combined elementary and secondary,Other religious,No,All Ungraded,All Ungraded
+IEF-AL-GHAZALY HIGH SCHOOL,3,BERGEN,46,45,41,36,261,0,132,51,1,77,25,10,Coed,Regular elementary or secondary,Secondary,Other religious,No,Grade 12,Grade 7
+KARASICK SHALEM HIGH SCHOOL AT T,3,BERGEN,3,3,3,2,11,0,0,0,0,11,3,3,All-Male,Special Education,Secondary,Other religious,No,Grade 12,Grade 9
+COMMUNITY HIGH SCHOOL,3,BERGEN,40,40,40,40,160,0,3,23,22,112,60,3,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+TORAH ACADEMY OF BERGEN COUNTY,3,BERGEN,54,74,80,38,246,0,0,0,0,246,24,10,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+RANNEY SCHOOL,25,MONMOUTH,52,63,57,56,817,9,158,6,15,554,89,9,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+DOROTHY B HERSH HIGH SCHOOL,25,MONMOUTH,1,-1,9,11,21,0,1,5,5,10,4,5,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 9
+OAKWOOD SCHOOL,25,MONMOUTH,10,5,11,15,43,0,0,4,4,35,8,5,All-Male,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 8
+THE TITUSVILLE ACADEMY,21,MERCER,6,8,7,10,60,0,0,2,38,19,12,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 2
+THE STUDIO FOR EXPERIENTIAL LEAR,21,MERCER,1,1,5,1,12,0,0,0,3,9,3,4,Coed,Alternative,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 2
+MONSIGNOR DONOVAN HIGH SCHOOL,29,OCEAN,225,215,223,225,888,-1,-1,-1,-1,-1,-1,-1,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+OCEAN COUNTY CHRISTIAN ACADEMY,29,OCEAN,6,6,7,6,107,0,17,7,7,62,14,7,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+ISLAMIC SCHOOL OF TRENTON/AL-BAY,21,MERCER,1,-1,-1,-1,42,0,23,0,5,0,9,4,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 9,Pre-K
+THE GARVEY SCHOOL,21,MERCER,5,2,1,-1,39,0,0,0,32,0,11,3,Coed,Special program emphasis,Combined elementary and secondary,Nonsectarian,Yes,Grade 11,Pre-K
+THE BRIDGE ACADEMY,21,MERCER,-1,-1,-1,-1,65,0,6,7,12,40,20,3,Coed,Special program emphasis,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+COASTAL LEARNING CENTER,29,OCEAN,2,2,4,16,42,0,0,7,23,12,5,8,Coed,Alternative,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 4
+DERON SCHOOL 1,39,UNION,-1,-1,-1,-1,105,0,5,23,76,1,17,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+LEARNING INSTITUTE OF UNION CITY,17,HUDSON,7,7,8,9,175,0,0,0,0,165,21,8,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+MIFTAAHUL ULOOM SCHOOL,17,HUDSON,12,15,8,14,185,0,13,5,9,110,23,7,Coed,Montessori,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+LACORDAIRE ACADEMY SECONDARY,13,ESSEX,17,20,25,18,80,0,2,10,26,42,12,7,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+THE CHILDREN'S INSTITUTE,13,ESSEX,-1,-1,-1,-1,160,0,6,16,51,87,19,8,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+SACRED HEART HIGH SCHOOL,11,CUMBERLAND,63,78,67,80,288,0,2,28,11,232,24,12,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+CUMBERLAND CHRISTIAN SCHOOL,11,CUMBERLAND,34,27,37,30,381,0,2,13,66,289,25,15,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+CREATIVE ACHIEVEMENT ACADEMY-WES,11,CUMBERLAND,6,18,13,15,52,0,0,11,31,9,9,6,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+DOWNE ACADEMY,11,CUMBERLAND,1,6,9,6,24,0,0,9,13,1,4,6,Coed,Special Education,Secondary,Nonsectarian,No,Grade 12,Grade 8
+PINELAND LEARNING CENTER,11,CUMBERLAND,-1,-1,-1,-1,160,0,0,29,75,56,27,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+CREATIVE ACHIEVEMENT ACADEMY-WOO,11,CUMBERLAND,9,1,-1,-1,39,0,0,8,26,5,8,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 10,Grade 2
+BANCROFT SCHOOL AT VOORMEES PEDI,7,CAMDEN,5,3,4,12,69,0,3,6,23,28,15,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Pre-K
+WALDWICK SEVENTH-DAY ADVENTIST S,3,BERGEN,9,9,-1,2,93,0,2,57,24,4,6,14,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+THE FORUM SCHOOL,3,BERGEN,-1,-1,-1,-1,138,-1,-1,-1,-1,-1,24,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+WOODCLIFF ACADEMY,25,MONMOUTH,8,9,8,9,50,0,0,4,20,26,18,3,Coed,Regular elementary or secondary,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 3
+IMMACULATE HEART ACADEMY,3,BERGEN,224,196,204,214,838,1,46,42,17,690,63,13,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+MT ST MARY ACADEMY HIGH SCHOOL,35,SOMERSET,68,82,116,84,350,0,19,14,10,303,58,6,All-Female,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+MCAULEY SCHOOL,35,SOMERSET,-1,-1,-1,-1,34,0,1,5,10,18,5,7,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,All Ungraded,All Ungraded
+DE PAUL CATHOLIC HIGH SCHOOL,31,PASSAIC,185,217,227,197,826,-1,-1,-1,-1,-1,56,15,Coed,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+CLEARVIEW SCHOOL,31,PASSAIC,5,10,11,15,46,0,1,24,8,13,6,8,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 7
+BENWAY SCHOOL,31,PASSAIC,3,9,9,10,31,0,1,9,14,7,8,4,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 9
+LAKEVIEW LEARNING CENTER,31,PASSAIC,1,15,15,21,57,0,0,27,15,15,12,5,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 8
+ESSEX VALLEY SCHOOL,13,ESSEX,7,13,12,19,55,0,0,15,30,10,10,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,No,Grade 12,Grade 6
+MA'OR YESHIVA HIGH SCHOOL FOR BO,25,MONMOUTH,8,8,5,8,29,0,0,0,0,29,5,5,All-Male,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+SETON HALL PREPARATORY SCHOOL,13,ESSEX,254,235,221,231,941,4,32,60,108,715,71,13,All-Male,Regular elementary or secondary,Secondary,Catholic,Yes,Grade 12,Grade 9
+SOLOMON SCHECHTER DAY SCHOOL OF,13,ESSEX,46,42,67,41,318,0,6,312,0,0,56,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Grade 6
+MOUNT CARMEL GUILD ACADEMY,13,ESSEX,-1,-1,-1,-1,92,0,0,13,75,4,19,5,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,All Ungraded,All Ungraded
+WINDSOR ACADEMY,31,PASSAIC,8,-1,-1,-1,62,0,0,19,30,12,7,8,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 9,Grade 1
+HAMPTON ACADEMY,5,BURLINGTON,6,9,19,19,61,0,1,6,21,28,8,8,Coed,Special Education,Secondary,Nonsectarian,Yes,Grade 12,Grade 7
+ARCHBISHOP DAMIANO SCHOOL,15,GLOUCESTER,-1,-1,-1,-1,180,0,5,21,25,128,26,7,Coed,Special Education,Combined elementary and secondary,Catholic,Yes,All Ungraded,All Ungraded
+CELEBRATE THE CHILDREN,27,MORRIS,6,6,6,3,97,0,2,5,5,83,15,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Pre-K
+CALAIS SCHOOL,27,MORRIS,11,13,12,8,95,0,1,18,13,63,25,4,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Kingergarten
+ABUNDANT LIFE CHRISTIAN SCHOOL,27,MORRIS,5,5,5,4,85,-1,-1,-1,-1,-1,8,11,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,No,Grade 12,Kingergarten
+VICTORY CHRISTIAN SCHOOL,15,GLOUCESTER,11,11,13,10,125,0,1,1,41,76,20,6,Coed,Regular elementary or secondary,Combined elementary and secondary,Other religious,Yes,Grade 12,Pre-K
+FINEST OF THE WHEAT CHRISTIAN AC,7,CAMDEN,2,-1,3,1,6,0,0,0,6,0,2,4,Coed,Regular elementary or secondary,Secondary,Other religious,Yes,Grade 12,Grade 9
+YALE SCHOOL WILLIAMSTOWN CAMPUS,15,GLOUCESTER,8,8,7,9,41,0,0,3,18,20,7,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Grade 5
+GARFIELD PARK ACADEMY,5,BURLINGTON,23,28,23,21,132,0,0,21,84,27,21,6,Coed,Special Education,Combined elementary and secondary,Nonsectarian,Yes,Grade 12,Kingergarten

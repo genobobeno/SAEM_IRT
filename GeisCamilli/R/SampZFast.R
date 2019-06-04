@@ -1,5 +1,5 @@
 SampZFast<-
-function(aa,bb,that,srp,w=NA,prl=settings$parallel) {
+function(aa,bb,that,indL,indU,srp,w=NA,prl=FALSE) {
   Eta<-t(as.matrix(aa)%*%t(as.matrix(that))) - t(as.matrix(bb)%*%t(as.matrix(rep(1,nrow(srp)))))
   #hold<- Eta - t(as.matrix(bb)%*%t(as.matrix(rep(1,nrow(srp)))))
   # Ez<-mat.or.vec(nrow(srp),ncol(srp))
