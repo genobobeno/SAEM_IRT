@@ -1,9 +1,13 @@
-MultipleTWFitTests<-function(fit.data.list,ratios=TRUE,tw=0.999,title="",...) {
+MultipleTWFitTests<-function(fit.data.list,ratios=TRUE,tw=0.999,title="",plot.layout=TRUE,...) {
   if (length(fit.data.list)>5) (print("Probably too many Plotted objects"))
   Adim.max<-which.max(sapply(fit.data.list,function(x) x$settings$Adim))
   E=fit.data.list[[Adim.max]]$settings$Adim+3
   f.er.exp<-f.exp<-c()
-  par(mfrow=c(1,1+ratios),...)
+  if (plot.layout) {
+    par(mfrow=c(1,1+ratios),mar=c(5,4,3,2),...)
+  } else {
+    par(mar=c(5,4,3,2),...)
+  }
   pCH<-c(22,23,21,24,25)[1:length(fit.data.list)]
   pCH.s<-c(1.1,1.2,1.2,1.1,1.1)[1:length(fit.data.list)]
   pBG<-c(0,3)
@@ -29,6 +33,10 @@ MultipleTWFitTests<-function(fit.data.list,ratios=TRUE,tw=0.999,title="",...) {
     
     gEV<-eigen(S, symmetric=TRUE)
     cEV<-eigen(cov2cor(S),symmetric = TRUE)
+    print(paste0("Percentage of S Variance By Eigenvalue (",fit.data.list[[f.data]]$settings$Adim,") : "))
+    print(signif(gEV$values[1:13]/sum(gEV$values),digits=3))
+    print(paste0("Percentage of cor(S) Variance By Eigenvalue (",fit.data.list[[f.data]]$settings$Adim,") : "))
+    print(signif(cEV$values[1:13]/sum(cEV$values),digits=3))
     # if (sum(d %in% c("S1","S2","S3"))>0 & di==d[1]) {
     #     par(mfrow=c(length(d),2),...)
     #     pCH<-matrix(c(0,2,5,15,17,18),nrow=3,ncol=2)

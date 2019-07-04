@@ -4,7 +4,7 @@
 #    2. PrePostItem()
 #    3. XBubble()
 
-ItemStats <- function(it,yearcut=NA,schoolcut=NA,test="Pre") {
+ItemStats <- function(wider.data,it,yearcut=NA,schoolcut=NA,test="Pre") {
   #   it=78
   #   test="Pre"
   #   classcut=NA
@@ -27,7 +27,7 @@ ItemStats <- function(it,yearcut=NA,schoolcut=NA,test="Pre") {
   descript = paste("Item",it)
   print(paste(descript,Test[it,"Item"],sep=" : "))
   # Name of columns we want to analyze
-  DF<-IDF
+  DF<-wider.data
   CutIndex <- rep(0,4)
   CutString = c("Year = ","School = ","Class = ")
   ci = paste(Istr[1],it,sep="")
@@ -137,7 +137,7 @@ ItemStats <- function(it,yearcut=NA,schoolcut=NA,test="Pre") {
   
 }
 
-XBubble <-function(it,test="Pre",yearcut=NA,schoolcut=NA) {
+XBubble <-function(wider.data,it,test="Pre",yearcut=NA,schoolcut=NA) {
   stopifnot(test=="Pre"|test=="Post")
   #it=76
   if (test=="Pre") {
@@ -148,7 +148,7 @@ XBubble <-function(it,test="Pre",yearcut=NA,schoolcut=NA) {
     Istr = c("c","b")
     Test<-TestY
   }
-  DF<-IDF
+  DF<-wider.data
   CutIndex <- rep(0,4)
   CutString = c("Year = ","School = ","Class = ")
   ci = paste(Istr[1],it,sep="")
@@ -223,7 +223,7 @@ XBubble <-function(it,test="Pre",yearcut=NA,schoolcut=NA) {
   return(list(XBub=dfXItem,Hits=hitN,Bubs=BList))
 }
 
-PrePostItem <- function(it,classcut=NA,yearcut=NA,schoolcut=NA,diff=1) {
+PrePostItem <- function(wider.data,it,classcut=NA,yearcut=NA,schoolcut=NA,diff=1) {
 
   print("The function calls for PrePostItem may include:")
   print("   0. first argument is the 1-129 integer index of the 129 test questions.")
@@ -258,7 +258,7 @@ PrePostItem <- function(it,classcut=NA,yearcut=NA,schoolcut=NA,diff=1) {
   descript = paste("Item",it)
   print(paste(descript,TestX[it,"Item"],sep=" : "))
   # Name of columns we want to analyze
-  DF<-IDF
+  DF<-wider.data
   CutIndex <- rep(0,4)
   CutString = c("Year = ","School = ","Class = ")
       

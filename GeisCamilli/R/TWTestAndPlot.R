@@ -32,9 +32,11 @@ TWTestAndPlot<-function(d,extra.dimensions=FALSE,E=10,ratios=FALSE,tw=0.999,...)
       gEV<-eigen(FitList$EZZ,symmetric=TRUE)
       cEV<-eigen(cov2cor(FitList$EZZ),symmetric = TRUE)
     }
+    
     if (sum(d %in% c("S1","S2","S3"))>0 & di==d[1]) {
       par(mfrow=c(length(d),2),...)
       pCH<-matrix(c(0,2,5,15,17,18),nrow=3,ncol=2)
+      pBG<-c(0,3)
     } else if (sum(d %in% c("S4","S5","S6","S7","S8","S9"))>0 & di==d[1]) {
       par(mfrow=c(length(d),1+ratios),...)
       pCH<-c(22,23,21,24,25)
@@ -63,6 +65,11 @@ TWTestAndPlot<-function(d,extra.dimensions=FALSE,E=10,ratios=FALSE,tw=0.999,...)
         gEV<-eigen(FitList$EZZ,symmetric=TRUE)
         cEV<-eigen(cov2cor(FitList$EZZ),symmetric = TRUE)
       }
+      print(paste0("Percentage of S Variance By Eigenvalue (",FitList$settings$Adim,") : "))
+      print(signif(gEV$values[1:13]/sum(gEV$values),digits=3))
+      print(paste0("Percentage of cor(S) Variance By Eigenvalue (",FitList$settings$Adim,") : "))
+      print(signif(cEV$values[1:13]/sum(cEV$values),digits=3))
+      
       gTW.TF<-TWTransform(gEV$values,p = sim.list[[di]]$J,n = sim.list[[di]]$N,ptest = T)
       print(paste0(fitdir[i],": TW transform and p-value of Q and Q+1 and Q+2"))
       cTW.TF<-TWTransform(cEV$values,p = sim.list[[di]]$J,n = sim.list[[di]]$N,ptest = T)

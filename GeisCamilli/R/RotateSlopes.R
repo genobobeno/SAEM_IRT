@@ -1,4 +1,5 @@
 RotateSlopes<-function(fit.data=NA,slopes=NA) {
+  library(GPArotation)
   stopifnot(is.list(fit.data)|!is.na(slopes)[1])
   if (is.list(fit.data)) {
     A<-fit.data$A
@@ -23,5 +24,10 @@ RotateSlopes<-function(fit.data=NA,slopes=NA) {
   ARI$FlippedAfterRotation<-colSums(ARI$loadings)<0
   ARI$loadings<-matrix(rep(ifelse(colSums(ARI$loadings)<0,-1,1),
                            nrow(A)),ncol=ncol(A),nrow=nrow(A),byrow=TRUE)*ARI$loadings
-  list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
+  ARO<-oblimin(A, Tmat=diag(ncol(A)), normalize=FALSE, eps=1e-5, maxit=1000)
+  print(ARO)
+  ARO$FlippedAfterRotation<-colSums(ARO$loadings)<0
+  ARO$loadings<-matrix(rep(ifelse(colSums(ARO$loadings)<0,-1,1),
+                           nrow(A)),ncol=ncol(A),nrow=nrow(A),byrow=TRUE)*ARO$loadings
+  list(Bifactor=ARB,Varimax=ARV,Infomax=ARI,Oblimin=ARO)
 }

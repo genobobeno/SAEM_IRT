@@ -142,7 +142,7 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
         }
       }
       # Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
-      print(THat)
+      #print(THat)
       Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W,prl=settings$parallel)    
       LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
       if (It<=settings$burnin | tolower(settings$est)!="rm") {

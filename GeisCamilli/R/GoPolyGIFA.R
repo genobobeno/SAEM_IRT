@@ -136,8 +136,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   pRotT<-NA
   pRotV<-NA
   itest<-(A-prevA)
+  passing = 0
   if (!is.na(timed)[1] && timed$TF) settings$timed.SAEM_Init<-Timing(clock)
-  while (max(abs(itest))>eps) {
+  while (passing!=3) {
     #if (i%%100==0) cat(nproc,i,"|")
     if (i%%10==1) cat(".")
     if (i%%100==1) cat(":")
@@ -163,8 +164,11 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     # print(out$vectors[,1:Q]%*%sqrt(diag(out$values[1:Q])))
     #if (i>20) {
     prevA <- A 
-    Avec0 <- atemp$Avec[1:Q]
-    #}
+    if (Q==1) {
+      Avec0 <- sum(atemp$Avec)
+    } else {
+      Avec0 <- atemp$Avec[1:Q]
+    }
     if (settings$drawA=="lowertriangular") {
       #compue covariances
       covTMC	<- cov(theta)
@@ -286,11 +290,19 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     if (tolower(settings$converge)=="a"|grepl("slop",tolower(settings$converge))) {
       itest<-(A-prevA)
     } else if (grepl("eig.+val",tolower(settings$converge))|grepl("e?(.+)val",tolower(settings$converge))) {
-      if (prod(atemp$Avec[1:Q]==Avec0)==1) {itest<-1} else {itest<-(atemp$Avec[1:Q] - Avec0)}
+      if (Q==1) {
+        itest<-(sum(atemp$Avec[1:J]) - Avec0)
+      } else if (prod(atemp$Avec[1:Q]==Avec0)==1) {
+        itest<-1
+      } else {
+        itest<-(atemp$Avec[1:Q] - Avec0)
+      }
     } else {
       itest<-(A-prevA)
     }
+    passing<-ifelse(max(abs(itest))<eps,passing+1,0) 
   }
+  print(paste("Total Iterations:",i))
   if (!is.na(timed)[1] && timed$TF) {
     settings$timed.SAEM_Cycles<-Timing(clock)-settings$timed.SAEM_Init
     settings$timed.Iterations<-i
@@ -432,6 +444,15 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
                     Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,
                     settings=settings,Iterations=Iterations)
     }
+  }
+  if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
+    filename=settings$estfile
+  } else { filename=paste(settings$estfile,".rda",sep="") }
+  if (settings$record) {
+    MCMCDATA<-Iterations #Titer=Titer,
+    save(FitDATA,MCMCDATA,settings,file=filename)
+  } else {
+    save(FitDATA,settings,file=filename)
   }
   FitDATA
 }
