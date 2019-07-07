@@ -1,6 +1,6 @@
 LRTest<-function(fit.data1,fit.data2) {
-  F1<-GetLikelihood(fit.data1)
-  F2<-GetLikelihood(fit.data2)
+  F1<-GetLikelihood(fit.data1,TRUE)
+  F2<-GetLikelihood(fit.data2,TRUE)
   if (F1["DOF"]>F2["DOF"]) {
     dev<-2*(F1["LogL"]-F2["LogL"])
     dof<-F1["DOF"]-F2["DOF"]

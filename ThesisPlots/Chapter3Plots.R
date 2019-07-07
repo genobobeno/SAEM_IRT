@@ -159,7 +159,6 @@ BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
 
 RMProofPlots()
 
-
 source("ThesisPlots/TWFitTests.R")
 TWTestAndPlot("S1",extra.dimensions = TRUE,E = 7)
 
@@ -167,6 +166,33 @@ BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
 
 CompareConditions("S1","S3",basedir = getwd())
 
+
+#   # extra.dimensions=TRUE; d="S1";r=1
+#   fd<-d
+#   source("CreateSimulationStructure.R")
+#   d<-fd
+#   fit.dir.tw <- "TWFits"
+#   twd <- paste0(d,c("Plus1","Plus2"))  #paste0(d,c("Plus1","Times5"))
+#   fitdir<-c(paste0(fit.dir,"/",d),paste0(fit.dir.tw,"/",twd))
+#   simdir<-paste0(gen.dir,"/",d)
+#   SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_1.rds"))
+#   FitList<-readRDS(paste0(fitdir[2],"/",SFileString(sim.list[[d]],gen=FALSE,r = 1),".rds"))
+#   if (d %in% c("S1","S2","S3")) {
+#     if (d=="S3") {
+#       S<-FitList$EZZ #-t(as.matrix(FitList$EZ))%*%as.matrix(FitList$EZ)
+#     } else {
+#       S<-FitList$EZZ-as.matrix(FitList$EZ)%*%t(as.matrix(FitList$EZ))
+#     }
+#     gEV<-eigen(S, symmetric=TRUE)
+#     cEV<-eigen(cov2cor(S),symmetric = TRUE)
+#   } else {
+#     gEV<-eigen(FitList$EZZ,symmetric=TRUE)
+#     cEV<-eigen(cov2cor(FitList$EZZ),symmetric = TRUE)
+#   }
+# 
+# psych::cortest.bartlett(R = cov2cor(S),n = sim.list[[d]]$N,diag = TRUE)
+# psych::KMO(R = cov2cor(S))
+# KaiserCriterion(J=sim.list[[d]]$J,N=sim.list[[d]]$N,S = S)
 
 TWTestAndPlot(c("S4","S5"),extra.dimensions = TRUE,E=8,ratios=TRUE)
 
@@ -181,3 +207,6 @@ BenchmarkPlots(condition = "S9",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c
 
 TWTestAndPlot(c("S8","S9"),extra.dimensions = TRUE,E=17,ratios=TRUE)
 
+EVTestTab<-data.frame(Dimensions = c(1,1,1,3,3,5,5,10,10), LambdaN2 = c(NA,NA,NA,1,0,1,0,2,0), 
+           LambdaN1 = c(NA,NA,NA,1,0,1,0,1,0), Lambda = c(0,0,0,0,0,0,0,1,0), 
+           LambdaP1 = c(0,0,1,1,1,1,1,3,1), LambdaP2 = c(1,1,2,2,2,2,2,4,2))
