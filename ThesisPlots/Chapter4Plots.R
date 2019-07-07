@@ -278,8 +278,15 @@ load("RealData/CCI_NoGuess_A5.rda")
 QOL.Fit.5D<-FitDATA
 load("RealData/CCI_NoGuess_A10.rda")
 
-barplot(table((as.numeric(cut2(rowMeans(R.QOL-3,na.rm = TRUE),cuts=seq(from = -2,to = 2,by = 0.1)))-21)*(1/10)),
+par(mfrow=c(1,1),mar=c(5,4,3,2))
+barplot(table((as.numeric(cut2(rowMeans(R.QOL-2,na.rm = TRUE),cuts=seq(from = -2,to = 2,by = 0.1)))-21)*(1/10)),
         main="Distribution of QOL Scores",ylab="Frequency",xlab="Average Response")
+
+
+ResponseCurves(R.QOL-2,scores = rowMeans(R.QOL-2,na.rm = TRUE),
+               prows = 6,pcols = 4,correct = rep(2,ncol(R.QOL)),j.legend = c(6,18),score.bins = 25)
+               
+
 
 MultipleTWFitTests(fit.data.list = list(QOL.Fit.1D,
                                         QOL.Fit.2D,

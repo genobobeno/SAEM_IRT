@@ -194,6 +194,7 @@ CompareConditions("S1","S3",basedir = getwd())
 # psych::KMO(R = cov2cor(S))
 # KaiserCriterion(J=sim.list[[d]]$J,N=sim.list[[d]]$N,S = S)
 
+
 TWTestAndPlot(c("S4","S5"),extra.dimensions = TRUE,E=8,ratios=TRUE)
 
 BenchmarkPlots(condition = "S6",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
