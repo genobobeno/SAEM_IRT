@@ -90,3 +90,30 @@ system.time(
   that<-mvrnormArma(N, tHat, V)
 )
 
+
+
+
+worker.init <- function() {
+  library(inline)
+  sigFunc <- signature(x="numeric", size_x="numeric")
+  code <- ' double tot =0;
+  for(int k = 0; k < INTEGER(size_x)[0]; k++){
+  tot += REAL(x)[k];
+  };
+  return ScalarReal(tot);
+  '
+  assign('cFunc', cxxfunction(sigFunc, code), .GlobalEnv)
+  NULL
+}
+
+f1 <- function(){
+  x <- rnorm(100)
+  a <- cFunc(x=x, size_x=as.integer(length(x)))
+  return(a)
+}
+
+library(foreach)
+library(doParallel)
+cl <- makePSOCKcluster(3)
+clusterCall(cl, worker.init)
+
