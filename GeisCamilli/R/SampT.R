@@ -24,17 +24,13 @@ function(aa,bb,zz,rp,prior,prl=FALSE,cores=settings$cores) {
     #for (n in 1:N) that[n]<-rnorm(1,mean=(tHat[n]/V+prior$tmu/prior$tsigma)/(1/V+1/prior$tsigma),sd=sqrt(1/(1/V+1/prior$tsigma)))
     Mean<-(tHat/V+prior$tmu/as.vector(prior$tsigma))/(1/V+1/as.vector(prior$tsigma))
     SD<-sqrt(1/(1/V+1/prior$tsigma))
-    if (prl) {
-      lt<-suppressWarnings(split(1:N,f=1:cores))
-      that<-as.vector(parSapply(cl,1:cores,function(x) rnorm(length(lt[[x]]),mean=Mean[lt[[x]]],sd=SD)))
-    } else {
-      that<-rnorm(N,mean=Mean,sd=SD)
-    }
+    that<-rnorm(N,mean=Mean,sd=SD)
   } else {
     #for (n in 1:N) that[n,]<-mvrnorm(1,tHat[n,],Sigma=V)
     if (prl) {
-      lt<-suppressWarnings(split(1:N,f=1:cores))
-      that<-as.vector(parSapply(cl,1:cores,function(x) mvrnormArma(length(lt[[x]]),tHat[lt[[x]]],V[lt[[x]]])))
+      p.lst<-suppressWarnings(vsplit(1:N,f=1:cores))
+      clusterExport(cl,c("p.lst","tHat","V"))
+      that<-do.call(rbind,parLapply(cl,1:cores,pMVNarma))
     } else {
       that<-mvrnormArma(N, tHat, V)
     }

@@ -13,9 +13,12 @@ PACK = c(ifelse(get_os()=="windows","snow","parallel"),"foreach",
 ### Install packages not already installed ###
 for (i in 1:length(PACK)){
   if(PACK[i] %in% rownames(installed.packages()) == FALSE) {
-    install.packages(PACK[i],dependencies = TRUE)}
+    print(PACK[i])
+    if (isOpen(url(description = "https://www.google.com"))) install.packages(PACK[i],dependencies = TRUE)}
 }
-required<-lapply(PACK, require, character.only = TRUE)                       # Call the libraries (will deprecate)
+# Call the libraries (will deprecate)
+required<-lapply(PACK[PACK %in% rownames(installed.packages()) ], require, character.only = TRUE)
 Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm Random (fast)
 file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
 sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
+enableJIT(1)
