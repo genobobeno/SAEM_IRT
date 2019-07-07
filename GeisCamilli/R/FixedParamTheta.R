@@ -1,5 +1,6 @@
 FixedParamTheta <-
-  function(FitDATA,rp,IT=settings$nesttheta,indL,indU) {
+  function(FitDATA,rp,IT=settings$nesttheta,indL,indU,R=NA,TAU=NA,MN=NA,
+           missList=NA,MY=NA) {
     cat("\n Running Fixed Parameter Theta Estimates \n")
     cat(paste(IT,"Draws \n"))
     atemp	<- list()
@@ -58,21 +59,19 @@ FixedParamTheta <-
       d = FitDATA$tau-matrix(rep(B,ncol(FitDATA$tau)),
                              length(B),ncol(FitDATA$tau))
       for (it in 1:IT) {
-        X2		<- simplify2array(parSapply(cl,1:length(B),WrapX,A=A,b=B,
-                                        d=d,theta=THat,
-                                        simplify=FALSE), higher=TRUE)	
+        if (settings$parallel) {
+          X2		<- simplify2array(parSapply(cl,1:length(B),WrapX,A=A,b=B,
+                                          d=d,theta=THat,simplify=FALSE), higher=TRUE)	
+        } else {
+          X2	<- lapply(1:J,function (x) (WrapX1(x,A=A,b=B,d=d,
+                                                theta=THat,settings=settings,R=R,MN=MN,
+                                                missList=missList,MY=MY)))
+          X2  <- simplify2array(X2,higher=TRUE)	
+        }
         X3		<- t(apply(X2,c(1,3),mean))
         b         <- -t(t(rowMeans(X3)));    
         dd        <- -t(apply(X3, 1, scale, scale=FALSE))   
         zHat	<- apply(X2,c(2,3),mean) 
-        # if (settings$drawA=="lowertriangular") {
-        #   #compue covariances
-        #   covTMC	<- cov(THat)
-        #   covTZMC	<- cov(THat,Z)
-        #   covT		<- covT  + alpha[i]*(covTMC-covT)
-        #   covTZ		<- covTZ + alpha[i]*(covTZMC-covTZ)
-        #   atemp	<- DrawALowerDiag(covT=covT,covTZ=covTZ,Q,J,N)
-        # } else 
         if (settings$drawA=="eigen") {
           atemp	<- tryCatch({
             DrawAEigen(covZ = cov(zHat)-diag(J),settings$Adim)
@@ -86,11 +85,22 @@ FixedParamTheta <-
           atemp	<- DrawA(cov(zHat)-diag(J)/n1cat,settings$Adim,a=A)
         }
         a <- as.matrix(atemp$Atemp)
-        if (settings$Adim==1) {
-          THat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=A,Z = zHat,BTB_INV=BTB_INV,b=B,dbltrunc=settings$dbltrunc))
+        if (settings$parallel) {
+          if (settings$Adim==1) {
+            THat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=A,Z = zHat,BTB_INV=BTB_INV,b=B,dbltrunc=settings$dbltrunc))
+          } else {
+            THat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=A,Z = zHat,BTB_INV=BTB_INV,b=B,dbltrunc=settings$dbltrunc))
+          }
         } else {
-          THat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=A,Z = zHat,BTB_INV=BTB_INV,b=B,dbltrunc=settings$dbltrunc))
+          if (settings$Adim==1) {
+            THat	<- as.matrix(sapply(1:nrow(zHat),function (x) (WrapT(x,A=A,Z = zHat,BTB_INV=BTB_INV,
+                                                                      b=B,dbltrunc=settings$dbltrunc))))
+          } else {
+            THat	<- t(sapply(1:nrow(zHat),function (x) (WrapTmv(x,A=A,Z = zHat,BTB_INV=BTB_INV,
+                                                                b=B,dbltrunc=settings$dbltrunc))))
+          }
         }
+        
         FTiter<-abind(FTiter,as.matrix(THat),along=3)
         #if(it%%10==0) print(paste(it,"th Iteration",sep=""))
         AFSEiter<-abind(AFSEiter,a,along=3)    

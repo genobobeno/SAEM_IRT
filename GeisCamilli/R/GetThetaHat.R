@@ -1,10 +1,12 @@
-GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,indU,indL,R=NA,TAU=NA) {
+GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,
+                         indU,indL,RT=NA,R=NA,TAU=NA,MN=NA,
+                         missList=NA,MY=NA) {
   #print("Theta Estimation GO!")
-  if (!is.na(R) & "Th" %in% names(R) & setting$Adim>1) {
-    for (i in 1:ncol(R$loadings)) {
-      if (sum(R$loadings[,i])<0) R$loadings[,i]<- (-1)*R$loadings[,i]
+  if (!is.na(RT) & "Th" %in% names(RT) & setting$Adim>1) {
+    for (i in 1:ncol(RT$loadings)) {
+      if (sum(RT$loadings[,i])<0) RT$loadings[,i]<- (-1)*RT$loadings[,i]
     }
-    aa<-R$loadings
+    aa<-RT$loadings
   }
   ZHAT<-zHat  # N x J
   if (!is.na(setting$nesttheta)[1]) {
@@ -35,22 +37,48 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,indU,indL,R=NA,TA
       ATA 		<- t(aa)%*%aa #*4
       BTB_INV	<- solve(diag(setting$Adim) + ATA)
       for (i in 1:setting$nesttheta) {
-        X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,simplify=FALSE,A=aa,b=bb,
-                                        d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat), higher=TRUE)	
+        if (setting$parallel) {
+          X2		<- simplify2array(parSapply(cl,1:length(bb),WrapX,simplify=FALSE,A=aa,b=bb,
+                                          d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat), higher=TRUE)	
+        } else {
+          X2	<- lapply(1:length(bb),function (x) (WrapX1(x,A=aa,b=bb,
+                                                d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),
+                                                theta=tHat,settings=setting,R=R,MN=MN,
+                                                missList=missList,MY=MY)))
+          X2  <- simplify2array(X2,higher=TRUE)	
+        }
         X3		<- t(apply(X2,c(1,3),mean))
+        
         if (!setting$dbltrunc) {
           zHat		<- colMeans(X2)
         } else {
-          X1 		<- parSapply(cl,1:length(bb),WrapZ,simplify=FALSE,A=aa,b=bb,
-                            d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat)
-          zHat		<- simplify2array(X1, higher=TRUE)	
+          if (setting$parallel) {
+            X1 		<- parSapply(cl,1:length(bb),WrapZ,simplify=FALSE,A=aa,b=bb,
+                              d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),theta=tHat)
+            zHat		<- simplify2array(X1, higher=TRUE)	
+          } else {
+            zHat 		<- simplify2array(sapply(1:length(bb),function (x) (WrapZ1(x,A=aa,b=bb,
+                                                                  d=TAU-matrix(rep(bb,ncol(TAU)),length(bb),ncol(TAU)),
+                                                                  theta=tHat,settings=setting,indL=indL,
+                                                                  indU=indU))),higher=TRUE)
+          }      
         }
-        if (setting$Adim==1) {
-          tHat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
+        
+        if (setting$parallel) {
+          if (setting$Adim==1) {
+            tHat	<- as.matrix(parSapply(cl,1:nrow(zHat),WrapT,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
+          } else {
+            tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
+          }
         } else {
-          tHat	<- t(parSapply(cl,1:nrow(zHat),WrapTmv,A=aa,Z = zHat,BTB_INV=BTB_INV,b=bb,dbltrunc=setting$dbltrunc))
+          if (setting$Adim==1) {
+            tHat	<- as.matrix(sapply(1:nrow(zHat),function (x) (WrapT(x,A=aa,Z = zHat,BTB_INV=BTB_INV,
+                                                             b=bb,dbltrunc=setting$dbltrunc))))
+          } else {
+            tHat	<- t(sapply(1:nrow(zHat),function (x) (WrapTmv(x,A=aa,Z = zHat,BTB_INV=BTB_INV,
+                                                       b=bb,dbltrunc=setting$dbltrunc))))
+          }
         }
-
         if (setting$Adim>1) {
           THAT<-abind(THAT,tHat,along=3)
         } else {
@@ -80,8 +108,8 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,indU,indL,R=NA,TA
       TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU,That=THETA[,1:setting$Adim])
       TMAP<-as.matrix(TMAP)
       ifelse(setting$Adim==1,colnames(TMAP)<-"TMAP",colnames(TMAP)<-paste("TMAP",1:setting$Adim,sep=""))
-      if (!is.na(R)) {
-        aa=R$loadings
+      if (!is.na(RT)) {
+        aa=RT$loadings
         TRMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU,That=THETA[,1:setting$Adim])
         TRMAP<-as.matrix(TRMAP)
         ifelse(setting$Adim==1,colnames(TRMAP)<-"TRMAP",colnames(TRMAP)<-paste("TRMAP",1:setting$Adim,sep=""))
@@ -92,8 +120,8 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,indU,indL,R=NA,TA
       TMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU,That=tHat)
       TMAP<-as.matrix(TMAP)
       ifelse(setting$Adim==1,colnames(TMAP)<-"TMAP",colnames(TMAP)<-paste("TMAP",1:setting$Adim,sep=""))
-      if (!is.na(R)) {
-        aa=R$loadings
+      if (!is.na(RT)) {
+        aa=RT$loadings
         TRMAP<-ThetaMAP(aa=aa,bb=bb,cc=cc,rp=rp,settings=setting,TAU=TAU,That=tHat)
         TRMAP<-as.matrix(TRMAP)
         ifelse(setting$Adim==1,colnames(TRMAP)<-"TRMAP",colnames(TRMAP)<-paste("TRMAP",1:setting$Adim,sep=""))

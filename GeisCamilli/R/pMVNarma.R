@@ -1,3 +1,3 @@
-pMVNarma<-function(x) {
-  mvrnormArma(length(p.lst[[x]]), tHat[p.lst[[x]],], V)
+pMVNarma<-function(x,pList,thHat,VAR) {
+  mvrnormArma(length(pList[[x]]), thHat[pList[[x]],], VAR)
 }

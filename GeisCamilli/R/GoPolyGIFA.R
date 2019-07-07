@@ -81,14 +81,23 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   if (settings$parallel) {
     clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
     clusterEvalQ(cl,c("WrapX","WrapT","WrapTmv","WrapZ"))
-  }
-  
-  if (!settings$dbltrunc) {
-    X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE), higher=TRUE)	
-    Z		<- apply(X2,c(2,3),mean) 
+    if (!settings$dbltrunc) {
+      X2		<- simplify2array(parSapply(cl,1:J,WrapX,A=A,b=b,d=d,theta=theta,simplify=FALSE),higher=TRUE)	
+      Z		<- apply(X2,c(2,3),mean) 
+    } else {
+      Z 		<- simplify2array(parSapply(cl,1:J,WrapZ,A=A,b=b,d=d,theta=theta,simplify=FALSE),higher=TRUE)
+    }
   } else {
-    Z 		<- simplify2array(parSapply(cl,1:J,WrapZ,A=A,b=b,d=d,theta=theta,simplify=FALSE), 
-                          higher=TRUE)
+    if (!settings$dbltrunc) {
+      X2		<- simplify2array(sapply(1:J,function (x) (WrapX1(x,A=A,b=b,d=d,theta=theta,
+                                                           settings=settings,R=R,MN=MN,
+                                                           missList=missList,MY=MY))),higher=TRUE)
+      Z		<- apply(X2,c(2,3),mean) 
+    } else {
+      Z 		<- simplify2array(sapply(1:J,function (x) (WrapZ1(x,A=A,b=b,d=d,theta=theta,
+                                                            settings=settings,indL=indL,
+                                                            indU=indU))),higher=TRUE)
+    }
   }
   # b[4]
   # sort(theta%*%A[4,])[1:5]
@@ -110,10 +119,20 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   A<-as.matrix(atemp$Atemp)
   ATA 		<- t(A)%*%A #*4
   BTB_INV	<- solve(IQ + ATA)
-  if (Q==1) {
-    theta	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+  if (settings$parallel) {
+    if (Q==1) {
+      theta	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    } else {
+      theta	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    }
   } else {
-    theta	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    if (Q==1) {
+      theta	<- as.matrix(sapply(1:N,function (x) (WrapT(x,A=A,Z = Z,BTB_INV=BTB_INV,
+                                                         b=b,dbltrunc=settings$dbltrunc))))
+    } else {
+      theta	<- t(sapply(1:N,function (x) (WrapTmv(x,A=A,Z = Z,BTB_INV=BTB_INV,
+                                                   b=b,dbltrunc=settings$dbltrunc))))
+    }
   }
   meanX	<- 0; meanD <- 0; meanB <- 0
   # alpha <- ifelse(1:niter < (nEM+1),rep(1,niter),1/(1:niter-nEM)^(2/3))
@@ -143,13 +162,26 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     if (i%%10==1) cat(".")
     if (i%%100==1) cat(":")
     if (i%%500==1) cat("\n",i,"\t : ")
-    X2		<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=theta), higher=TRUE)	
+    if (settings$parallel) {
+      X2	<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=theta), higher=TRUE)	
+    } else {
+      X2	<- lapply(1:J,function (x) (WrapX1(x,A=A,b=b,d=d,theta=theta,
+                                                            settings=settings,R=R,MN=MN,
+                                                            missList=missList,MY=MY)))
+      X2  <- simplify2array(X2,higher=TRUE)	
+    }
     X3		<- t(apply(X2,c(1,3),mean))
     if (!settings$dbltrunc) {
       Z		<- colMeans(X2)
     } else {
-      X1 		<- parSapply(cl,1:J,WrapZ,simplify=FALSE,A=A,b=b,d=d,theta=theta)
-      Z		<- simplify2array(X1, higher=TRUE)	
+      if (settings$parallel) {
+        X1 		<- parSapply(cl,1:J,WrapZ,simplify=FALSE,A=A,b=b,d=d,theta=theta)
+        Z		<- simplify2array(X1, higher=TRUE)	
+      } else {
+        Z 		<- simplify2array(sapply(1:J,function (x) (WrapZ1(x,A=A,b=b,d=d,theta=theta,
+                                                              settings=settings,indL=indL,
+                                                              indU=indU))),higher=TRUE)
+      }      
     }
     meanB <- meanB + alpha[i]*(t(t(rowMeans(X3)))-meanB)
     meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
@@ -199,10 +231,20 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     BTB_INV	<- solve(IQ + ATA)
     # print("BTB_INV")
     # print(BTB_INV)
-    if (Q==1) {
-      theta		<- thetanew	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    if (settings$parallel) {
+      if (Q==1) {
+        theta	<- thetanew	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+      } else {
+        theta	<- thetanew	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+      }
     } else {
-      theta		<- thetanew	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+      if (Q==1) {
+        theta	<- thetanew	<- as.matrix(sapply(1:N,function (x) (WrapT(x,A=A,Z = Z,BTB_INV=BTB_INV,
+                                                          b=b,dbltrunc=settings$dbltrunc))))
+      } else {
+        theta	<- thetanew	<- t(sapply(1:N,function (x) (WrapTmv(x,A=A,Z = Z,BTB_INV=BTB_INV,
+                                                    b=b,dbltrunc=settings$dbltrunc))))
+      }
     }
     # theta	<- t(parSapply(cl,1:N,WrapT,A=A,Z=Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
     # print("theta")
@@ -306,6 +348,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   if (!is.na(timed)[1] && timed$TF) {
     settings$timed.SAEM_Cycles<-Timing(clock)-settings$timed.SAEM_Init
     settings$timed.Iterations<-i
+    print(paste("Time: ",settings$timed.SAEM_Cycles))
   }
   # Time <- Sys.time()-Tstart;	print(paste(settings$cores,"processors:",Time))
   gc()
@@ -359,8 +402,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
       C<-NA;W<-NA
       if (settings$esttheta) {
         THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
-                          prior=prior,setting=settings,R=AR,
-                          TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+                          prior=prior,setting=settings,RT=AR,R=R,
+                          TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                          MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
       } else {THAT<-NA}
       ARot<-AR$loadings
     } else {
@@ -369,8 +413,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
       ARot <- A
       if (settings$esttheta) {
         THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
-                          prior=prior,setting=settings,R=AR,
-                          TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+                          prior=prior,setting=settings,RT=AR,R=R,
+                          TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                          MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
       } else {THAT<-NA}
     }
   } else {
@@ -379,8 +424,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     ARot <- A
     if (settings$esttheta) {
       THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
-                        prior=prior,setting=settings,R=AR,
-                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1))
+                        prior=prior,setting=settings,RT=AR,R=R,
+                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                        MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
     } else {
       THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA)
     }
@@ -399,7 +445,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
                 tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                 EZ=Z,EZZ=covZ,settings=settings,That=THAT$THETA,Trot=TROT)
   if (settings$esttheta & !is.na(settings$nesttheta)) {
-    ThetaFix<-FixedParamTheta(FitDATA,rp=rp)
+    ThetaFix<-FixedParamTheta(FitDATA,rp=rp,R=R,MN=MN,missList=missList,
+                              MY=MY,indU=indU,indL=indL)
   } else {ThetaFix<-NA}
   if (settings$empiricalse) {
     EmpSE<-GetPolyEmpiricalSE(FitDATA,rp=rp)

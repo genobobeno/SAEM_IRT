@@ -505,14 +505,15 @@ settings$nesttheta<-200
 settings$thinA=8
 settings$thinB=5
 settings$EmpIT=1000
-settings$estfile<-paste0(data.dir,"/QOL_A",settings$Adim)
+settings$estfile<-paste0(data.dir,"/QOL_TIMED_A",settings$Adim)
 settings$burnin=2000
 settings$eps=0.001
 settings$thetamap=FALSE
 settings$record=TRUE
 settings$cores<-4
-settings$parallel<-TRUE
-QOL.Fit.1D<-AnalyzeTestData(RP = Response,settings = settings,verbose = TRUE,TargetA = NA)
+settings$parallel<-FALSE
+settings$burnin=80
+QOL.Fit.1D<-AnalyzeTestData(RP = Response,settings = settings,verbose = TRUE,TargetA = NA,timed=TRUE)
 GetLikelihood(QOL.Fit.1D)
 #TWFitTest(fit.data = QOL.Fit.1D)
 

@@ -412,11 +412,20 @@ X<-scan()
 LC<-matrix(X,nrow=24,ncol=13,byrow = TRUE)
 LC<-LC[,c(2,4,6,8,10)]
 LiCai.MH.1D<-LC
+library(DescTools)
+
+k=5
+hetcor(data = data.frame(l1=factor(order(-LiCai.MH.1D[,k]),ordered = TRUE),
+           l2=factor(order(-QOL.1D.Thresholds[,k]),ordered = TRUE)))
+cor.test(x = LiCai.MH.1D[,k],y = QOL.1D.Thresholds[,k],method = "spearman")
+p1<-table(order(-LiCai.MH.1D[,k]),order(-QOL.1D.Thresholds[,k]))
+
+cd1<-ConDisPairs(p1)
+cd1$D/(24*(24-1)/2)
 
 for (i in 1:ncol(Response)) {
   cat(i,"&",paste0(round(QOL.1D.Thresholds[i,],digits=2)," & ",LiCai.MH.1D[i,],collapse=" & "),"\\\\ \\hline \n")
 }
-
 Target.R<-cbind(rep(NA,24),
                 c(0,0,NA,NA,0,0,0,0,NA,NA,0,0,0,0,NA,NA,0,NA,0,0,0,NA,NA,NA),
                 c(0,NA,0,0,0,NA,0,0,0,NA,0,0,0,0,0,0,NA,0,0,0,0,0,0,0),

@@ -1,5 +1,4 @@
-GoGIFA <-
-function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
+GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   library(rlecuyer)		# for rand num generation
   if (get_os()=="windows") library(snow)			# for parallel processing
   library(GPArotation)	# for rotations
@@ -22,7 +21,7 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   }
   if (settings$parallel) {
     clusterExport(cl,c("J","N","rp","indL","indU"),envir=environment())
-    clusterEvalQ(cl,c("mvrnormArma"))
+    clusterEvalQ(cl,c("pMVNarma"))
   }
   if (settings$plots) {
     ItCC<-vector() 
@@ -84,8 +83,9 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   GammaT=matrix(rep(0,(pxi)^2),pxi,pxi) 
   W<-NA
   cat("Iterations")
+  passing=0
   if (!is.na(timed)[1] && timed$TF) settings$timed.SAEM_Init<-Timing(clock)
-  while (max(abs(test))>settings$eps) {    
+  while (passing!=3) {    
     #print(paste(It,"Next Iteration"))
     if (It%%10==1) cat(".")
     if (It%%100==1) cat(":")
@@ -181,7 +181,20 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
         if (It%%(10*settings$Adim)==0 && settings$plots && ncol(Biter)>settings$burnin+1 && !is.na(settings$simfile)) PlotsChain(Aiter,Biter,settings,A,init)
       }
       if (tolower(settings$est)=="rm") {
-        test<-as.vector(A-A0)
+        if (tolower(settings$converge)=="a"|grepl("slop",tolower(settings$converge))) {
+          test<-(A-A0)
+        } else if (grepl("eig.+val",tolower(settings$converge))|grepl("e?(.+)val",tolower(settings$converge))) {
+          if (settings$Adim==1) {
+            test<-(sum(A) - sum(A0))
+          } else if (prod(A==A0)==1) {
+            test<-1
+          } else {
+            test<-(A-A0)
+          }
+        } else {
+          test<-(A-A0)
+        }
+        passing<-ifelse(max(abs(test))<settings$eps,passing+1,0) 
         JH<-GetErrorLogitApp(A=A,B=B,C=C,TH=THat,RP=rp)
         Jacob <- JH$Jacob
         Hess  <- JH$Hess
@@ -201,6 +214,7 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
           if (settings$guess) mC<-rowMeans(Citer[,(settings$burnin-10):(It+1)])
           XIMean<-c(mA,mB)
           test<-(abs(XIMean-XIMean0))
+          passing<-ifelse(max(abs(test))<settings$eps,passing+1,0) 
           XIMean0<-XIMean
         }
       } else {
@@ -210,9 +224,11 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     }
     It<-It+1
   }
+  print(paste("Total Iterations:",It))
   if (!is.na(timed)[1] && timed$TF) {
     settings$timed.SAEM_Cycles<-Timing(clock)-settings$timed.SAEM_Init
     settings$timed.Iterations<-It
+    print(paste("Time: ",settings$timed.SAEM_Cycles))
   }
   if (tolower(settings$est)=="off") {
     ifelse(settings$Adim==1,A<-mA,A<-matrix(mA,nrow=J,ncol=settings$Adim))
@@ -230,6 +246,9 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     THat<-as.matrix(TCai[,1:settings$Adim,1])
   }
   ####   Rotations
+  # A is A_gen
+  # B is estimated loading matrix, W is a weight matrix, the rotation target is bifactor 0s
+  # pstT is partially specified target orthogonal rotation
   if (settings$Adim>1 & !is.na(settings$simfile)) {
     ifelse(grepl("\\.[Rr][Dd][Aa]",settings$simfile),
            load(file=settings$simfile),
@@ -247,10 +266,6 @@ function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
       #Rotate Theta via %*%t(Th)
     } else if (settings$rmethod=="pstT") {
       for (i in 1:length(RTS)) {
-        # A is A_gen
-        # B is estimated loading matrix
-        # W is a weight matrix. The rotation target is the bifactor 0’s
-        # pstT is partially specified target orthogonal rotation
         WR <- matrix(0,J,settings$Adim)
         WR[which(gen.xi[,1:settings$Adim]==0)] <- 1
         Tmat <- matrix(-1,settings$Adim,settings$Adim)

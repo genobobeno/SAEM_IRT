@@ -29,8 +29,8 @@ function(aa,bb,zz,rp,prior,prl=FALSE,cores=settings$cores) {
     #for (n in 1:N) that[n,]<-mvrnorm(1,tHat[n,],Sigma=V)
     if (prl) {
       p.lst<-suppressWarnings(vsplit(1:N,f=1:cores))
-      clusterExport(cl,c("p.lst","tHat","V"))
-      that<-do.call(rbind,parLapply(cl,1:cores,pMVNarma))
+      #clusterExport(cl,c("p.lst","tHat","V"))
+      that<-do.call(rbind,parLapply(cl,1:cores,pMVNarma,pList=p.lst,thHat=tHat,VAR=V))
     } else {
       that<-mvrnormArma(N, tHat, V)
     }

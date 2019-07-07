@@ -19,6 +19,9 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE,timed=FALS
   if (settings$parallel) { # & settings$cores>1) {
     if (get_os()=="windows") {
       cl <<- parallel::makePSOCKcluster(settings$cores)
+      if (is.na(settings$ncat)[1] | settings$ncat==2) {
+        clusterCall(cl, cppInit)
+      }
       parallel::clusterSetRNGStream(cl, iseed = round(runif(6)*1001))
       #parallel::setDefaultCluster(cl)
       prl<-TRUE

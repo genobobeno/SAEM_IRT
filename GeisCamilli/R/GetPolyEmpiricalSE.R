@@ -86,8 +86,10 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     yL <- matrix(yA+1,N,1)
     indL[[j]] <- cbind(1:N,yL); 		indU[[j]] <- cbind(1:N,yL + 1)
   }
-  clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
-  clusterEvalQ(cl,c("WrapX","WrapT","WrapZ"))
+  if (settings$parallel) {
+    clusterExport(cl,c("Y","Q","n1cat","N","J","MY","MN","R","missList","indL","indU"),envir=environment())
+    clusterEvalQ(cl,c("WrapX","WrapT","WrapZ"))
+  }
   ATA 		<- t(A)%*%A #*4
   BTB_INV	<- solve(IQ + ATA)
   d<-D; b<-B
@@ -115,7 +117,15 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     if (i%%10==1) cat(".")
     if (i%%100==1) cat(":")
     if (i%%500==1) cat("\n",i,"\t : ")
-    X2		<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=THat), higher=TRUE)	
+    
+    if (settings$parallel) {
+      X2		<- simplify2array(parSapply(cl,1:J,WrapX,simplify=FALSE,A=A,b=b,d=d,theta=THat), higher=TRUE)	
+    } else {
+      X2	<- lapply(1:J,function (x) (WrapX1(x,A=A,b=b,d=d,theta=THat,
+                                            settings=settings,R=R,MN=MN,
+                                            missList=missList,MY=MY)))
+      X2  <- simplify2array(X2,higher=TRUE)	
+    }
     X3		<- t(apply(X2,c(1,3),mean))
     b <- -(t(t(rowMeans(X3))))
     d <- -(t(apply(X3, 1, scale, scale=FALSE)))
@@ -124,8 +134,14 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     if (!settings$dbltrunc) {
       Z		<- colMeans(X2)
     } else {
-      X1 		<- parSapply(cl,1:J,WrapZ,simplify=FALSE,A=A,b=b,d=d,theta=THat)
-      Z		<- simplify2array(X1, higher=TRUE)	
+      if (settings$parallel) {
+        X1 		<- parSapply(cl,1:J,WrapZ,simplify=FALSE,A=A,b=b,d=d,theta=THat)
+        Z		<- simplify2array(X1, higher=TRUE)	
+      } else {
+        Z 		<- simplify2array(sapply(1:J,function (x) (WrapZ1(x,A=A,b=b,d=d,theta=THat,
+                                                              settings=settings,indL=indL,
+                                                              indU=indU))),higher=TRUE)
+      } 
     }
     covZ	<- cov(Z)
     # print(i)
@@ -161,10 +177,23 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     BTB_INV	<- solve(IQ + ATA)
     # print("BTB_INV")
     # print(BTB_INV)
-    if (Q==1) {
-      THat		<- thetanew	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+    
+    if (settings$parallel) {
+      if (Q==1) {
+        THat		<- thetanew	<- as.matrix(parSapply(cl,1:N,WrapT,A=A,Z = Z,BTB_INV=BTB_INV,
+                                                 b=b,dbltrunc=settings$dbltrunc))
+      } else {
+        THat		<- thetanew	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,
+                                         b=b,dbltrunc=settings$dbltrunc))
+      }
     } else {
-      THat		<- thetanew	<- t(parSapply(cl,1:N,WrapTmv,A=A,Z = Z,BTB_INV=BTB_INV,b=b,dbltrunc=settings$dbltrunc))
+      if (Q==1) {
+        THat	<- thetanew	<- as.matrix(sapply(1:N,function (x) (WrapT(x,A=A,Z = Z,BTB_INV=BTB_INV,
+                                                                      b=b,dbltrunc=settings$dbltrunc))))
+      } else {
+        THat	<- thetanew	<- t(sapply(1:N,function (x) (WrapTmv(x,A=A,Z = Z,BTB_INV=BTB_INV,
+                                                                b=b,dbltrunc=settings$dbltrunc))))
+      }
     }
     ASEiter<-abind(ASEiter,as.matrix(A),along=3)    
     BSEiter<-cbind(BSEiter,B)
