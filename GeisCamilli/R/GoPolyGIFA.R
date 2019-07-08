@@ -183,7 +183,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
                                                               indU=indU))),higher=TRUE)
       }      
     }
-    meanB <- meanB + alpha[i]*(t(t(rowMeans(X3)))-meanB)
+    #meanB <- meanB + alpha[i]*(t(t(rowMeans(X3)))-meanB)
+    meanB <- meanB + alpha[i]*(rowMeans(X3)-meanB)
     meanD <- meanD + alpha[i]*(t(apply(X3, 1, scale, scale=FALSE)) - meanD)
     b         <- -meanB;    d        <- -meanD   
     #Z		<- apply(X2,c(2,3),mean)

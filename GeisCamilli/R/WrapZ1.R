@@ -14,6 +14,7 @@ WrapZ1 <- function(j,A,b,d,theta,settings=settings,indL=indL,indU=indU) {
   # yL <- matrix(y.a[,j]+1,n,1) 
   # indL <- cbind(nn,yL); 		indU <- cbind(nn,yL + 1)
   pL <- pnorm( pp[indL[[j]]] ) ; 	pU <- pnorm( pp[indU[[j]]] )
+  #pL <- approxPnorm( pp[indL[[j]]] ) ; 	pU <- approxPnorm( pp[indU[[j]]] )
   Zj <- eta + qnorm( pL + U*(pU - pL)  ) 
   c(Zj)
 }
