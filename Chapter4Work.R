@@ -158,9 +158,15 @@ FCIB<-paste("B",64:93,sep="")
 b.RP<-IDF[which(!is.na(IDF$FCI.x)&(!is.na(IDF$LetterGrade123)|!is.na(IDF$LetterGrade115))),FCIB]
 Correct<-FCTest[,"Numbers"]
 scores<-table(100*round(rowMeans(Response),digits = 3))
-par(mfrow=c(1,1))
+par(mfrow=c(1,2))
 barplot(scores,main="FCI Pretest Score Distribution",names.arg = names(scores),xlab = "% Correct",ylab = "Frequency",las=2)
-fitlist.score<-ResponseCurves(responses = b.RP,scores = rowMeans(Response),prows = 3,pcols = 5,correct = Correct)
+qqnorm(y=100*round(rowMeans(Response),digits = 3),main="FCI Pretest Q-Q Analysis")
+
+
+
+
+fitlist.score<-ResponseCurves(responses = b.RP,scores = rowMeans(Response),
+                              prows = 1,pcols = 3,correct = Correct,j.legend = c(1,10))
 fitlist.1D<-ResponseCurves(responses = b.RP,scores = FCI.1D.NoGuess$That[,"Theta"],prows = 3,pcols = 5,correct = Correct)
 fitlist.1D.G<-ResponseCurves(responses = b.RP,scores = FCI.1D.Guess$That[,"Theta"],prows = 3,pcols = 5,correct = Correct)
 par(mfrow=c(1,4)) 
@@ -489,31 +495,34 @@ for (j in 1:ncol(Response)) {
 
 
 ### QOL Data
-
+?Rprof
+Rprof()
 Response = scan(paste0(data.dir,"/qol.dat"), what = "numeric",sep = "\n") # N=753
 Response = data.matrix(do.call(rbind,lapply(strsplit(Response,"\\s"), function(x) as.numeric(x[-1]))))
 settings<-CheckParams(generate = FALSE)
 settings$ncat<-5
-settings$Adim<-1
+settings$Adim<-5
 settings$dbltrunc<-TRUE
 settings$tmu<-rep(0,settings$Adim)
 settings$tsigma<-diag(settings$Adim)
 settings$rmethod<-NA
-settings$empiricalse<-TRUE
-settings$esttheta<-TRUE
+settings$empiricalse<-FALSE
+settings$esttheta<-FALSE
 settings$nesttheta<-200
 settings$thinA=8
 settings$thinB=5
 settings$EmpIT=1000
 settings$estfile<-paste0(data.dir,"/QOL_TIMED_A",settings$Adim)
 settings$burnin=2000
-settings$eps=0.001
+settings$eps=0.0001
 settings$thetamap=FALSE
-settings$record=TRUE
-settings$cores<-4
+settings$record=FALSE
+settings$cores<-1
 settings$parallel<-FALSE
 settings$burnin=80
 QOL.Fit.1D<-AnalyzeTestData(RP = Response,settings = settings,verbose = TRUE,TargetA = NA,timed=TRUE)
+Rprof(NULL)
+summaryRprof()
 GetLikelihood(QOL.Fit.1D)
 #TWFitTest(fit.data = QOL.Fit.1D)
 

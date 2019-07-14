@@ -1,4 +1,6 @@
-ResponseCurves<-function(responses,scores,prows=5,pcols=3,correct=NA,j.legend=c(24,6),score.bins=NA,missing=9,...) {
+ResponseCurves<-function(responses,scores,prows=5,pcols=3,correct=NA,
+                         j.legend=c(24,6),score.bins=NA,missing=9,
+                         distractor.letters=TRUE,...) {
   # responses<-b.RP; scores<-apply(Response,1,mean); correct<-Correct
   # stopifnot(sum(is.numeric(data.matrix(responses)))==length(data.matrix(responses)))
   #responses = R.QOL-2;scores = rowMeans(R.QOL-2,na.rm = TRUE)
@@ -19,7 +21,7 @@ ResponseCurves<-function(responses,scores,prows=5,pcols=3,correct=NA,j.legend=c(
   ncat<-max(apply(responses,2, function(x) length(unique(x[!is.na(x)]))))
   PCH<-c(0,1,2,6,3,7,9)[1:ncat]
 #  par(mfrow=c(prows,pcols),...)
-  par(mfrow=c(prows,pcols),cex=0.7)
+  par(mfrow=c(prows,pcols),...)
   l.fits<-list()
   for (j in 1:J) {
     if ((j%%pcols)==1 & ceiling((((j-1)%%(prows*pcols))+1)/pcols)!=prows) {
@@ -37,7 +39,7 @@ ResponseCurves<-function(responses,scores,prows=5,pcols=3,correct=NA,j.legend=c(
          xlab=ifelse(ceiling((((j-1)%%(prows*pcols))+1)/pcols)==prows,"score",NA))
     if ((j%%pcols)==1) axis(2)
     if (ceiling((((j-1)%%(prows*pcols))+1)/pcols)==prows) axis(1)
-    if (ncat==2) {
+    if (distractor.letters) {
       rf<-factor(responses[,j],levels=1:ncat)
     } else {
       Lvls<-unique(responses[!is.na(responses[,j]),j])
@@ -93,7 +95,7 @@ ResponseCurves<-function(responses,scores,prows=5,pcols=3,correct=NA,j.legend=c(
       text(mean(range(scores)),0.95,paste("Item",j))
     }
     if (j %in% j.legend) {
-      if (ncat==2) {
+      if (distractor.letters) {
         legend("right",legend = LETTERS[1:ncat],pch=PCH)
       } else if (sum(grepl("(-)?[0-9]+",row.names(p)))==nrow(p)) {
         legend("right",legend = sort(as.numeric(row.names(p))),pch=PCH)

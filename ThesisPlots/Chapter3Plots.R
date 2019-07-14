@@ -155,7 +155,7 @@ text(875,1.25,expression(italic(gamma)[RM]),col=1)
 ######################
 
 
-BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
+BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd())
 
 RMProofPlots()
 
