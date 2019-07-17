@@ -157,7 +157,25 @@ text(875,1.25,expression(italic(gamma)[RM]),col=1)
 
 BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd())
 
-RMProofPlots()
+RMProofPlots(condition = "S1",items=c(5,11,37,38,53,63),basedir = getwd())
+
+ChainPlots(condition = "S1",items=c(38,37,53,63,5,11),repl=NA,bins=200,basedir = getwd(),brewpalette = "Set2",cex=1)
+
+
+source("CreateSimulationStructure.R")
+d = "S1";r = 3;simdir<-paste0(gen.dir,"/",d);fitdir<-paste0(fit.dir,"/",d)
+SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_",r,".rds"))
+FitList<-readRDS(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
+load(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rda"))
+par(mfrow=c(4,2))
+AutocovMC(MCMCDATA,start = 600,end = 800,items = 1,title.append = "Burn-in : ")   # Chain during burn
+AutocovMC(MCMCDATA,start = 800,end = 1000,items = 1,title.append = "Annealing : ")   # Chain during burn
+AutocovMC(MCMCDATA,start = 600,end = 800,items = 2,title.append = "Burn-in : ")   # Chain during burn
+AutocovMC(MCMCDATA,start = 800,end = 1000,items = 2,title.append = "Annealing : ")   # Chain during burn
+
+BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd())
+
+
 
 source("ThesisPlots/TWFitTests.R")
 TWTestAndPlot("S1",extra.dimensions = TRUE,E = 7)

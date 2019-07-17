@@ -7,16 +7,6 @@ options(digits = 5)
 # }
 #"ConvergedModelFits/"
 library(mcmc)
-AutocovMC<-function(x,burnin=800,start=600,items=1:5,title.append=NA) {
-  par(mfrow=c(5,2),mar=c(3,3,3,1))
-  if (is.na(items)[1]) items<-dim(x$Aiter)[1]
-  for (j in items) {
-    acf(x$Aiter[j,1,start:burnin],main=paste0(ifelse(is.na(title.append),"",title.append),"Slope, Item ",j),xlab=NA)
-    acf(x$Biter[j,start:burnin],main=paste0(ifelse(is.na(title.append),"",title.append),"Intercept, Item ",j),xlab=NA)
-  }
-}
-AutocovMC(MCMCDATA,burnin = burnin[2],start = burnin[1],title.append = "Iteration 600-800: ")   # Chain during burn
-AutocovMC(MCMCDATA,burnin = burnin[3],start = burnin[2],title.append = "Iteration 800-1000: ")   # Chain during Annealing window
 
 MCErrorFunction<-function(x,burnin=800,start=600,trimA=8,trimB=5) {
   for (iii in 1:dim(x$Aiter)[2]) {
