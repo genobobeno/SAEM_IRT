@@ -155,14 +155,17 @@ text(875,1.25,expression(italic(gamma)[RM]),col=1)
 ######################
 
 
-BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd())
+BenchmarkPlots(condition = "S1",all.reps = TRUE,basedir = getwd())
 
 RMProofPlots()
 
 source("ThesisPlots/TWFitTests.R")
 TWTestAndPlot("S1",extra.dimensions = TRUE,E = 7)
 
-BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
+BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd(),cex=1)
+
+
+BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd(),cex=1)
 
 CompareConditions("S1","S3",basedir = getwd())
 
