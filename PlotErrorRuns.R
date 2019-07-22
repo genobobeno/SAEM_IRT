@@ -2,617 +2,94 @@ WorkingDirectory = "."
 setwd(WorkingDirectory)
 PARALLEL=FALSE
 options(digits = 5)
+source("InitializeGeisCamilli.R")
 # if (!exists("jj")) {
 #  jj=0
 # }
 #"ConvergedModelFits/"
-library(mcmc)
 
-MCErrorFunction<-function(x,burnin=800,start=600,trimA=8,trimB=5) {
-  for (iii in 1:dim(x$Aiter)[2]) {
-    Atrim = start+trimA*1:(floor((burnin-start)/trimA))
-    if (iii==1) {
-      AE<-apply(x$Aiter[,1,Atrim],1,sd)
-    } else {
-      AE<-cbind(AE,apply(x$Aiter[,1,Atrim],1,sd))
-    }
-  }
-  Btrim = start+trimB*1:(floor((burnin-start)/trimB))
-  BE<-apply(x$Biter[,Btrim],1,sd)
-  cbind(AE,BE)
-}
+ERRStats<-RunErrors(condition="S1",CLT.start=0.1)
+PlotErrorEstimates(ERRStats)
 
-CLTErrorFunction<-function(x,burnin=800,start=600,trimA=8,trimB=5) {
-  for (iii in 1:dim(x$Aiter)[2]) {
-    Atrim = start+trimA*1:(floor((burnin-start)/trimA))
-    if (iii==1) {
-      AE<-apply(x$Aiter[,1,Atrim],1,function(y) (sqrt(initseq(y)$var.pos)))
-    } else {
-      AE<-cbind(AE,apply(x$Aiter[,1,Atrim],1,function(y) (sqrt(initseq(y)$var.pos))))
-    }
-  }
-  Btrim = start+trimB*1:(floor((burnin-start)/trimB))
-  BE<-apply(x$Biter[,Btrim],1,function(y) (sqrt(initseq(y)$var.pos)))
-  cbind(AE,BE)
-}
+ERRStatsS2<-RunErrors(condition="S2",CLT.start=0.1,CLT.end=0.8,guessing = FALSE)
+PlotErrorEstimates(ERRStatsS2)
 
-negsqrt<-function(x) {
-  if (x<0) return(0)
-  else return(sqrt(x))
-}
+ERRStatsS3<-RunErrors(condition="S3",CLT.start=0.1,CLT.end=0.8,guessing = FALSE)
+PlotErrorEstimates(ERRStatsS3)
+
+
+# mcmcCLTError<-function(x,burnin=800,start=600,trimA=8,trimB=5) {
+#   for (iii in 1:dim(x$Aiter)[2]) {
+#     Atrim = start+trimA*1:(floor((burnin-start)/trimA))
+#     if (iii==1) {
+#       AE<-apply(x$Aiter[,1,Atrim],1,function(y) (sqrt(initseq(y)$var.pos)))
+#     } else {
+#       AE<-cbind(AE,apply(x$Aiter[,1,Atrim],1,function(y) (sqrt(initseq(y)$var.pos))))
+#     }
+#   }
+#   Btrim = start+trimB*1:(floor((burnin-start)/trimB))
+#   BE<-apply(x$Biter[,Btrim],1,function(y) (sqrt(initseq(y)$var.pos)))
+#   cbind(AE,BE)
+# }
+
+library(mcmcse)
+#mcse.initseq(x=as.matrix(rnorm(10000,sd=0.5)))$cov
+
+
+# stats1D$A1_RMSE
+# par(mfrow=c(2,2))
+#sqrt(sum((XIiter[1,1,]-mXI[1,1])^2))/sqrt(49)
+
+# fit.dir<-"RMSE_Tests"
+# fitdir<-paste0(fit.dir,"/",d)
+# i=1
+# d="S1"
+# estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = i),".rda")
+# load(estfile)
+# 
+# AE<-mcse.initseq(t(MCMCDATA$Aiter[,1,600:1000]),adjust = F)$cov
+# plot(density(sqrt(diag(AE))/stats1D$A1_RMSE))
+# mean(sqrt(diag(AE))/stats1D$A1_RMSE)
+# 
+# SEA<-mcse.initseq(t(as.matrix(FitDATA$EmpSE$Aiter[,1,])))$cov
+# plot(density(sqrt(diag(SEA))/stats1D$A1_RMSE))
+# mean(sqrt(diag(SEA))/stats1D$A1_RMSE)
+# 
+# SEB<-mcse.initseq(t(as.matrix(FitDATA$EmpSE$Biter)))$cov
+# plot(density(sqrt(diag(SEB))/stats1D$B_RMSE))
+# 
+# BE<-mcse.initseq(t(MCMCDATA$Biter[,600:1000]),adjust = F)$cov
+# plot(density(sqrt(diag(BE))/stats1D$B_RMSE))
+# mean(sqrt(diag(BE))/stats1D$B_RMSE)
+# 
+# E1 <- cbind(t(MCMCDATA$Aiter[,1,300:1000]),t(MCMCDATA$Biter[,300:1000]))
+# SE1<-mcse.initseq(E1,adjust = F)$cov
+# plot(density(sqrt(diag(SE1))/c(stats1D$A1_RMSE,stats1D$B_RMSE)))
+# mean(sqrt(diag(SE1)[1:100])/c(stats1D$A1_RMSE))
+# mean(sqrt(diag(SE1)[100+1:100])/c(stats1D$B_RMSE))
+# mean(sqrt(diag(SE1))/c(stats1D$A1_RMSE,stats1D$B_RMSE))
+# 
+# 
+# AE<-apply(x$Aiter[,1,Atrim],1,function(y) (sqrt(as.vector(mcse.initseq(as.matrix(y))$cov))))
+# 
+# mcmcCLTError(MCMCDATA,burnin = burnin[3],start = burnin[2])
+# 
+
+
+
 
 
 ###############
 # RUN 1D Test #
 ###############
-source("CreateSimulationStructure.R")
-d<-condition<-"S1"
-SIM = 1
-sims=sim.list[[d]]$Reps
-# items=c(30,40,50)
-# examinees=c(2000,3000,4000)
-# burn = 100
-#b = 1; n = 1; j = 1; i = 1 # debug
-items=sim.list[[d]]$J
-examinees=sim.list[[d]]$N #,10000)
 
-simdir<-paste0(gen.dir,"/",d)
-SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_",SIM,".rds"))
-fitdir<-paste0(fit.dir,"/",d)
-FitList<-readRDS(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = SIM),".rds"))
-load(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = SIM),".rda"))
-burnin = c(ceiling(0.6*FitList$settings$burnin),ceiling(0.8*FitList$settings$burnin),FitList$settings$burnin)
-burn = burnin[2]
-
-# for (b in 1:length(burn)) {
-#   simfile=paste("Error",burn[b],"/SimError1D-",items,"-",examinees,"-s",SIM,".rda",sep="")    # Save to an ".rda" file with this name
-#   load(simfile)
-#   estfile=paste("Error",burn[b],"/FitError1D-",items,"-",examinees,"-s",SIM,"-r1.rda",sep="") 
-#       load(estfile)
-XIiter<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))        
-ERRiter<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims)) # LMI iterative - 2PNO
-iERR<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))    # LMI simple - 2PL
-oERR<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))    # LMI simple - 2PNO
-MCERR.Burn<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))  # Chain during burn
-MCERR.Ann<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))   # Chain during Ann window
-MCCLT.Burn<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))  # CLT during burn
-MCCLT.Ann<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))   # CLT during Ann window
-EMCERR<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))  # Chain empirical
-EMCCLT<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims))   # MCMC CLT empirical
-EmpLMIi<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims)) # LMI iterative - 2PL
-EmpLMIo<-array(0, dim=c(items,1+FitDATA$settings$Adim,sims)) # LMI iterative - 2PNO
-for (i in 1:sims) {
-  estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = i),".rda")
-  load(estfile)
-  XIiter[,,i]<-as.matrix(FitDATA$xi)   # converged
-  ERRiter[,,i]<-as.matrix(FitDATA$xiError)   # LMI iterative
-  iERR[,,i]<-as.matrix(FitDATA$iError)   # LMI at convergence, one calculation - 2pl
-  oERR[,,i]<-as.matrix(FitDATA$oError) # LMI at convergence, one calculation - 2pno
-  MCERR.Burn[,,i]<-as.matrix(MCErrorFunction(MCMCDATA,burnin = burnin[2],start = burnin[1]))   # Chain during burn
-  MCERR.Ann[,,i]<-as.matrix(MCErrorFunction(MCMCDATA,burnin = burnin[3],start = burnin[2]))    # Chain during Ann window
-  MCCLT.Burn[,,i]<-as.matrix(CLTErrorFunction(MCMCDATA,burnin = burnin[2],start = burnin[1]))  # CLT during burn
-  MCCLT.Ann[,,i]<-as.matrix(CLTErrorFunction(MCMCDATA,burnin = burnin[3],start = burnin[2]))   # CLT during Ann window
-  EMCERR[,,i]<-as.matrix(cbind(FitDATA$EmpSE$MCSA,FitDATA$EmpSE$MCSB)) # Chain empirical
-  EMCCLT[,,i]<-as.matrix(cbind(FitDATA$EmpSE$SEA,FitDATA$EmpSE$SEB))   # MCMC CLT empirical
-  EmpLMIi[,,i]<-as.matrix(FitDATA$EmpSE$VARLMIi)  # LMI empirical - iterative - 2pl
-  EmpLMIo[,,i]<-as.matrix(FitDATA$EmpSE$VARLMIo)  # LMI empirical - iterative - 2pno
-}
-
-
-
-#### Means of the variance estimations
-mXI<-  apply(XIiter,c(1,2),mean)  # converged   :::   parameters
-mLMI<- apply(ERRiter,c(1,2),function(x) mean(x[x>0])) # LMI iterative   :::  variance
-miERR<-apply(iERR,c(1,2),function(x) mean(x[x>0]))    # LMI at convergence, one calculation - 2pl   ::: variance
-moERR<-apply(oERR,c(1,2),function(x) mean(x[x>0]))    # LMI at convergence, one calculation - 2pno  ::: variance
-mLMIi<-apply(EmpLMIi,c(1,2),function(x) mean(x[x>0]))  # LMI empirical - iterative - 2pl  ::: variance
-mLMIo<-apply(EmpLMIo,c(1,2),function(x) mean(x[x>0]))  # LMI empirical - iterative - 2pno ::: variance
-
-print("Iterative LMI Negative Variances:")
-tt<-table(unlist(lapply(apply(ERRiter,3,function(x) which(x<0,arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-print("Simple LMI 2PL  Negative Variances:")
-tt<-table(unlist(lapply(apply(iERR,3,function(x) which(x<0,arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-print("Simple LMI 2PNO Negative Variances:")
-tt<-table(unlist(lapply(apply(oERR,3,function(x) which(x<0,arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-print("Empirical LMI 2PL  Negative Variances:")
-tt<-table(unlist(lapply(apply(EmpLMIi,3,function(x) which(x<0,arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-print("Empirical LMI 2PNO Negative Variances:")
-tt<-table(unlist(lapply(apply(EmpLMIo,3,function(x) which(x<0,arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-
-print("MCMC CLT Burnin NaN Variances:")
-tt<-table(unlist(lapply(apply(MCCLT.Burn,3,function(x) which(is.nan(x),arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-print("MCMC CLT Annealing NaN Variances:")
-tt<-table(unlist(lapply(apply(MCCLT.Ann,3,function(x) which(is.nan(x),arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-print("Empirical MCMC CLT Burnin NaN Variances:")
-tt<-table(unlist(lapply(apply(EMCCLT,3,function(x) which(is.nan(x),arr.ind = TRUE)),function(y) (y[,1]))))
-if (length(tt)>0) print(tt) else cat("0\n")
-
-
-#### All SDs
-sXI<-apply(XIiter,c(1,2),sd)  # RMSE
-eLMI<-matrix(sqrt(mLMI),nrow=items,ncol=1+FitDATA$settings$Adim)  # LMI iterative ::: sd
-eiERR<-matrix(sqrt(miERR),nrow=items,ncol=1+FitDATA$settings$Adim) # LMI at convergence, one calculation - 2pl  ::: sd
-eoERR<-matrix(sqrt(moERR),nrow=items,ncol=1+FitDATA$settings$Adim) # LMI at convergence, one calculation - 2pno ::: sd
-mMCE.Burn<- apply(MCERR.Burn,c(1,2),mean)   # Chain during burn         ::: sd
-mMCE.Ann<-  apply(MCERR.Ann,c(1,2),mean)    # Chain during Ann window   ::: sd
-mCLT.Burn<- apply(MCCLT.Burn,c(1,2),function(x) mean(x[!is.nan(x)]))   # CLT during burn           ::: sd
-mCLT.Ann<-  apply(MCCLT.Ann,c(1,2),function(x) mean(x[!is.nan(x)]))    # CLT during Ann window     ::: sd
-mEMC<- apply(EMCERR,c(1,2),mean)   # Chain empirical    ::: sd
-mECLT<-apply(EMCCLT,c(1,2),mean)   # MCMC CLT empirical ::: sd
-eLMIi<-matrix(sqrt(mLMIi),nrow=items,ncol=1+FitDATA$settings$Adim) # LMI empirical - iterative - 2pl  ::: sd
-eLMIo<-matrix(sqrt(mLMIo),nrow=items,ncol=1+FitDATA$settings$Adim) # LMI empirical - iterative - 2pno ::: sd
-
-
-gen.xi<-SimList$gen.xi
-bias<-mXI-gen.xi
-#######  SD of the variances
-sLMI <-apply(ERRiter,c(1,2),function(x) sd(sqrt(x[x>0])))
-siERR<-apply(iERR,c(1,2),function(x) sd(sqrt(x[x>0])))
-soERR<-apply(oERR,c(1,2),function(x) sd(sqrt(x[x>0])))
-sMCE.Burn<-apply(MCERR.Burn,c(1,2),sd)
-sMCE.Ann <-apply(MCERR.Ann,c(1,2),sd)
-sCLT.Burn<-apply(MCCLT.Burn,c(1,2),sd)
-sCLT.Ann <-apply(MCCLT.Ann,c(1,2),sd)
-sEMC <-apply(EMCERR,c(1,2),sd)
-sECLT<-apply(EMCCLT,c(1,2),sd)
-sLMIi<-apply(EmpLMIi,c(1,2),function(x) sd(sqrt(x[x>0])))
-sLMIo<-apply(EmpLMIo,c(1,2),function(x) sd(sqrt(x[x>0])))
-
-stats1D<-data.frame(N=rep(examinees,items),J=rep(items,items),Burn=rep(burn,items))
-for(p in 1:ncol(gen.xi)) {
-  ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
-  stats1D<-cbind(stats1D,gen.xi[,p])
-  colnames(stats1D)[ncol(stats1D)]<-pt
-  stats1D<-cbind(stats1D,mXI[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"est",sep="_")
-  stats1D<-cbind(stats1D,bias[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"bias",sep="_")
-  stats1D<-cbind(stats1D,sXI[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"RMSE",sep="_")
-  stats1D<-cbind(stats1D,mLMI[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"VAR_LMI_Iter",sep="_")
-  stats1D<-cbind(stats1D,eLMI[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_LMI_Iter",sep="_")
-  stats1D<-cbind(stats1D,sLMI[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_LMI_Iter",sep="_")
-  stats1D<-cbind(stats1D,miERR[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"VAR_Simple_2PL",sep="_")
-  stats1D<-cbind(stats1D,eiERR[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_Simple_2PL",sep="_")
-  stats1D<-cbind(stats1D,siERR[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_Simple_2PL",sep="_")
-  stats1D<-cbind(stats1D,moERR[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"VAR_Simple_2PNO",sep="_")
-  stats1D<-cbind(stats1D,eoERR[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_Simple_2PNO",sep="_")
-  stats1D<-cbind(stats1D,soERR[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_Simple_2PNO",sep="_")
-  stats1D<-cbind(stats1D,mMCE.Burn[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_MCMC_Burn",sep="_")
-  stats1D<-cbind(stats1D,sMCE.Burn[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_MCMC_Burn",sep="_")
-  stats1D<-cbind(stats1D,mMCE.Ann[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_MCMC_Ann",sep="_")
-  stats1D<-cbind(stats1D,sMCE.Ann[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_MCMC_Ann",sep="_")
-  stats1D<-cbind(stats1D,mCLT.Burn[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_CLT_Burn",sep="_")
-  stats1D<-cbind(stats1D,sCLT.Burn[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_CLT_Burn",sep="_")
-  stats1D<-cbind(stats1D,mCLT.Ann[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_CLT_Ann",sep="_")
-  stats1D<-cbind(stats1D,sCLT.Ann[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_CLT_Ann",sep="_")
-  stats1D<-cbind(stats1D,mEMC[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_MCMC_Emp",sep="_")
-  stats1D<-cbind(stats1D,sEMC[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_MCMC_Emp",sep="_")
-  stats1D<-cbind(stats1D,mECLT[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_CLT_Emp",sep="_")
-  stats1D<-cbind(stats1D,sECLT[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_CLT_Emp",sep="_")
-  stats1D<-cbind(stats1D,mLMIi[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"VAR_LMI_Iter_Emp_2PL",sep="_")
-  stats1D<-cbind(stats1D,eLMIi[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_LMI_Iter_Emp_2PL",sep="_")
-  stats1D<-cbind(stats1D,sLMIi[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_LMI_Iter_Emp_2PL",sep="_")
-  stats1D<-cbind(stats1D,mLMIo[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"VAR_LMI_Iter_Emp_2PNO",sep="_")
-  stats1D<-cbind(stats1D,eLMIo[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"ERR_LMI_Iter_Emp_2PNO",sep="_")
-  stats1D<-cbind(stats1D,sLMIo[,p])
-  colnames(stats1D)[ncol(stats1D)]<-paste(pt,"sd_ERR_LMI_Iter_Emp_2PNO",sep="_")
-} # else {
-#   st<-cbind(rep(examinees,items),rep(items,items),rep(burn[b],items))
-#   for(p in 1:ncol(gen.xi)) {
-#     st<-cbind(st,gen.xi[,p],bias[,p],sXI[,p],mLMI[,p],sqrt(mLMI[,p]),sLMI[,p],miERR[,p],
-#               sqrt(miERR[,p]),siERR[,p],moERR[,p],sqrt(moERR[,p]),soERR[,p],mMCE[,p],sMCE[,p],
-#               mLMIi[,p],eLMIi[,p],sLMIi[,p],mLMIo[,p],eLMIo[,p],sLMIo[,p])
-#   }
-#   colnames(st)<-colnames(stats1D)
-#   stats1D<-rbind(stats1D,st)
-# }
-
-write.csv(stats1D,"Stats1D.csv")
 
 
 ###### PLOTS
 #nf <- layout(matrix(c(1,2,3,4,6,7,8,9,5,5,5,5,10,10,10,10),8,2), c(16,16), c(4,3,3,5,4,3,3,5), TRUE)
-nf <- layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12,12,12,12,12,13,13,13,13,13,13),11,2), c(14,20), 
-             c(4,3,3,3,3,3,3,3,3,3,5,4,3,3,3,3,3,3,3,3,3,5), TRUE)
-#layout.show(nf)
+# nf <- layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12,12,12,12,12,13,13,13,13,13,13),11,2), c(14,20), 
+#              c(4,3,3,3,3,3,3,3,3,3,5,4,3,3,3,3,3,3,3,3,3,5), TRUE)
 
-YR<-range(c(stats1D$A1_ERR_CLT_Ann,
-            stats1D$A1_ERR_CLT_Burn,
-            stats1D$A1_ERR_CLT_Emp,
-            stats1D$A1_ERR_LMI_Iter,
-            stats1D$A1_ERR_LMI_Iter_Emp_2PL,
-            stats1D$A1_ERR_LMI_Iter_Emp_2PNO,
-            stats1D$A1_ERR_Simple_2PL,
-            stats1D$A1_ERR_Simple_2PNO,
-            stats1D$A1_ERR_MCMC_Ann,
-            stats1D$A1_ERR_MCMC_Burn,
-            stats1D$A1_ERR_MCMC_Emp)/stats1D$A1_RMSE)
-
-txt.labels<-c(expression("CLT"["Ann"]),
-              expression("CLT"["Burn"]),
-              expression("CLT"["Emp"]),
-              expression("MCMC"["Ann"]),
-              expression("MCMC"["Burn"]),
-              expression("MCMC"["Emp"]),
-              expression("ICE"),
-              expression("IPCE"["2PL"]),
-              expression("IPCE"["2PNO"]),
-              expression("SPCE"["2PL"]),
-              expression("SPCE"["2PNO"]))
-
-ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]
-labels <- format(ticks, big.mark=",", scientific=FALSE)
-m.b = 0.25
-par(mar=c(m.b,4,2,m.b))
-# for (p in 1:ncol(gen.xi)) {
-p=1
-ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=expression("Slope Error Estimates : 2PNO"),ylim=YR,
-     xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_CLT_Ann/stats1D$A1_RMSE,pch=0,col=1)
-text(0.6,0.9*YR[2],txt.labels[1])
-
-par(mar=c(m.b,4,m.b,m.b))
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_CLT_Burn/stats1D$A1_RMSE,pch=1,col=1)
-text(0.6,0.9*YR[2],txt.labels[2])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_CLT_Emp/stats1D$A1_RMSE,pch=2,col=1)
-text(0.6,0.9*YR[2],txt.labels[3])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_MCMC_Ann/stats1D$A1_RMSE,pch=8,col=1)
-text(0.6,0.9*YR[2],txt.labels[4])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_MCMC_Burn/stats1D$A1_RMSE,pch=9,col=1)
-text(0.6,0.9*YR[2],txt.labels[5])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,yaxt="n",xaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_MCMC_Emp/stats1D$A1_RMSE,pch=10,col=1)
-text(0.6,0.9*YR[2],txt.labels[6])
-mtext(text = "Ratio of Error Approximation to RMSE",side = 2,line = 2.5,cex=0.7,adj=0)
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_LMI_Iter/stats1D$A1_RMSE,pch=3,col=1)
-text(0.6,0.9*YR[2],txt.labels[7])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_LMI_Iter_Emp_2PL/stats1D$A1_RMSE,pch=4,col=1)
-text(0.6,0.9*YR[2],txt.labels[8])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_LMI_Iter_Emp_2PNO/stats1D$A1_RMSE,pch=5,col=1)
-text(0.6,0.9*YR[2],txt.labels[9])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_Simple_2PL/stats1D$A1_RMSE,pch=6,col=1)
-text(0.6,0.9*YR[2],txt.labels[10])
-
-par(mar=c(4,4,m.b,m.b))
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$A1_ERR_Simple_2PNO/stats1D$A1_RMSE,pch=7,col=1)
-text(0.6,0.9*YR[2],txt.labels[11])
-
-
-fitA1.CLT_Ann<-loess(A1_ERR_CLT_Ann/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.CLT_Ann
-sd(fitA1.CLT_Ann$residuals)
-#fitA1o<-lm(A1_sd_LMIo/A1_sd~A1,data=stats1D)
-fitA1.CLT_Burn<-loess(A1_ERR_CLT_Burn/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.CLT_Burn
-sd(fitA1.CLT_Burn$residuals)
-#fitA1MC<-lm(A1_sd_MCE/A1_sd~A1,data=stats1D)
-fitA1.CLT_Emp<-loess(A1_ERR_CLT_Emp/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.CLT_Emp
-sd(fitA1.CLT_Emp$residuals)
-#fitA1LM<-lm(A1_sd_LMI/A1_sd~A1,data=stats1D)
-fitA1.LMI_Iter<-loess(A1_ERR_LMI_Iter/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.LMI_Iter
-sd(fitA1.LMI_Iter$residuals)
-fitA1.LMI_Iter_Emp_2PL<-loess(A1_ERR_LMI_Iter_Emp_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.LMI_Iter_Emp_2PL
-sd(fitA1.LMI_Iter_Emp_2PL$residuals)
-#fitA1o<-lm(A1_sd_LMIo/A1_sd~A1,data=stats1D)
-fitA1.LMI_Iter_Emp_2PNO<-loess(A1_ERR_LMI_Iter_Emp_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.LMI_Iter_Emp_2PNO
-sd(fitA1.LMI_Iter_Emp_2PNO$residuals)
-#fitA1MC<-lm(A1_sd_MCE/A1_sd~A1,data=stats1D)
-fitA1.Simple_2PL<-loess(A1_ERR_Simple_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.Simple_2PL
-sd(fitA1.Simple_2PL$residuals)
-#fitA1LM<-lm(A1_sd_LMI/A1_sd~A1,data=stats1D)
-fitA1.Simple_2PNO<-loess(A1_ERR_Simple_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.Simple_2PNO
-sd(fitA1.Simple_2PNO$residuals)
-fitA1.MCMC_Ann<-loess(A1_ERR_MCMC_Ann/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.MCMC_Ann
-sd(fitA1.MCMC_Ann$residuals)
-#fitA1o<-lm(A1_sd_LMIo/A1_sd~A1,data=stats1D)
-fitA1.MCMC_Burn<-loess(A1_ERR_MCMC_Burn/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.MCMC_Burn
-sd(fitA1.MCMC_Burn$residuals)
-#fitA1MC<-lm(A1_sd_MCE/A1_sd~A1,data=stats1D)
-fitA1.MCMC_Emp<-loess(A1_ERR_MCMC_Emp/A1_RMSE~A1,data=stats1D,span=0.5)
-fitA1.MCMC_Emp
-sd(fitA1.MCMC_Emp$residuals)
-######plot2
-par(mar=c(4,6,4,m.b))
-seqA1<-seq(range(stats1D$A1)[1],range(stats1D$A1)[2],length.out = 50)
-plot(stats1D$A1,stats1D$A1_ERR_MCMC_Emp/stats1D$A1_RMSE,main=expression("Loess fit to"~hat(sigma)/sigma["RMSE"]),
-     ylab="Ratio of Error Approximation to RMSE",xlab="Generated Slope (1D, 2PNO)",ylim=YR,type="n")
-lines(seqA1,predict(fitA1.CLT_Ann,newdata = data.frame(A1=seqA1)),lty=1)
-lines(seqA1,predict(fitA1.CLT_Burn,newdata = data.frame(A1=seqA1)),lty=2,col=2)
-lines(seqA1,predict(fitA1.CLT_Emp,newdata = data.frame(A1=seqA1)),lty=3,col=3)
-lines(seqA1,predict(fitA1.MCMC_Ann,newdata = data.frame(A1=seqA1)),lty=4,col=4,lwd=2)
-lines(seqA1,predict(fitA1.MCMC_Burn,newdata = data.frame(A1=seqA1)),lty=5,col=6,lwd=2)
-lines(seqA1,predict(fitA1.MCMC_Emp,newdata = data.frame(A1=seqA1)),lty=6,col=1)
-legend("topright",c(expression("CLT"["Ann"]),
-                    expression("CLT"["Burn"]),
-                    expression("CLT"["Emp"]),
-                    expression("MCMC"["Ann"]),
-                    expression("MCMC"["Burn"]),
-                    expression("MCMC"["Emp"])),inset = 0.05,lty=1:6,col=c(1:4,6,1),lwd=c(1,1,1,2,2,1))
-abline(h=1)
-par(mar=c(4,6,7,m.b))
-plot(stats1D$A1,stats1D$A1_ERR_MCMC_Emp/stats1D$A1_RMSE,main=expression("Loess fit to Hessian"~hat(sigma)/sigma["RMSE"]),
-     ylab="Ratio of Error Approximation to RMSE",xlab="Generated Slope (1D, 2PNO)",ylim=YR,type="n")
-lines(seqA1,predict(fitA1.LMI_Iter,newdata = data.frame(A1=seqA1)),lty=1,col=1)
-lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PL,newdata = data.frame(A1=seqA1)),lty=2,col=2)
-lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PNO,newdata = data.frame(A1=seqA1)),lty=3,col=3,lwd=2)
-lines(seqA1,predict(fitA1.Simple_2PL,newdata = data.frame(A1=seqA1)),lty=4,col=4)
-lines(seqA1,predict(fitA1.Simple_2PNO,newdata = data.frame(A1=seqA1)),lty=5,col=6)
-legend("topright",c(expression("ICE"),
-                    expression("IPCE"["2PL"]),
-                    expression("IPCE"["2PNO"]),
-                    expression("SPCE"["2PL"]),
-                    expression("SPCE"["2PNO"])),inset = 0.05,lty=1:5,col=c(1:4,6),lwd=c(1,1,2,1,1))
-abline(h=1)
-
-#########  Error Plots for B
-p=2
-YR<-range(c(stats1D$B_ERR_CLT_Ann,
-            stats1D$B_ERR_CLT_Burn,
-            stats1D$B_ERR_CLT_Emp,
-            stats1D$B_ERR_LMI_Iter,
-            stats1D$B_ERR_LMI_Iter_Emp_2PL,
-            stats1D$B_ERR_LMI_Iter_Emp_2PNO,
-            stats1D$B_ERR_Simple_2PL,
-            stats1D$B_ERR_Simple_2PNO,
-            stats1D$B_ERR_MCMC_Ann,
-            stats1D$B_ERR_MCMC_Burn,
-            stats1D$B_ERR_MCMC_Emp)/stats1D$B_RMSE)
-
-ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]
-labels <- format(ticks, big.mark=",", scientific=FALSE)
-m.b = 0.25
-par(mar=c(m.b,4,2,m.b))
-# for (p in 1:ncol(gen.xi)) {
-p=2
-ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=expression("Intercept Error Estimates : 2PNO"),ylim=YR,
-     xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_CLT_Ann/stats1D$B_RMSE,pch=0,col=1)
-text(-1,0.9*YR[2],txt.labels[1])
-
-par(mar=c(m.b,4,m.b,m.b))
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_CLT_Burn/stats1D$B_RMSE,pch=1,col=1)
-text(-1,0.9*YR[2],txt.labels[2])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_CLT_Emp/stats1D$B_RMSE,pch=2,col=1)
-text(-1,0.9*YR[2],txt.labels[3])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_MCMC_Ann/stats1D$B_RMSE,pch=8,col=1)
-text(-1,0.9*YR[2],txt.labels[4])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_MCMC_Burn/stats1D$B_RMSE,pch=9,col=1)
-text(-1,0.9*YR[2],txt.labels[5])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,yaxt="n",xaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_MCMC_Emp/stats1D$B_RMSE,pch=10,col=1)
-text(-1,0.9*YR[2],txt.labels[6])
-mtext(text = "Ratio of Error Approximation to RMSE",side = 2,line = 2.5,cex=0.7,adj=0)
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_LMI_Iter/stats1D$B_RMSE,pch=3,col=1)
-text(-1,0.9*YR[2],txt.labels[7])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_LMI_Iter_Emp_2PL/stats1D$B_RMSE,pch=4,col=1)
-text(-1,0.9*YR[2],txt.labels[8])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_LMI_Iter_Emp_2PNO/stats1D$B_RMSE,pch=5,col=1)
-text(-1,0.9*YR[2],txt.labels[9])
-
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_Simple_2PL/stats1D$B_RMSE,pch=6,col=1)
-text(-1,0.9*YR[2],txt.labels[10])
-
-par(mar=c(4,4,m.b,m.b))
-plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
-     main=NA,ylim=YR,xlab=NA,ylab=NA,yaxt="n")
-axis(2,at=ticks,labels=labels,las=2)
-abline(h=1,lwd=2,lty=2)
-points(gen.xi[,p],stats1D$B_ERR_Simple_2PNO/stats1D$B_RMSE,pch=7,col=1)
-text(-1,0.9*YR[2],txt.labels[11])
-
-
-fitB.CLT_Ann<-loess(B_ERR_CLT_Ann/B_RMSE~B,data=stats1D,span=0.5)
-fitB.CLT_Ann
-sd(fitB.CLT_Ann$residuals)
-#fitBo<-lm(B_sd_LMIo/B_sd~B,data=stats1D)
-fitB.CLT_Burn<-loess(B_ERR_CLT_Burn/B_RMSE~B,data=stats1D,span=0.5)
-fitB.CLT_Burn
-sd(fitB.CLT_Burn$residuals)
-#fitBMC<-lm(B_sd_MCE/B_sd~B,data=stats1D)
-fitB.CLT_Emp<-loess(B_ERR_CLT_Emp/B_RMSE~B,data=stats1D,span=0.5)
-fitB.CLT_Emp
-sd(fitB.CLT_Emp$residuals)
-#fitBLM<-lm(B_sd_LMI/B_sd~B,data=stats1D)
-fitB.LMI_Iter<-loess(B_ERR_LMI_Iter/B_RMSE~B,data=stats1D,span=0.5)
-fitB.LMI_Iter
-sd(fitB.LMI_Iter$residuals)
-fitB.LMI_Iter_Emp_2PL<-loess(B_ERR_LMI_Iter_Emp_2PL/B_RMSE~B,data=stats1D,span=0.5)
-fitB.LMI_Iter_Emp_2PL
-sd(fitB.LMI_Iter_Emp_2PL$residuals)
-#fitBo<-lm(B_sd_LMIo/B_sd~B,data=stats1D)
-fitB.LMI_Iter_Emp_2PNO<-loess(B_ERR_LMI_Iter_Emp_2PNO/B_RMSE~B,data=stats1D,span=0.5)
-fitB.LMI_Iter_Emp_2PNO
-sd(fitB.LMI_Iter_Emp_2PNO$residuals)
-#fitBMC<-lm(B_sd_MCE/B_sd~B,data=stats1D)
-fitB.Simple_2PL<-loess(B_ERR_Simple_2PL/B_RMSE~B,data=stats1D,span=0.5)
-fitB.Simple_2PL
-sd(fitB.Simple_2PL$residuals)
-#fitBLM<-lm(B_sd_LMI/B_sd~B,data=stats1D)
-fitB.Simple_2PNO<-loess(B_ERR_Simple_2PNO/B_RMSE~B,data=stats1D,span=0.5)
-fitB.Simple_2PNO
-sd(fitB.Simple_2PNO$residuals)
-fitB.MCMC_Ann<-loess(B_ERR_MCMC_Ann/B_RMSE~B,data=stats1D,span=0.5)
-fitB.MCMC_Ann
-sd(fitB.MCMC_Ann$residuals)
-#fitBo<-lm(B_sd_LMIo/B_sd~B,data=stats1D)
-fitB.MCMC_Burn<-loess(B_ERR_MCMC_Burn/B_RMSE~B,data=stats1D,span=0.5)
-fitB.MCMC_Burn
-sd(fitB.MCMC_Burn$residuals)
-#fitBMC<-lm(B_sd_MCE/B_sd~B,data=stats1D)
-fitB.MCMC_Emp<-loess(B_ERR_MCMC_Emp/B_RMSE~B,data=stats1D,span=0.5)
-fitB.MCMC_Emp
-sd(fitB.MCMC_Emp$residuals)
-######plot2
-par(mar=c(4,6,4,m.b))
-seqB<-seq(range(stats1D$B)[1],range(stats1D$B)[2],length.out = 50)
-plot(stats1D$B,stats1D$B_ERR_MCMC_Emp/stats1D$B_RMSE,main=expression("Loess fit to"~hat(sigma)/sigma["RMSE"]),
-     ylab="Ratio of Error Approximation to RMSE",xlab="Generated Slope (1D, 2PNO)",ylim=YR,type="n")
-lines(seqB,predict(fitB.CLT_Ann,newdata = data.frame(B=seqB)),lty=1)
-lines(seqB,predict(fitB.CLT_Burn,newdata = data.frame(B=seqB)),lty=2,col=2)
-lines(seqB,predict(fitB.CLT_Emp,newdata = data.frame(B=seqB)),lty=3,col=3)
-lines(seqB,predict(fitB.MCMC_Ann,newdata = data.frame(B=seqB)),lty=4,col=4,lwd=2)
-lines(seqB,predict(fitB.MCMC_Burn,newdata = data.frame(B=seqB)),lty=5,col=6,lwd=2)
-lines(seqB,predict(fitB.MCMC_Emp,newdata = data.frame(B=seqB)),lty=6,col=1)
-legend("topright",c(expression("CLT"["Ann"]),
-                    expression("CLT"["Burn"]),
-                    expression("CLT"["Emp"]),
-                    expression("MCMC"["Ann"]),
-                    expression("MCMC"["Burn"]),
-                    expression("MCMC"["Emp"])),inset = 0.05,lty=1:6,col=c(1:4,6,1),lwd=c(1,1,1,2,2,1))
-abline(h=1)
-par(mar=c(4,6,7,m.b))
-plot(stats1D$B,stats1D$B_ERR_MCMC_Emp/stats1D$B_RMSE,main=expression("Loess fit to Hessian"~hat(sigma)/sigma["RMSE"]),
-     ylab="Ratio of Error Approximation to RMSE",xlab="Generated Slope (1D, 2PNO)",ylim=YR,type="n")
-lines(seqB,predict(fitB.LMI_Iter,newdata = data.frame(B=seqB)),lty=1,col=1)
-lines(seqB,predict(fitB.LMI_Iter_Emp_2PL,newdata = data.frame(B=seqB)),lty=2,col=2)
-lines(seqB,predict(fitB.LMI_Iter_Emp_2PNO,newdata = data.frame(B=seqB)),lty=3,col=3,lwd=2)
-lines(seqB,predict(fitB.Simple_2PL,newdata = data.frame(B=seqB)),lty=4,col=4)
-lines(seqB,predict(fitB.Simple_2PNO,newdata = data.frame(B=seqB)),lty=5,col=6)
-legend("topright",c(expression("ICE"),
-                    expression("IPCE"["2PL"]),
-                    expression("IPCE"["2PNO"]),
-                    expression("SPCE"["2PL"]),
-                    expression("SPCE"["2PNO"])),inset = 0.05,lty=1:5,col=c(1:4,6),lwd=c(1,1,2,1,1))
-abline(h=1)
 
 ###########################
 # DEFINITIONS
@@ -869,7 +346,7 @@ for (j in 1:length(items)) {
     ERRiter<-array(FitDATA$xiError, dim=c(items,1+FitDATA$settings$Adim,sims))        
     iERR<-array(FitDATA$iError, dim=c(items,1+FitDATA$settings$Adim,sims))        
     oERR<-array(FitDATA$oError, dim=c(items,1+FitDATA$settings$Adim,sims))        
-    MCERR<-array(MCErrorFunction(MCMCDATA), dim=c(items,1+FitDATA$settings$Adim,sims))
+    MCERR<-array(mcmcTrimmedError(MCMCDATA), dim=c(items,1+FitDATA$settings$Adim,sims))
       #array(cbind(FitDATA$EmpSE$MCSA,FitDATA$EmpSE$MCSB), dim=c(items,1+FitDATA$settings$Adim,sims))
     EmpLMIi<-array(FitDATA$EmpSE$VARLMIi, dim=c(items,1+FitDATA$settings$Adim,sims))
     EmpLMIo<-array(FitDATA$EmpSE$VARLMIo, dim=c(items,1+FitDATA$settings$Adim,sims))
@@ -883,7 +360,7 @@ for (j in 1:length(items)) {
         ERRiter[,,k]<-as.matrix(FitDATA$xiError) 
         iERR[,,k]<-as.matrix(FitDATA$iError) 
         oERR[,,k]<-as.matrix(FitDATA$oError) 
-        MCERR[,,k]<-as.matrix(MCErrorFunction(MCMCDATA))
+        MCERR[,,k]<-as.matrix(mcmcTrimmedError(MCMCDATA))
           #as.matrix(cbind(FitDATA$EmpSE$MCSA,FitDATA$EmpSE$MCSB)) 
         EmpLMIi[,,k]<-as.matrix(FitDATA$EmpSE$VARLMIi) 
         EmpLMIo[,,k]<-as.matrix(FitDATA$EmpSE$VARLMIo) 

@@ -1,5 +1,4 @@
-PlotErrors <-
-function(Fit,setting=settings) {
+PlotErrors <- function(Fit,setting=settings) {
   # RMSE<-list(STATS=STATS,stats=stats)
   # save(RMSE,file="RMSE.rda")
   load("RMSE.rda")

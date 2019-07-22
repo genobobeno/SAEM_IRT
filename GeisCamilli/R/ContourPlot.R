@@ -51,5 +51,6 @@ ContourPlot <- function(df = NA, var1 = NA, var2 = NA, bins=100, ...) {
   if (length(colnames(vtab))>(length(v2c)-1)) {
     vtab<-vtab[,1:(length(v2c)-1)]
   }
+  #par(cex=0.9,mar=c(5,5,2,2))
   image(v1c,v2c,log(vtab),col=rainbow(1000,start = 0.2,end = 0.75),...)
 }

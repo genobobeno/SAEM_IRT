@@ -1,3 +1,5 @@
+TEST = TRUE
+
 ##### INITIALIZE
 if (!"knitr" %in% installed.packages()[,1]) { install.packages("knitr",dependencies = TRUE)} 
 knitr::opts_chunk$set(echo=FALSE,warning = FALSE)
@@ -19,7 +21,11 @@ Rcpp::sourceCpp("MVNormRand.cpp")                                  # C++ MV Norm
 file.sources = list.files(path = "./GeisCamilli/R/",pattern="*.R") # Grab the R functions!
 sourced<-sapply(paste0("./GeisCamilli/R/",file.sources),source,.GlobalEnv)  # Source them!
 library(stringr)
-source("CreateSimulationStructure.R")
+if (TEST) {
+  source("TestSimulationStructure.R")
+} else {
+  source("CreateSimulationStructure.R")
+}
 
 ## Check fit directories
 
@@ -36,7 +42,7 @@ for (d in names(sim.list)) {
 #   if (grepl(,dir(paste0(gen.dir,"/",d))))
 #     
 #CheckSims
-for (d in names(sim.list)) {
+for (d in names(sim.list)) { 
   print(paste("Checking files for:",d))
   ## Check Generated files
   fs<-SFileString(sim.list[[d]],gen=TRUE)
@@ -64,15 +70,21 @@ for (d in names(sim.list)) {
   cat(paste0("Starting Sim: ",d,"\n"))
   simdir<-paste0(gen.dir,"/",d)
   fitdir<-paste0(fit.dir,"/",d)
-  if (fit.dir %in% dir())
-  gfiles<-dir(simdir)
+  if (fit.dir %in% dir()) gfiles<-dir(simdir)
   gfiles<-gfiles[grep("\\.rds",gfiles)]
   R<-sort(as.numeric(str_extract_all(gfiles,paste0("(?<=_R",sim.list[[d]]$Reps,"_)[0-9]+"))))
-  if (length(dir(paste0(fit.dir,"/",d)))>0) {
+  if (!TEST & length(dir(paste0(fit.dir,"/",d)))>0) {
     ffiles<-dir(paste0(fit.dir,"/",d))
     fR<-sort(as.numeric(unique(str_extract_all(ffiles,paste0("(?<=_R",sim.list[[d]]$Reps,"_)[0-9]+")))))
     R<-R[!R %in% fR]
-  }
+  } else if (TEST) {
+    R<-1
+    ffiles<-dir(paste0(fit.dir,"/",d))
+    fR<-sort(as.numeric(unique(str_extract_all(ffiles,paste0("(?<=_R",sim.list[[d]]$Reps,"_)[0-9]+")))))
+    if (length(fR)>0 && fR==R) {
+      next
+    }
+  } 
   fs<-SFileString(sim.list[[d]],gen=TRUE)
   cat(paste0("Gotta fit: ",paste(R,collapse=" "),"\n"))
   for (r in R) {
@@ -88,20 +100,20 @@ for (d in names(sim.list)) {
                     fm="eigen",    # Factor analysis procedure: fa() methods=c("ml","minres","wls","gls") or "licai", "camilli", or "old"...etc?
                     rmethod="pstT",  # GPArotation method, currently "targetT" or "pstT"
                     empiricalse=TRUE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                    thinA=10, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                    thinB=7, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                    EmpIT=2000, # Iterations of Empirical Errors
+                    thinA=8, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                    thinB=5, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                    EmpIT=2500, # Iterations of Empirical Errors
                     est="rm",        # Estimation method? model("gifa) -> "off"=mean, "rm"=robbinsmonro, "sa"=simannealing; model("irt") -> "anr"=analytical newton-raphson, "nnr"=numerical newton-raphson #Convergence procedure
                     estgain=1,       # Constant to slow down(decrease to decimal)/speed up(increase) newton cycles, or exponent on denominator in rm-squeeze
-                    burnin=as.integer(5000000/sim.list[[d]]$N),      # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
+                    burnin=2500,  #as.integer(5000000/sim.list[[d]]$N),      # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
                     quad="manual",   # gauss-hermite
                     nodes=15,        # nodes for quadrature
                     gridbounds=c(-3.5,3.5), #manual quadrature bounds
                     tmu=0,           # Prior mean, can be multivariate vector(Adim)
                     tsigma=1,        # Prior sigma, can be multivariate matrix(Adim x Adim)
                     eps=1e-4,        # Converged?
-                    nesttheta=100,    # if esttheta="mcmc", how many random samples?
-                    thetamap=TRUE,   # do an MAP estimate of Theta?
+                    nesttheta=25,    # if esttheta="mcmc", how many random samples?
+                    thetamap=FALSE,   # do an MAP estimate of Theta?
                     thetaGen=genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
                     impute=FALSE,    # Impute missing data?
                     plots=FALSE,     # Show plots for diagnostics
@@ -109,10 +121,14 @@ for (d in names(sim.list)) {
                     initialize="best", # "best", "random"
                     record=TRUE,     # "off"
                     parallel=TRUE,  # True or false for parallel computation?
+                    cores=4,
                     simfile=paste0(gfile,".rda"), # or NA
                     estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r))) 
       settings<-CheckParams(parameters = settings,generate = FALSE)
-      Fit1D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings)
+      # Rprof()
+      Fit1D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,timed = TRUE)
+      # Rprof(NULL)
+      # print(summaryRprof())
       saveRDS(Fit1D,paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
     } else {
       settings = list(Adim=sim.list[[d]]$Q,
@@ -121,10 +137,10 @@ for (d in names(sim.list)) {
                       est="rm",
                       estgain=1,
                       empiricalse=TRUE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                      thinA=10, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                      thinB=7, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                      EmpIT=2000, # Iterations of Empirical Errors
-                      burnin=as.integer(5000000/sim.list[[d]]$N),
+                      thinA=8, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                      thinB=5, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
+                      EmpIT=2500, # Iterations of Empirical Errors
+                      burnin=2500, #as.integer(5000000/sim.list[[d]]$N),
                       ncat=sim.list[[d]]$K,
                       plots=FALSE,
                       plotiter=10,
@@ -132,15 +148,16 @@ for (d in names(sim.list)) {
                       tsigma=diag(sim.list[[d]]$Q),
                       eps=1e-4,
                       thetaGen=genlist$gen.theta, # Did you simulate a new set of thetas? if so, give them to me. 
-                      nesttheta=100,    # if esttheta="mcmc", how many random samples?
+                      nesttheta=25,    # if esttheta="mcmc", how many random samples?
                       parallel=TRUE,  # True or false for parallel computation?
-                      cores=8,
+                      cores=4,
                       simfile=paste0(gfile,".rda"), # or NA
                       estfile=paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r)),
                       thetamap=FALSE,
                       record=TRUE)
       settings<-CheckParams(parameters = settings,generate=FALSE)
-      Fit2D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,TargetA = genlist$gen.xi[,1:sim.list[[d]]$Q]) 
+      Fit2D<-AnalyzeTestData(RP=genlist$gen.rp,settings=settings,TargetA = genlist$gen.xi[,1:sim.list[[d]]$Q],
+                             timed=TRUE) 
       saveRDS(Fit2D,paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
     }
   }

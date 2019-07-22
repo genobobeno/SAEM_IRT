@@ -146,73 +146,6 @@ TWFitTest(fit.data = FCI.Fit.12D.NoGuess)
 
 ###############################################
 
-source("WIDER_DATA/InitiateData.R")
-source("WIDER_DATA/ItemFunctions.R")
-
-WIDER.data<-read.csv("WIDER_DATA/IDF.csv",header=TRUE)
-ItemStats(WIDER.data,it=64)
-
-FCIC<-paste("C",64:93,sep="")
-Response<-IDF[which(!is.na(IDF$FCI.x)&(!is.na(IDF$LetterGrade123)|!is.na(IDF$LetterGrade115))),FCIC]
-FCIB<-paste("B",64:93,sep="")
-b.RP<-IDF[which(!is.na(IDF$FCI.x)&(!is.na(IDF$LetterGrade123)|!is.na(IDF$LetterGrade115))),FCIB]
-Correct<-FCTest[,"Numbers"]
-scores<-table(100*round(rowMeans(Response),digits = 3))
-par(mfrow=c(1,2))
-barplot(scores,main="FCI Pretest Score Distribution",names.arg = names(scores),xlab = "% Correct",ylab = "Frequency",las=2)
-qqnorm(y=100*round(rowMeans(Response),digits = 3),main="FCI Pretest Q-Q Analysis")
-
-
-
-
-fitlist.score<-ResponseCurves(responses = b.RP,scores = rowMeans(Response),
-                              prows = 1,pcols = 3,correct = Correct,j.legend = c(1,10))
-fitlist.1D<-ResponseCurves(responses = b.RP,scores = FCI.1D.NoGuess$That[,"Theta"],prows = 3,pcols = 5,correct = Correct)
-fitlist.1D.G<-ResponseCurves(responses = b.RP,scores = FCI.1D.Guess$That[,"Theta"],prows = 3,pcols = 5,correct = Correct)
-par(mfrow=c(1,4)) 
-resid = data.frame(Mean.Score=numeric(),SD.Score=numeric(),Mean.Theta=numeric(),SD.Theta=numeric(),Mean.Theta.G=numeric(),SD.Theta.G=numeric())
-for (j in 1:ncol(Response)) {
-  plot(density(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),main="Residual Comparisons",
-       xlab=expression("P(Y=1) -"~hat(P)(Y=1)),lty=2,ylab="density",
-       ylim=range(c(density(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values)$y,density(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values)$y)))
-    lines(density(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values),lty=1,col=2)
-    resid[j,]<-c(mean(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
-                 sd(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
-                 mean(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values),
-                 sd(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values),
-                 mean(fitlist.1D.G[[j]]$y-fitlist.1D.G[[j]]$fitted.values),
-                 sd(fitlist.1D.G[[j]]$y-fitlist.1D.G[[j]]$fitted.values))
-}
-
-sum(resid$SD.Score>resid$SD.Theta)
-sum(resid$Mean.Score>resid$Mean.Theta)
-sum(resid$SD.Score>resid$SD.Theta.G)
-sum(resid$Mean.Score>resid$Mean.Theta.G)
-sum(resid$SD.Theta>resid$SD.Theta.G)
-sum(resid$Mean.Theta>resid$Mean.Theta.G)
-
-for (r in 1:nrow(resid)) cat(paste0("$",r,"$ & $",paste(signif(resid[r,],digits=3),collapse="$ & $"),"$ \\\\ \\hline \n"))
-
-resid.saem = data.frame(Mean.Score=numeric(),SD.Score=numeric(),Mean.Theta=numeric(),SD.Theta=numeric(),Mean.Theta.G=numeric(),SD.Theta.G=numeric())
-for (j in 1:ncol(Response)) {
-  resid.saem[j,]<-c(mean(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
-               sd(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
-               mean(fitlist.1D[[j]]$y - ProbOgive(xi=FCI.1D.NoGuess$xi,
-                                                  theta = fitlist.1D[[j]]$data$x.data,guess = FALSE,j = j)),
-               sd(fitlist.1D[[j]]$y - ProbOgive(xi=FCI.1D.NoGuess$xi,
-                                                theta = fitlist.1D[[j]]$data$x.data,guess = FALSE,j = j)),
-               mean(fitlist.1D.G[[j]]$y - ProbOgive(xi=FCI.1D.Guess$xi,
-                                                    theta = fitlist.1D[[j]]$data$x.data,guess = TRUE,j = j)),
-               sd(fitlist.1D.G[[j]]$y - ProbOgive(xi=FCI.1D.Guess$xi,
-                                                  theta = fitlist.1D[[j]]$data$x.data,guess = TRUE,j = j)))
-}
-
-sum(resid.saem$SD.Score>resid.saem$SD.Theta)
-sum(resid.saem$Mean.Score>resid.saem$Mean.Theta)
-sum(resid.saem$SD.Score>resid.saem$SD.Theta.G)
-sum(resid.saem$Mean.Score>resid.saem$Mean.Theta.G)
-sum(resid.saem$SD.Theta>resid.saem$SD.Theta.G)
-sum(resid.saem$Mean.Theta>resid.saem$Mean.Theta.G)
 
 
 load("RealData/FCI_NoGuess_A1.rda")
@@ -277,17 +210,6 @@ LRTest(FCI.3D.NoGuess,FCI.4D.NoGuess)
 # FCI.4D.Guess<-FitDATA
 # LRTest(FCI.3D.Guess,FCI.4D.Guess)
 # LRTest(FCI.4D.NoGuess,FCI.4D.Guess)
-
-for (r in 1:nrow(FCI.1D.NoGuess$xi)) cat(paste0("$",r,"$ & $",
-                                                paste(c(round(c(1,1,1/1.7)*FCI.1D.NoGuess$xi[r,c(1,2,2)],digits=3),
-                                                        round(c(1,1,1/1.7,1)*FCI.1D.Guess$xi[r,c(1,2,2,3)],digits=3)),collapse="$ & $"),
-                                                "$ \\\\ \\hline \n"))
-
-t(apply(FCI.1D.NoGuess$xi,1,function(x) signif(x*c(1,1),3)))
-
-# WANG: A: 13, 18, 5, 25, 26, 30  Low B: 6, 1, 12, 24, 3 High B: 17, 26, 15, 25, 5  Guess: 16, 9==22,  6, 7, 27, 21 
-# CHEN: A: 18, 13, 5, 25, 11, 30  Low B: 1, 3, 19, 12, 7 High B: 15, 17 ,26, 25, 4  Guess: 6, 16, 9, 8, 24 
-# GEIS: A: 13, 5, 18, 2, 26, 25   Low B: 12, 6, 24, 10, 1  High B: 5, 13, 2, 18, 26  Guess: 1, 9, 19, 6, 7
 
 ########### CCI
 

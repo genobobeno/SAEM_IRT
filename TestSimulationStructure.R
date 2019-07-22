@@ -1,8 +1,8 @@
 
 # Set programs options so this can run on autopilot
 gen.dir<-"GeneratedFiles"
-#fit.dir<-"RMSE_Tests"         #"ConvergedModelFits"
-fit.dir<-"ConvergedModelFits"
+fit.dir<-"RMSE_Tests"         #"ConvergedModelFits"
+#fit.dir<-"ConvergedModelFits"
 filestructure<-FALSE
 options(scipen=999)
 

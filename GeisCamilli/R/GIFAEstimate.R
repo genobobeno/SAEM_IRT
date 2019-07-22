@@ -11,34 +11,28 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
   bb<-as.matrix(bb)             # J x 1
   N<-ncol(zz)
   J<-nrow(zz)
-  #   print("Covariance of Z")
-#   print(EZZ)
-#   print("mu * transpose(mu)")
-#   print(as.matrix(EZ)%*%t(as.matrix(EZ)))
-  ifelse(length(settings$tmu)==1,L<-t(aa)/as.numeric(settings$tsigma+t(aa)%*%aa),L<-ginv(settings$tsigma+t(aa)%*%aa)%*%t(aa)) # D x J
-#   print("Lambda")
-#   print(L)
-  #ifelse(ncol(aa)>1,alpha<-L%*%ZB,alpha<-as.matrix(L%*%ZB)) # D x N
+  if (length(settings$tmu)==1) {
+    L<-t(aa)/as.numeric(settings$tsigma+t(aa)%*%aa)
+  } else {
+    L<-ginv(settings$tsigma+t(aa)%*%aa)%*%t(aa) # D x J
+  }
   if (tolower(settings$fm)=="camilli" | EmpT) {
     if (is.na(ez)[1]) {
       S<-EZZ-as.matrix(EZ)%*%t(as.matrix(EZ))
-#       print("First term")
-#       print(S%*%t(L))
-#       print("Second term")
-#       print(settings$tsigma-L%*%aa)
-#       print("Third term")
-#       print(L%*%S%*%t(L))
-      ifelse(ncol(aa)>1,A<-(S%*%t(L))%*%ginv(settings$tsigma-L%*%aa+L%*%S%*%t(L)),A<-(S%*%t(L))/as.numeric(settings$tsigma-L%*%aa+L%*%S%*%t(L)))
-#       print("A loadings")
-#       print(A)
+      # print("First term")
+      # print(S%*%t(L))
+      # print("Second term")
+      # print(settings$tsigma-L%*%aa)
+      # print("Third term")
+      # print(L%*%S%*%t(L))
+      ifelse(ncol(aa)>1,A<-(S%*%t(L))%*%ginv(settings$tsigma-L%*%aa+L%*%S%*%t(L)),
+             A<-(S%*%t(L))/as.numeric(settings$tsigma-L%*%aa+L%*%S%*%t(L)))
     } else {
-      #print("Burned, now in FA")
-      #print(paste("Iteration",it))
       EZ<-ez+(EZ-ez)*gain
       EZZ<-ezz+(EZZ-ezz)*gain
       S<-EZZ-as.matrix(EZ)%*%t(as.matrix(EZ))
       ifelse(ncol(aa)>1,A<-(S%*%t(L))%*%ginv(settings$tsigma-L%*%aa+L%*%S%*%t(L)),A<-(S%*%t(L))/as.numeric(settings$tsigma-L%*%aa+L%*%S%*%t(L)))
-#       print(c((which.max(EZZ-ezz)-1)%%((ncol(aa)+1)*nrow(aa)) + 1,ceiling(which.max(EZZ-ezz)/((ncol(aa)+1)*nrow(aa)))))
+      # print(c((which.max(EZZ-ezz)-1)%%((ncol(aa)+1)*nrow(aa)) + 1,ceiling(which.max(EZZ-ezz)/((ncol(aa)+1)*nrow(aa)))))
     }    
     B<-EZ*(-1)
   } else if (tolower(settings$fm)=="eigen") {
@@ -182,5 +176,10 @@ function(aa,bb,zz,tt,settings,gain=NA,w=NA,rp=NA,ez=NA,ezz=NA,EmpT=FALSE) {
       C[j]<-s[j]/t[j]+(C[j]-s[j]/t[j])*gain
     }
   }
-  return(list(A=A,B=B,C=C,EZ=EZ,EZZ=EZZ))
+  if (!tolower(settings$fm) %in% c("pca","new","eigen") | EmpT) {
+    Avec = NA
+  } else {
+    Avec = Avec[1:settings$Adim]
+  }
+  return(list(A=A,B=B,C=C,EZ=EZ,EZZ=EZZ,Avec=Avec))
 }

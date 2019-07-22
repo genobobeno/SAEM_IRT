@@ -20,9 +20,9 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,
     cat(paste(setting$nesttheta,"Draws \n"))
     if (is.na(TAU)[1]) {
       for (i in 1:setting$nesttheta) {
-        if (i%%500==1) cat(" \n",i,"\t")
         if (i%%10==1) cat(".")
         if (i%%100==1) cat(":")
+        if (i%%500==1) cat("\n",i,"\t : ")
         tHat<-SampT(aa=aa,bb=bb,zz=zHat,rp=rp,prior=prior)
         #zHat<-SampZ(aa=aa,bb=bb,that=tHat,rp=rp,w=w)
         zHat<-SampZFast(aa=aa,bb=bb,that=tHat,srp=rp,w=w,indU=indU,indL=indL)
@@ -92,7 +92,7 @@ GetThetaHat <-  function(aa,bb,cc,rp,tHat,zHat,w,prior,setting,
       THETA<-apply(THAT,c(1,2),mean)
       THETA<-cbind(THETA,THETA-apply(THAT,c(1,2),sd),THETA+apply(THAT,c(1,2),sd))
       colnames(THETA)<-paste(rep(c("Theta","Theta-SE","Theta+SE"),c(setting$Adim,setting$Adim,setting$Adim)),
-                             rep(c(1:setting$Adim),rep(3,setting$Adim)))
+                             rep(c(1:setting$Adim),3))
     } else {
       THETA<-rowMeans(THAT)
       THETA<-cbind(THETA,THETA-apply(THAT,1,sd),THETA+apply(THAT,1,sd))
