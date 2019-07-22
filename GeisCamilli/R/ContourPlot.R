@@ -1,4 +1,4 @@
-ContourPlot <- function(df = NA, var1 = NA, var2 = NA, ...) {
+ContourPlot <- function(df = NA, var1 = NA, var2 = NA, bins=100, ...) {
   library(Hmisc)
   cat("\n\nThis function takes either,
       1. A two-column data.frame: ContourPlot(df=DF), or
@@ -12,10 +12,10 @@ ContourPlot <- function(df = NA, var1 = NA, var2 = NA, ...) {
   #   XN = "Var1"; YN = "Var2"
   # }
   if (is.integer(var1)) {
-    if (length(unique(var1))>99 & length(unique(var1))<200) {
+    if (length(unique(var1))>bins-1 & length(unique(var1))<2*bins) {
       v1c=c(min(var1,na.rm=TRUE)+0:(length(unique(var1))/2)*diff(range(var1,na.rm=TRUE))/(length(unique(var1))/2))
-    } else if (length(unique(var1))>200) {
-      v1c=c(min(var1,na.rm=TRUE)+0:100*diff(range(var1,na.rm=TRUE))/100)
+    } else if (length(unique(var1))>2*bins) {
+      v1c=c(min(var1,na.rm=TRUE)+0:bins*diff(range(var1,na.rm=TRUE))/bins)
     } else if (length(unique(var1))<21) {
       v1c=c(min(var1,na.rm=TRUE):(max(var1,na.rm=TRUE)+1))
     } else {
@@ -28,10 +28,10 @@ ContourPlot <- function(df = NA, var1 = NA, var2 = NA, ...) {
     v1c=c(min(var1,na.rm=TRUE)-0.0001+0:50*diff(range(var1,na.rm=TRUE))/50+c(rep(0,50),0.0001))
   }
   if (is.integer(var2)) {
-    if (length(unique(var2))>99 & length(unique(var2))<200) {
+    if (length(unique(var2))>bins-1 & length(unique(var2))<2*bins) {
       v2c=c(min(var2,na.rm=TRUE)+0:(length(unique(var2))/2)*diff(range(var2,na.rm=TRUE))/(length(unique(var2))/2))
-    } else if (length(unique(var2))>200) {
-      v2c=c(min(var2,na.rm=TRUE)+0:100*diff(range(var2,na.rm=TRUE))/100)
+    } else if (length(unique(var2))>2*bins) {
+      v2c=c(min(var2,na.rm=TRUE)+0:bins*diff(range(var2,na.rm=TRUE))/bins)
     } else if (length(unique(var2))<21) {
       v2c=c(min(var2,na.rm=TRUE):(max(var2,na.rm=TRUE)+1))
     } else {
@@ -51,5 +51,6 @@ ContourPlot <- function(df = NA, var1 = NA, var2 = NA, ...) {
   if (length(colnames(vtab))>(length(v2c)-1)) {
     vtab<-vtab[,1:(length(v2c)-1)]
   }
+  #par(cex=0.9,mar=c(5,5,2,2))
   image(v1c,v2c,log(vtab),col=rainbow(1000,start = 0.2,end = 0.75),...)
 }

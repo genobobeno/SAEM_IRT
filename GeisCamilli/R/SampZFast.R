@@ -12,6 +12,8 @@ function(aa,bb,that,indL,indU,srp,w=NA,prl=FALSE) {
     simplify2array(parSapply(cl,1:ncol(srp),TruncNormFast,Eta,simplify=FALSE), 
                         higher=FALSE)
   } else {
+    # simplify2array(sapply(1:ncol(srp),function(x) (TruncNormFast(x,Eta = Eta))), 
+    #                higher=FALSE)
     TruncNormSlow(Eta=Eta,indL=indL,indU=indU)
   }
 }

@@ -11,7 +11,8 @@ function(aa,bb,that,srp,w=NA,prl=settings$parallel) {
     Z 		<- simplify2array(parSapply(cl,1:J,fastTruncNorm,Eta,hold,simplify=FALSE), 
                         higher=TRUE)
   } else {
-    Z     <- TruncNormSlow(Eta=Eta,hold=hold,indL=indL,indU=indU)
+    #Z     <- TruncNormSlow(Eta=Eta,hold=hold,indL=indL,indU=indU)
+    Z     <- simplify2array(sapply(1:J,function(x) fastTruncNorm(x,Eta = Eta,hold = hold)),higher=TRUE)
   }
   
   Q

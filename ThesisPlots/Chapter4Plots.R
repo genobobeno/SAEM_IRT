@@ -3,6 +3,91 @@ basedir<-getwd()
 data.dir<-"RealData"
 if (!data.dir %in% dir()) dir.create(data.dir)
 
+############## SCORES
+source("WIDER_DATA/InitiateData.R")
+source("WIDER_DATA/ItemFunctions.R")
+ItemStats(WIDER.data,it=64)
+
+WIDER.data<-read.csv("WIDER_DATA/IDF.csv",header=TRUE)
+
+FCIC<-paste("C",64:93,sep="")
+Response<-IDF[which(!is.na(IDF$FCI.x)&(!is.na(IDF$LetterGrade123)|!is.na(IDF$LetterGrade115))),FCIC]
+FCIB<-paste("B",64:93,sep="")
+b.RP<-IDF[which(!is.na(IDF$FCI.x)&(!is.na(IDF$LetterGrade123)|!is.na(IDF$LetterGrade115))),FCIB]
+Correct<-FCTest[,"Numbers"]
+scores<-table(100*round(rowMeans(Response),digits = 3))
+par(mfrow=c(1,2))
+barplot(scores,main="FCI Pretest Score Distribution",names.arg = names(scores),xlab = "% Correct",ylab = "Frequency",las=2)
+qqnorm(y=100*round(rowMeans(Response),digits = 3),main="FCI Pretest Q-Q Analysis")
+
+
+fitlist.score<-ResponseCurves(responses = b.RP,scores = rowMeans(Response),
+                              prows = 1,pcols = 3,correct = Correct,j.legend = c(1,10))
+fitlist.1D<-ResponseCurves(responses = b.RP,scores = FCI.1D.NoGuess$That[,"Theta"],prows = 3,pcols = 5,correct = Correct)
+fitlist.1D.G<-ResponseCurves(responses = b.RP,scores = FCI.1D.Guess$That[,"Theta"],prows = 3,pcols = 5,correct = Correct)
+par(mfrow=c(1,4)) 
+resid = data.frame(Mean.Score=numeric(),SD.Score=numeric(),Mean.Theta=numeric(),SD.Theta=numeric(),Mean.Theta.G=numeric(),SD.Theta.G=numeric())
+for (j in 1:ncol(Response)) {
+  plot(density(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),main="Residual Comparisons",
+       xlab=expression("P(Y=1) -"~hat(P)(Y=1)),lty=2,ylab="density",
+       ylim=range(c(density(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values)$y,density(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values)$y)))
+  lines(density(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values),lty=1,col=2)
+  resid[j,]<-c(mean(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
+               sd(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
+               mean(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values),
+               sd(fitlist.1D[[j]]$y-fitlist.1D[[j]]$fitted.values),
+               mean(fitlist.1D.G[[j]]$y-fitlist.1D.G[[j]]$fitted.values),
+               sd(fitlist.1D.G[[j]]$y-fitlist.1D.G[[j]]$fitted.values))
+}
+
+sum(resid$SD.Score>resid$SD.Theta)
+sum(resid$Mean.Score>resid$Mean.Theta)
+sum(resid$SD.Score>resid$SD.Theta.G)
+sum(resid$Mean.Score>resid$Mean.Theta.G)
+sum(resid$SD.Theta>resid$SD.Theta.G)
+sum(resid$Mean.Theta>resid$Mean.Theta.G)
+
+for (r in 1:nrow(resid)) cat(paste0("$",r,"$ & $",paste(signif(resid[r,],digits=3),collapse="$ & $"),"$ \\\\ \\hline \n"))
+
+resid.saem = data.frame(Mean.Score=numeric(),SD.Score=numeric(),Mean.Theta=numeric(),SD.Theta=numeric(),Mean.Theta.G=numeric(),SD.Theta.G=numeric())
+for (j in 1:ncol(Response)) {
+  resid.saem[j,]<-c(mean(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
+                    sd(fitlist.score[[j]]$y-fitlist.score[[j]]$fitted.values),
+                    mean(fitlist.1D[[j]]$y - ProbOgive(xi=FCI.1D.NoGuess$xi,
+                                                       theta = fitlist.1D[[j]]$data$x.data,guess = FALSE,j = j)),
+                    sd(fitlist.1D[[j]]$y - ProbOgive(xi=FCI.1D.NoGuess$xi,
+                                                     theta = fitlist.1D[[j]]$data$x.data,guess = FALSE,j = j)),
+                    mean(fitlist.1D.G[[j]]$y - ProbOgive(xi=FCI.1D.Guess$xi,
+                                                         theta = fitlist.1D[[j]]$data$x.data,guess = TRUE,j = j)),
+                    sd(fitlist.1D.G[[j]]$y - ProbOgive(xi=FCI.1D.Guess$xi,
+                                                       theta = fitlist.1D[[j]]$data$x.data,guess = TRUE,j = j)))
+}
+
+sum(resid.saem$SD.Score>resid.saem$SD.Theta)
+sum(resid.saem$Mean.Score>resid.saem$Mean.Theta)
+sum(resid.saem$SD.Score>resid.saem$SD.Theta.G)
+sum(resid.saem$Mean.Score>resid.saem$Mean.Theta.G)
+sum(resid.saem$SD.Theta>resid.saem$SD.Theta.G)
+sum(resid.saem$Mean.Theta>resid.saem$Mean.Theta.G)
+
+############## UNIVARIATE Tables
+
+for (r in 1:nrow(FCI.1D.NoGuess$xi)) cat(paste0("$",r,"$ & $",
+                                                paste(c(round(c(1,1,1/1.7)*FCI.1D.NoGuess$xi[r,c(1,2,2)],digits=3),
+                                                        round(c(1,1,1/1.7,1)*FCI.1D.Guess$xi[r,c(1,2,2,3)],digits=3)),collapse="$ & $"),
+                                                "$ \\\\ \\hline \n"))
+
+t(apply(FCI.1D.NoGuess$xi,1,function(x) signif(x*c(1,1),3)))
+
+# WANG: A: 13, 18, 5, 25, 26, 30  Low B: 6, 1, 12, 24, 3 High B: 17, 26, 15, 25, 5  Guess: 16, 9==22,  6, 7, 27, 21 
+# CHEN: A: 18, 13, 5, 25, 11, 30  Low B: 1, 3, 19, 12, 7 High B: 15, 17 ,26, 25, 4  Guess: 6, 16, 9, 8, 24 
+# GEIS: A: 13, 5, 18, 2, 26, 25   Low B: 12, 6, 24, 10, 1  High B: 5, 13, 2, 18, 26  Guess: 1, 9, 19, 6, 7
+
+
+
+################ Dimensions
+
+
 load("RealData/FCI_NoGuess_A1.rda")
 FCI.Fit.1D.NoGuess<-FitDATA
 load("RealData/FCI_NoGuess_A2.rda")
@@ -11,16 +96,44 @@ load("RealData/FCI_NoGuess_A3.rda")
 FCI.Fit.3D.NoGuess<-FitDATA
 load("RealData/FCI_NoGuess_A4.rda")
 FCI.Fit.4D.NoGuess<-FitDATA
+
+load("RealData/FCI_Guess_A1.rda")
+FCI.Fit.1D.Guess<-FitDATA
+load("RealData/FCI_Guess_A2.rda")
+FCI.Fit.2D.Guess<-FitDATA
+load("RealData/FCI_Guess_A3.rda")
+FCI.Fit.3D.Guess<-FitDATA
+load("RealData/FCI_Guess_A4.rda")
+FCI.Fit.4D.Guess<-FitDATA
 # load("RealData/FCI_NoGuess_A10.rda")
 # FCI.Fit.10D.NoGuess<-FitDATA
 rm(FitDATA)
 par(mfrow=c(1,2))
+TWSplitSCData(fit.data.list = list(FCI.Fit.1D.NoGuess,
+                                   FCI.Fit.2D.NoGuess,
+                                   FCI.Fit.3D.NoGuess,
+                                   FCI.Fit.4D.NoGuess),
+              tw=0.99,E = 8,sTitle = "FCI (no guessing)")
+
+TWSplitSCData(fit.data.list = list(FCI.Fit.1D.Guess,
+                                   FCI.Fit.2D.Guess,
+                                   FCI.Fit.3D.Guess,
+                                   FCI.Fit.4D.Guess),E = 8,
+              tw=0.99,sTitle = "FCI (guessing)")
+
+
 MultipleTWFitTests(fit.data.list = list(FCI.Fit.1D.NoGuess,
                                         FCI.Fit.2D.NoGuess,
                                         FCI.Fit.3D.NoGuess,
                                         FCI.Fit.4D.NoGuess),
                    title = "FCI (no guessing)",plot.layout = FALSE,
                    cex=0.95,ratios = FALSE)
+
+par(mfrow=c(2,2),cex=0.95)
+TWSplitSC("S4",extra.dimensions = TRUE,E = 9)
+TWSplitSC("S5",extra.dimensions = TRUE,E = 9)
+
+
 
 load("RealData/FCI_Guess_A1.rda")
 FCI.Fit.1D.Guess<-FitDATA
@@ -41,17 +154,17 @@ MultipleTWFitTests(fit.data.list = list(FCI.Fit.1D.Guess,
                    cex=0.95,ratios = FALSE)
 
 #########  Rotation of 2-D
-
-A.Rot<-array(rep(0,360*length(FCI.Fit.2D.Guess$A)),
+degrees<-180
+A.Rot<-array(rep(0,degrees*length(FCI.Fit.2D.Guess$A)),
              dim = c(nrow(FCI.Fit.2D.Guess$A),
-                     ncol(FCI.Fit.2D.Guess$A),360))
-V.L<-matrix(rep(0,360*nrow(FCI.Fit.2D.Guess$A)),
+                     ncol(FCI.Fit.2D.Guess$A),degrees))
+V.L<-matrix(rep(0,degrees*nrow(FCI.Fit.2D.Guess$A)),
             nrow=ncol(FCI.Fit.2D.Guess$A),
-            ncol=360)
-V.V<-matrix(rep(0,360*nrow(FCI.Fit.2D.Guess$A)),
+            ncol=degrees)
+V.V<-matrix(rep(0,degrees*nrow(FCI.Fit.2D.Guess$A)),
             nrow=ncol(FCI.Fit.2D.Guess$A),
-            ncol=360)
-for (x in 1:360) {
+            ncol=degrees)
+for (x in 1:degrees) {
   r<-(x/180)*pi
   A.Rot[,,x] <- FCI.Fit.2D.Guess$A %*% matrix(c(cos(r),-sin(r),sin(r),cos(r)),
                                               nrow=2,ncol=2)
@@ -59,33 +172,50 @@ for (x in 1:360) {
   V.V[,x]<-apply(A.Rot[,,x],2,function(y) var(y^2))
 }
 A.items<-unique(as.vector(apply(abs(A.Rot),c(2,3),which.max)))
-par(mfrow=c(3,1),mar=c(1,4,3,2))
+par(mfrow=c(3,1),mar=c(1,4,3,2),cex=0.8)
 plot(1:ncol(V.L),apply(V.L,2,max),
      type="n",main="Rotated Discrimination",
      ylab="L2 Norm",xaxt="n",ylim=c(0,max(V.L)))
-lines(1:ncol(V.L),V.L[1,],lty=5)
+lines(1:ncol(V.L),V.L[1,],lty=1)
 lines(1:ncol(V.L),V.L[2,],lty=3)
-abline(v=43.5)
+abline(v=43.5,lty=2)
+text(5,7.4,"Q=1")
+text(5,1.9,"Q=2")
 par(mar=c(3,4,2,2))
 plot(1:ncol(V.V),apply(V.V,2,max),
      type="n",main=NA,
      ylab="Variance",xaxt="n",ylim=c(0,max(V.V)))
-lines(1:ncol(V.V),V.V[1,],lty=5)
+lines(1:ncol(V.V),V.V[1,],lty=1)
 lines(1:ncol(V.V),V.V[2,],lty=3)
-abline(v=43.5)
+abline(v=43.5,lty=2)
+text(5,8,"Q=1")
+text(5,1,"Q=2")
+
 par(mar=c(5,4,0,2))
 plot(c(1,dim(A.Rot)[3]),range(A.Rot),
      type="n",main=NA,
      ylab="Discrimination",xlab="Rotation (degrees)")
 abline(h=0)
 for (j in 1:length(A.items)) {
-  lines(1:dim(A.Rot)[3],A.Rot[A.items[j],1,],lty=5,col=j+1)
+  lines(1:dim(A.Rot)[3],A.Rot[A.items[j],1,],lty=1,col=j+1)
   lines(1:dim(A.Rot)[3],A.Rot[A.items[j],2,],lty=3,col=j+1)
 }
-legend("top",paste("Item",A.items),col=1:length(A.items)+1,lty=1)
-abline(v=43.5)
+legend("topright",paste("Item",A.items),col=1:length(A.items)+1,lty=1)
+abline(v=43.5,lty=2)
+text(47,-2.5,expression(43*degree))
 
-for (j in 1:30) cat(j," & ",paste0(round(A.Rot[j,,43],digits=3),collapse=" & ")," \\\\ \\hline \n")
+
+#round((ROT5.T$loadings)/sqrt(1+(ROT5.T$loadings)^2),digits = 2)
+########### TABLE OF LOADINGS
+
+for (j in 1:30) cat(j," & ",paste0(apaformat(round(A.Rot[j,,43]/sqrt(1+A.Rot[j,,43]^2),digits=3),digits = 3),collapse=" & ")," \\\\   \n")
+
+##################################
+
+par(mfrow=c(1,2))
+plot(A.Rot[,2,1],A.Rot[,1,1],ylim=c(-1,2),xlim=c(-1,2))
+abline(h=0,v=0)
+points(A.Rot[,2,44],A.Rot[,1,44],pch=16)
 
 ##########################  Without Guessing
 A.Rot<-array(rep(0,360*length(FCI.Fit.2D.NoGuess$A)),
@@ -145,12 +275,21 @@ load("RealData/CCI_NoGuess_A5.rda")
 CCI.Fit.5D.NoGuess<-FitDATA
 load("RealData/CCI_NoGuess_A10.rda")
 CCI.Fit.10D.NoGuess<-FitDATA
+load("RealData/CCI_NoGuess_A15.rda")
+CCI.Fit.15D.NoGuess<-FitDATA
+load("RealData/CCI_NoGuess_A12.rda")
+CCI.Fit.12D.NoGuess<-FitDATA
+load("RealData/CCI_NoGuess_A13.rda")
+CCI.Fit.13D.NoGuess<-FitDATA
+load("RealData/CCI_NoGuess_A14.rda")
+CCI.Fit.14D.NoGuess<-FitDATA
 rm(FitDATA)
 
-MultipleTWFitTests(fit.data.list = list(CCI.Fit.1D.NoGuess,
+TWSplitSCData(fit.data.list = list(CCI.Fit.1D.NoGuess,
                                         CCI.Fit.2D.NoGuess,
                                         CCI.Fit.3D.NoGuess,
-                                        CCI.Fit.4D.NoGuess),title = "CCI",ratios = FALSE)
+                                        CCI.Fit.10D.NoGuess,
+                                        CCI.Fit.15D.NoGuess),E=17,sTitle = "CCI (no guessing)")
 
 MultipleTWFitTests(fit.data.list = list(CCI.Fit.1D.Guess,
                                         CCI.Fit.2D.Guess,
@@ -261,39 +400,55 @@ round(ROT13$Infomax$loadings, digits=3)
 ROT14<-RotateSlopes(fit.data = CCI.Fit.14D.NoGuess)
 round(ROT14$Infomax$loadings, digits=3)
 
-apply(cbind(1:22,round(ROT10$Infomax$loadings, digits=3)),1,function(x) (paste(x,collapse=" & ")))
+apply(cbind(1:22,round(ROT13$Infomax$loadings, digits=3)),1,function(x) (paste(x,collapse=" & ")))
+apply(cbind(1:22,matrix(apaformat(round(ROT13$Infomax$loadings/sqrt(1+ROT13$Infomax$loadings^2), digits=3),digits=3),
+                        nrow=nrow(ROT13$Infomax$loadings),
+                        ncol=ncol(ROT13$Infomax$loadings))),
+            1,function(x) (paste(x,collapse=" & ")))
 
 
 ################# QOL
 
-load("RealData/_A1.rda")
+load("RealData/QOL_A1.rda")
 QOL.Fit.1D<-FitDATA
-load("RealData/QOL")
+load("RealData/QOL_A2.rda")
 QOL.Fit.2D<-FitDATA
-load("RealData/CCI_NoGuess_A3.rda")
+load("RealData/QOL_A3.rda")
 QOL.Fit.3D<-FitDATA
-load("RealData/CCI_NoGuess_A4.rda")
+load("RealData/QOL_A4.rda")
 QOL.Fit.4D<-FitDATA
-load("RealData/CCI_NoGuess_A5.rda")
+load("RealData/QOL_A5.rda")
 QOL.Fit.5D<-FitDATA
-load("RealData/CCI_NoGuess_A10.rda")
 
-par(mfrow=c(1,1),mar=c(5,4,3,2))
+Response = scan(paste0(data.dir,"/qol.dat"), what = "numeric",sep = "\n") # N=753
+Response = data.matrix(do.call(rbind,lapply(strsplit(Response,"\\s"), function(x) as.numeric(x[-1]))))
+
+R.QOL<-Response
+R.QOL[R.QOL==9]<-NA
+
+par(mfrow=c(1,2),mar=c(5,4,3,2))
 barplot(table((as.numeric(cut2(rowMeans(R.QOL-2,na.rm = TRUE),cuts=seq(from = -2,to = 2,by = 0.1)))-21)*(1/10)),
         main="Distribution of QOL Scores",ylab="Frequency",xlab="Average Response")
+qqnorm(y=100*round(rowMeans(R.QOL-2,na.rm = TRUE),digits = 3),main="FCI Pretest Q-Q Analysis")
 
 
 ResponseCurves(R.QOL-2,scores = rowMeans(R.QOL-2,na.rm = TRUE),
                prows = 6,pcols = 4,correct = rep(2,ncol(R.QOL)),j.legend = c(6,18),score.bins = 25)
                
 
+TWSplitSCData(fit.data.list = list(QOL.Fit.1D,
+                                   QOL.Fit.2D,
+                                   QOL.Fit.3D,
+                                   QOL.Fit.4D,
+                                   QOL.Fit.5D),
+              tw=0.999,E = 8,sTitle = "QOL")
 
 MultipleTWFitTests(fit.data.list = list(QOL.Fit.1D,
                                         QOL.Fit.2D,
                                         QOL.Fit.3D,
                                         QOL.Fit.4D),title = "QOL")
-mean(rowMeans(R.QOL-3,na.rm = TRUE))
-sd(rowMeans(R.QOL-3,na.rm = TRUE))
+mean(rowMeans(R.QOL-2,na.rm = TRUE))
+sd(rowMeans(R.QOL-2,na.rm = TRUE))
 
 QOL.TEST<-c("I wished I had more friends.",
 "I want to spend more time with my family.",
@@ -323,7 +478,7 @@ QOL.TEST<-c("I wished I had more friends.",
 
 QOL.ROT3<-RotateSlopes(QOL.Fit.3D)
 for (i in 1:nrow(QOL.ROT3$Oblimin$loadings)) {
-  cat(i,"&",paste0(c(round(QOL.ROT3$Oblimin$loadings[i,],digits=2),QOL.TEST[i]),collapse=" & "),"\\\\ \\hline\n")
+  cat(i,"&",paste0(c(apaformat(round(QOL.ROT3$Oblimin$loadings[i,]/sqrt(1+QOL.ROT3$Oblimin$loadings[i,]^2),digits=3),digits=3),QOL.TEST[i]),collapse=" & "),"\\\\ \n")
 }
 
 QOL.Study<-list()
@@ -464,5 +619,6 @@ c(.50,.56,-.12,-.04,.01),
 c(.46,.57,-.13,-.11,-.07))      
 
 for (i in 1:ncol(Response)) {
-  cat(i,"&",paste0(ifelse(is.na(Target.R[i,]),"X",0)," & ",QOL.Target[i,]," & ",LiCai.MH[i,],collapse=" & ")," \\\\ \\hline \n")
+  cat(i,"&",paste0(ifelse(is.na(Target.R[i,]),"X",0)," & ",apaformat(QOL.Target[i,],digits=2),
+                   " & ",apaformat(LiCai.MH[i,]),collapse=" & ")," \\\\  \n")
 }

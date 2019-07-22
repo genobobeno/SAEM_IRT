@@ -34,11 +34,11 @@ TWTestAndPlot<-function(d,extra.dimensions=FALSE,E=10,ratios=FALSE,tw=0.999,...)
     }
     
     if (sum(d %in% c("S1","S2","S3"))>0 & di==d[1]) {
-      par(mfrow=c(length(d),2),...)
+      #par(mfrow=c(length(d),2),...)
       pCH<-matrix(c(0,2,5,15,17,18),nrow=3,ncol=2)
       pBG<-c(0,3)
     } else if (sum(d %in% c("S4","S5","S6","S7","S8","S9"))>0 & di==d[1]) {
-      par(mfrow=c(length(d),1+ratios),...)
+      #par(mfrow=c(length(d),1+ratios),...)
       pCH<-c(22,23,21,24,25)
       pCH.s<-c(1,1.2,1.2,1,1)
       pBG<-c(0,3)

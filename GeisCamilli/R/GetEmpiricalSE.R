@@ -1,10 +1,11 @@
 GetEmpiricalSE <-
 function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$thinA,thinB=settings$thinB,
-         recordChain=FALSE,indL,indU) {
+         indL,indU) {
   cat("\n")
   print(paste("Starting",IT,"iterations of Empirical SEs, Thinning A:",thinA,"; Thinning B:",thinB))
   settings=FitDATA$settings
-  settings$fm<-"camilli"
+  #settings$fm<-"camilli"
+  library(mcmcse)
   if (settings$Adim>1) {
     if (!is.na(FitDATA$AR)[1]) {
       A=as.matrix(FitDATA$AR$loadings)
@@ -28,20 +29,36 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   J<-ncol(rp)
   N<-nrow(rp)
 
-  iDnew = rep(0,(settings$Adim+1)*J) # Jacobian Delta
-  iGnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
-  iJnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
-  iDeltak0<-rep(0,(settings$Adim+1)*J) # Jacobian Delta
-  iDk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
-  iGk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
-
-  oDnew = rep(0,(settings$Adim+1)*J) # Jacobian Delta
-  oGnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
-  oJnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
-  oDeltak0<-rep(0,(settings$Adim+1)*J) # Jacobian Delta
-  oDk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
-  oGk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
-  XIMean0<-rep(1,J*(1+settings$Adim))  
+  if (settings$Adim==1) {
+    iDnew = rep(0,(settings$Adim+1+settings$guess)*J) # Jacobian Delta
+    iGnew = mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian Covariance G
+    iJnew = mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian D
+    iDeltak0<-rep(0,(settings$Adim+1+settings$guess)*J) # Jacobian Delta
+    iDk0<-mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian D
+    iGk0<-mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian Covariance G
+    
+    oDnew = rep(0,(settings$Adim+1+settings$guess)*J) # Jacobian Delta
+    oGnew = mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian Covariance G
+    oJnew = mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian D
+    oDeltak0<-rep(0,(settings$Adim+1+settings$guess)*J) # Jacobian Delta
+    oDk0<-mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian D
+    oGk0<-mat.or.vec((settings$Adim+1+settings$guess)*J,(settings$Adim+1+settings$guess)*J) # Hessian Covariance G
+  } else {
+    iDnew = rep(0,(settings$Adim+1)*J) # Jacobian Delta
+    iGnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
+    iJnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
+    iDeltak0<-rep(0,(settings$Adim+1)*J) # Jacobian Delta
+    iDk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
+    iGk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
+    
+    oDnew = rep(0,(settings$Adim+1)*J) # Jacobian Delta
+    oGnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
+    oJnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
+    oDeltak0<-rep(0,(settings$Adim+1)*J) # Jacobian Delta
+    oDk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
+    oGk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
+  }
+  #XIMean0<-rep(1,J*(1+settings$Adim))  
   
   ifelse(settings$guess,W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp),W<-NA)  
   #Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
@@ -49,8 +66,8 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   ASEiter<-array(A, dim=c(J,settings$Adim,1))    
   BSEiter<-matrix(B, nrow=J, ncol=1)
   ifelse(settings$guess,CSEiter<-matrix(C, nrow=J, ncol=1),CSEiter<-NA)
-  ZSEiter<-matrix(Z, nrow=N, ncol=1)
-  TSEiter<-array(THat, dim=c(N,settings$Adim,1))
+  # ZSEiter<-matrix(Z, nrow=N, ncol=1)
+  # TSEiter<-array(THat, dim=c(N,settings$Adim,1))
   LLSEiter<-vector()
   #print(paste("Running Standard Errors using",IT,"iterations"))
   
@@ -60,11 +77,18 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     if (it%%500==1) cat(" \n",it,"\t")
     if (settings$guess) {
       W<-DrawW(aa=A,bb=B,cc=C,tt=THat,rp=rp)
+      for (j in 1:J) {
+        indL[[j]] <- cbind(1:N,W[,j]+1)
+        indU[[j]] <- cbind(1:N,W[,j]+2)
+      }
+      if (settings$parallel) {
+        clusterExport(cl,c("indL","indU"),envir=environment())
+      }
     } else {
       W<-NA  
     }
     #Z<-SampZ(aa=A,bb=B,that=THat,rp=rp,w=W)    
-    Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W)    
+    Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W,prl=settings$parallel)    
     LL<-GIFAFullLL(A,B,Z,THat,prior=prior)
     if (settings$guess) {
       PSI<-GIFAEstimate(aa=A,bb=B,zz=Z,tt=THat,settings=settings,w=W,rp=rp,EmpT=TRUE)    
@@ -77,8 +101,8 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     ASEiter<-abind(ASEiter,as.matrix(A),along=3)    
     BSEiter<-cbind(BSEiter,B)
     if (settings$guess) CSEiter<-cbind(CSEiter,C)
-    ZSEiter<-cbind(ZSEiter,Z)
-    TSEiter<-abind(TSEiter,as.matrix(THat),along=3)
+    #ZSEiter<-cbind(ZSEiter,Z)
+    #TSEiter<-abind(TSEiter,as.matrix(THat),along=3)
     LLSEiter<-c(LLSEiter,LL)
     gain<-1.0/it^estgain
     #     Hess<-GetHessian(A,B,Z)
@@ -107,45 +131,101 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
     iGk0<-iGk0+gain*(as.matrix(iJacob)%*%t(as.matrix(iJacob))-iGk0)
     iDeltak0<-iDeltak0+gain*(iJacob-iDeltak0)
     #     J2    <- matrix(Jacob,J*(1+settings$Adim),1)%*% matrix(Jacob,1,J*(1+settings$Adim))
-#     Dnew = Dnew + Jacob
-#     Gnew = Gnew + Hess
-#     Jnew = Jnew + J2  
-#     #   print(c("check out Jacob ",mean(abs(Jacob)),mean(Jacob)))
-#     #   print(c("        ",max(Jacob),which(Jacob==max(Jacob),arr.ind=TRUE) ))
-#     Dold = Dnew*gain
-#     Gold = Gnew*gain
-#     Jold = Jnew*gain
-#     H1 = Gold
-#     H2 = Jold - matrix(Dold,J*(settings$Adim+1),1)%*%matrix(Dold,1,J*(settings$Adim+1))
-#     Hk0 = -(H1+H2)
-    THat<-SampT(aa=A,bb=B,zz=Z,rp=rp,prior=prior)  
+    #     Dnew = Dnew + Jacob
+    #     Gnew = Gnew + Hess
+    #     Jnew = Jnew + J2  
+    #     #   print(c("check out Jacob ",mean(abs(Jacob)),mean(Jacob)))
+    #     #   print(c("        ",max(Jacob),which(Jacob==max(Jacob),arr.ind=TRUE) ))
+    #     Dold = Dnew*gain
+    #     Gold = Gnew*gain
+    #     Jold = Jnew*gain
+    #     H1 = Gold
+    #     H2 = Jold - matrix(Dold,J*(settings$Adim+1),1)%*%matrix(Dold,1,J*(settings$Adim+1))
+    #     Hk0 = -(H1+H2)
+    #THat<-SampT(aa=A,bb=B,zz=Z,rp=rp,prior=prior)
+    THat<-SampT(aa=A,bb=B,zz=Z,rp=rp,prior=prior,prl=settings$parallel,cores=settings$cores) 
   }
   MCthin<-MCthinA<-1:floor(IT/thinA)*thinA
   MCthinB<-1:floor(IT/thinB)*thinB
   if (settings$Adim>1) {
-    SEA<-as.matrix(apply(ASEiter[,,MCthinA],c(1,2),sd))
+    # SEA<-as.matrix(apply(ASEiter[,,MCthinA],c(1,2),sd))
     MEA<-as.matrix(apply(ASEiter[,,MCthinA],c(1,2),mean))
-    MCSA<-sqrt(as.matrix(apply(ASEiter[,,MCthinA],c(1,2),function(x) (initseq(x)$var.pos))))
+    MCEM<-t(as.matrix(ASEiter[,1,]))
+    for (q in 1:settings$Adim) {
+      MCEM<-cbind(MCEM,t(as.matrix(ASEiter[,q,])))
+    }
+    SEA<-tryCatch({
+      matrix(sqrt(diag(mcse.initseq(MCEM)$cov)),nrow=dim(ASEiter)[1],ncol=dim(ASEiter)[2])
+    }, error = function(e) {
+      NA
+    })
+    #SEA<-as.matrix(apply(ASEiter[,,MCthinA],c(1,2),sd))
+    #MCSA<-sqrt(as.matrix(apply(ASEiter[,,MCthinA],c(1,2),function(x) (initseq(x)$var.pos))))
   } else {
-    SEA<-as.vector(apply(as.matrix(ASEiter[,1,MCthinA]),1,sd))
+    #SEA<-as.vector(apply(as.matrix(ASEiter[,1,MCthinA]),1,sd))
     MEA<-as.vector(apply(as.matrix(ASEiter[,1,MCthinA]),1,mean))
-    MCSA<-sqrt(as.vector(apply(ASEiter[,1,MCthinA],1,function(x) (initseq(x)$var.pos))))
+    MCEM<-t(as.matrix(ASEiter[,1,]))
+    SEA<-tryCatch({
+      matrix(sqrt(diag(mcse.initseq(MCEM)$cov)),nrow=dim(ASEiter)[1],ncol=1)
+    }, error = function(e) {
+      NA
+    })
+    #SEA<-as.vector(apply(as.matrix(ASEiter[,1,MCthinA]),1,sd))
+    #MCSA<-sqrt(as.vector(apply(ASEiter[,1,MCthinA],1,function(x) (initseq(x)$var.pos))))
   } 
-  SEB<-as.vector(apply(BSEiter[,MCthinB],1,sd))
+  #SEB<-as.vector(apply(BSEiter[,MCthinB],1,sd))
+  SEB<-tryCatch({
+    matrix(sqrt(diag(mcse.initseq(t(as.matrix(BSEiter)))$cov)),nrow=dim(BSEiter)[1],ncol=1)
+  }, error = function(e) {
+    NA
+  })
   MEB<-as.vector(apply(BSEiter[,MCthinB],1,mean))
-  MCSB<-sqrt(as.vector(apply(BSEiter[,MCthinB],1,function(x) (initseq(x)$var.pos))))
-  ifelse(settings$guess,SEC<-as.vector(apply(CSEiter[,MCthin],1,sd)),SEC<-NA)
-  ifelse(settings$guess,MEC<-as.vector(apply(CSEiter[,MCthin],1,mean)),MEC<-NA)
-  ifelse(settings$guess,MCSC<-sqrt(as.vector(apply(CSEiter[,MCthin],1,function(x) (initseq(x)$var.pos)))),MCSC<-NA)
-  if (settings$Adim>1) {
-    SET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),sd))
-    MET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),mean))
-    MCST<-sqrt(as.matrix(apply(TSEiter[,,MCthin],c(1,2),function(x) (initseq(x)$var.pos))))
+  MCEM<-cbind(MCEM,t(as.matrix(BSEiter)))
+#  ifelse(settings$guess,SEC<-as.vector(apply(CSEiter[,MCthin],1,sd)),SEC<-NA)
+  
+  if (settings$guess) {
+    SEC<-tryCatch({
+      matrix(sqrt(diag(mcse.initseq(t(as.matrix(CSEiter)))$cov)),nrow=dim(CSEiter)[1],ncol=1)
+    }, error = function(e) {
+      NA
+    })
+    MEC<-as.vector(apply(CSEiter[,MCthin],1,mean))  
+    MCEM<-cbind(MCEM,t(as.matrix(CSEiter)))
+    MCSC<-tryCatch({
+      matrix(sqrt(diag(mcse.initseq(t(as.matrix(MCEM)))$cov))[ncol(MCEM)-(dim(CSEiter)[1]-1):0],
+                 nrow=dim(CSEiter)[1],ncol=1)
+    }, error = function(e) {
+      NA
+    })
   } else {
-    SET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,sd))
-    MET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,mean))
-    MCST<-sqrt(as.vector(apply(TSEiter[,1,MCthin],1,function(x) (initseq(x)$var.pos))))
-  } 
+    SEC<-NA
+    MEC<-NA
+    MCSC<-NA
+  }
+  #[ncol(MCEM)-(dim(CSEiter)[1]-1):0]
+  MCSA<-tryCatch({
+    matrix(sqrt(diag(mcse.initseq(MCEM)$cov))[1:(dim(ASEiter)[1]*dim(ASEiter)[2])],
+               nrow=dim(ASEiter)[1],ncol=dim(ASEiter)[2])  
+  }, error = function(e) {
+    NA
+  })
+  #MCSA<-sqrt(as.matrix(apply(ASEiter[,,MCthinA],c(1,2),function(x) (initseq(x)$var.pos))))
+  MCSB<-tryCatch({
+    matrix(sqrt(diag(mcse.initseq(MCEM)$cov))[(dim(ASEiter)[1]*dim(ASEiter)[2])+1:dim(ASEiter)[1]],
+               nrow=dim(BSEiter)[1],ncol=1)  
+  }, error = function(e) {
+    NA
+  })
+  #MCSB<-sqrt(as.vector(apply(BSEiter[,MCthinB],1,function(x) (initseq(x)$var.pos))))
+  # if (settings$Adim>1) {
+  #   SET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),sd))
+  #   MET<-as.matrix(apply(TSEiter[,,MCthin],c(1,2),mean))
+  #   MCST<-sqrt(as.matrix(apply(TSEiter[,,MCthin],c(1,2),function(x) (initseq(x)$var.pos))))
+  # } else {
+  #   SET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,sd))
+  #   MET<-as.vector(apply(as.matrix(TSEiter[,1,MCthin]),1,mean))
+  #   MCST<-sqrt(as.vector(apply(TSEiter[,1,MCthin],1,function(x) (initseq(x)$var.pos))))
+  # } 
   if (settings$plots) {
     par(mfrow=c(1,settings$Adim+1),mar=c(3,3,1,1))
     for (i in 1:settings$Adim) {
@@ -168,12 +248,9 @@ function(FitDATA,rp,IT=settings$EmpIT,estgain=settings$estgain,thinA=settings$th
   VARLMIi<-diag(ginv((-1)*iHk0))
   VARLMIo<-matrix(VARLMIo,J,settings$Adim+1,byrow=T)[,c(2:(settings$Adim+1),1)]
   VARLMIi<-matrix(VARLMIi,J,settings$Adim+1,byrow=T)[,c(2:(settings$Adim+1),1)]
-  if (!recordChain){
-    return(list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SEC=SEC,MEC=MEC,MCSC=MCSC,
-                SET=SET,MET=MET,MCST=MCST,VARLMIi=VARLMIi,VARLMIo=VARLMIo))
-  } else {
-    return(list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SEC=SEC,MEC=MEC,MCSC=MCSC,
-                SET=SET,MET=MET,MCST=MCST,VARLMIi=VARLMIi,VARLMIo=VARLMIo,Aiter=ASEiter,    
-                Biter=BSEiter,Citer=CSEiter,Liter=LLSEiter))
-  }
+
+  list(SEA=SEA,MEA=MEA,MCSA=MCSA,SEB=SEB,MEB=MEB,MCSB=MCSB,SEC=SEC,MEC=MEC,MCSC=MCSC,
+       #SET=SET,MET=MET,MCST=MCST,
+       VARLMIi=VARLMIi,VARLMIo=VARLMIo,Aiter=ASEiter,    
+       Biter=BSEiter,Citer=CSEiter,Liter=LLSEiter)
 }

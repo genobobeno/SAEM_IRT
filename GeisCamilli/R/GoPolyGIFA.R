@@ -406,18 +406,65 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
                           prior=prior,setting=settings,RT=AR,R=R,
                           TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                           MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
-      } else {THAT<-NA}
+        TROT<-THAT$THETA
+      } else {
+        THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA);  TROT<-NA
+      }
       ARot<-AR$loadings
-    } else {
-      AR<-list()
-      AR$loadings <- A
-      ARot <- A
+    } else {#what is the proper rotation when there's no TARGET loading?
+      ROT.Data<-RotateSlopes(slopes = A)
+      if (settings$record) {
+        if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
+          rfilename=paste0(gsub("\\.[Rr][Dd][Aa]","",settings$estfile),"_ROT.rda")
+        } else { 
+          rfilename=paste0(settings$estfile,"_ROT.rda") 
+        }
+        #ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
+        save(ROT.Data,settings,file=rfilename)
+      }
+      if (tolower(settings$rmethod) %in% tolower("Bifactor","Oblimin","Varimax","Infomax")) {
+        AR<-ROT.Data[[grepl(tolower(settings$rmethod),tolower(names(ROT.Data)))]]
+      } else {
+        AR<-list()
+        AR$loadings <- A
+        ARot <- A
+      }
       if (settings$esttheta) {
         THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
                           prior=prior,setting=settings,RT=AR,R=R,
                           TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                           MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
-      } else {THAT<-NA}
+        TROT<-THAT$THETA
+      } else {
+        THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA);  TROT<-NA
+      }
+    }
+  } else if (settings$Adim>1) {
+    ROT.Data<-RotateSlopes(slopes = A)
+    if (settings$record) {
+      if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
+        rfilename=paste0(gsub("\\.[Rr][Dd][Aa]","",settings$estfile),"_ROT.rda")
+      } else { 
+        rfilename=paste0(settings$estfile,"_ROT.rda") 
+      }
+      #ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
+      save(ROT.Data,settings,file=rfilename)
+    }
+    if (tolower(settings$rmethod) %in% tolower("Bifactor","Oblimin","Varimax","Infomax")) {
+      AR<-ROT.Data[[grepl(tolower(settings$rmethod),tolower(names(ROT.Data)))]]
+    } else {
+      AR<-list()
+      AR$loadings <- A
+      ARot <- A
+    }
+    if (settings$esttheta) {
+      THAT<-GetThetaHat(aa=A,bb=b,cc=C,rp=rp,tHat=theta,zHat=Z,w=W,
+                        prior=prior,setting=settings,RT=AR,R=R,
+                        TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                        MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
+      TROT<-THAT$THETA
+    } else {
+      THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA);  TROT<-NA
     }
   } else {
     AR<-list()
@@ -428,17 +475,7 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
                         prior=prior,setting=settings,RT=AR,R=R,
                         TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                         MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
-    } else {
-      THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA)
     }
-  }
-  if (settings$esttheta) {
-    if (settings$Adim>1 & !is.na(AR)[1] & "Th" %in% names(AR)) {
-      TROT<-cbind(THAT$THETA[,1:settings$Adim]%*%AR$Th,THAT$THETA[,settings$Adim+1:settings$Adim]%*%AR$Th,THAT$THETA[,2*settings$Adim+1:settings$Adim]%*%AR$Th)
-    } else {
-      TROT<-THAT$THETA
-    }
-  } else {
     TROT<-NA
   }
   gc()
@@ -456,52 +493,30 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   }
   C<-NA
   if (settings$record) {
-    Iterations<-list(Ait=Aiter,AVit=Viter,Bit=Biter,Dit=Diter)
+    Iterations<-list(Aiter=Aiter,Viter=Viter,Biter=Biter,Diter=Diter)
   } else {
     Iterations<-NA
   }
   if (!is.na(settings$simfile)) {
-    if (Q>1 & !is.na(AR)[1]) {
-      FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
-                    TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
-                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
-                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
-                    EmpSE=EmpSE,ThetaFix=ThetaFix,
-                    settings=settings,Iterations=Iterations)
-    } else {
-      FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
-                    TAU=gen.tau,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
-                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
-                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,
-                    settings=settings,Iterations=Iterations)
-    }
-  } else {
-    if (Q>1 & !is.na(AR)[1]) {
-      FitDATA<-list(XI=NA,RP=rp,THETA=NA,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
-                    TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
-                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
-                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
-                    EmpSE=EmpSE,ThetaFix=ThetaFix,
-                    settings=settings,Iterations=Iterations)
-    } else {
-      FitDATA<-list(XI=NA,RP=rp,THETA=NA,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
-                    TAU=NA,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
-                    xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
-                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,
-                    settings=settings,Iterations=Iterations)
-    }
-  }
+    THETA<-gen.theta; XI<-gen.xi; TAU<-gen.tau
+  } else {THETA<-NA; XI<-NA; TAU<-NA}
+  FitDATA<-list(XI=XI,RP=rp,THETA=THETA,xi=cbind(ARot,b),A=A,AR=AR,B=b,C=C,
+                TAU=TAU,tau=d+matrix(rep(b,ncat-1),length(b),ncat-1),
+                xiError=NA,iError=NA,oError=NA,gain=alpha,EZ=Z,EZZ=covZ,
+                That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=THAT$TRMAP,Trot=TROT,
+                EmpSE=EmpSE,ThetaFix=ThetaFix,
+                settings=settings,Iterations=Iterations)
+  
+  if (!is.na(TROT)[1]) {
+    FitDATA$Theta=TROT[,1:settings$Adim]
+  } else {FitDATA$Theta=NA}
+
   if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
     filename=settings$estfile
-  } else { filename=paste(settings$estfile,".rda",sep="") }
-  if (settings$record) {
-    MCMCDATA<-Iterations #Titer=Titer,
-    save(FitDATA,MCMCDATA,settings,file=filename)
-  } else {
-    save(FitDATA,settings,file=filename)
+  } else { 
+    filename=paste(settings$estfile,".rda",sep="") 
   }
+  save(FitDATA,file=filename)
   FitDATA
 }
 

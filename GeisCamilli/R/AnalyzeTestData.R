@@ -54,7 +54,7 @@ function(RP,settings=settings,verbose=FALSE,TargetA = NA,simple=FALSE,timed=FALS
   } else {
     K=max(apply(rp,2,function(x) (length(unique(x[!is.na(x)])))))
   }
-
+  
   if (K>2) settings$ncat <- K
   if (verbose) {
     print(paste("************   Analyzing Test Data, J =",

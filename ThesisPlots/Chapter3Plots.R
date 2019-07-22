@@ -157,10 +157,35 @@ text(875,1.25,expression(italic(gamma)[RM]),col=1)
 
 BenchmarkPlots(condition = "S1",all.reps = TRUE,basedir = getwd())
 
-RMProofPlots()
+RMProofPlots(condition = "S1",items=c(5,11,37,38,53,63),basedir = getwd())
+
+ChainPlots(condition = "S1",items=c(38,37,53,63,5,11),repl=NA,bins=200,basedir = getwd(),brewpalette = "Set2",cex=1)
+
+
+source("CreateSimulationStructure.R")
+d = "S1";r = 3;simdir<-paste0(gen.dir,"/",d);fitdir<-paste0(fit.dir,"/",d)
+SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[d]],gen=TRUE),"_",r,".rds"))
+FitList<-readRDS(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rds"))
+load(paste0(fitdir,"/",SFileString(sim.list[[d]],gen=FALSE,r = r),".rda"))
+par(mfrow=c(4,2))
+AutocovMC(MCMCDATA,start = 600,end = 800,items = 1,title.append = "Burn-in : ")   # Chain during burn
+AutocovMC(MCMCDATA,start = 800,end = 1000,items = 1,title.append = "Annealing : ")   # Chain during burn
+AutocovMC(MCMCDATA,start = 600,end = 800,items = 2,title.append = "Burn-in : ")   # Chain during burn
+AutocovMC(MCMCDATA,start = 800,end = 1000,items = 2,title.append = "Annealing : ")   # Chain during burn
+
+BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd())
+
+
 
 source("ThesisPlots/TWFitTests.R")
-TWTestAndPlot("S1",extra.dimensions = TRUE,E = 7)
+
+TWTestAndPlot("S1",extra.dimensions = TRUE,E = 7,ratios = FALSE)
+
+par(mfrow=c(3,2),cex=0.9)
+TWSplitSC("S1",extra.dimensions = TRUE,E=8)
+TWSplitSC("S2",extra.dimensions = TRUE,E=8)
+TWSplitSC("S3",extra.dimensions = TRUE,E=8)
+
 
 BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd(),cex=1)
 
@@ -196,21 +221,42 @@ CompareConditions("S1","S3",basedir = getwd())
 # psych::cortest.bartlett(R = cov2cor(S),n = sim.list[[d]]$N,diag = TRUE)
 # psych::KMO(R = cov2cor(S))
 # KaiserCriterion(J=sim.list[[d]]$J,N=sim.list[[d]]$N,S = S)
+layout(matrix(c(1,4,2,5,3,6),nrow=3,ncol=2,byrow = TRUE))
+FactorReconstruction(condition = "S4",all.reps = TRUE,basedir = getwd())
+FactorReconstruction(condition = "S5",all.reps = TRUE,basedir = getwd())
 
+par(mfrow=c(2,2),cex=0.95)
+TWSplitSC("S4",extra.dimensions = TRUE,E = 9)
+TWSplitSC("S5",extra.dimensions = TRUE,E = 9)
+
+par(mfrow=c(1,2))
+PlotEVRatios("S4",extra.dimensions = TRUE,E = 9)
+PlotEVRatios("S5",extra.dimensions = TRUE,E = 9)
+#TWTestAndPlot("S4",extra.dimensions = TRUE,E = 8,ratios = TRUE)
+#TWTestAndPlot("S5",extra.dimensions = TRUE,E = 8,ratios = TRUE)
 
 TWTestAndPlot(c("S4","S5"),extra.dimensions = TRUE,E=8,ratios=TRUE)
 
 BenchmarkPlots(condition = "S6",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
 BenchmarkPlots(condition = "S7",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
 
+par(mfrow=c(2,2),cex=1)
+TWSplitSC("S6",extra.dimensions = TRUE,E = 9)
+TWSplitSC("S7",extra.dimensions = TRUE,E = 9)
+
 TWTestAndPlot(c("S6","S7"),extra.dimensions = TRUE,E=8,ratios=TRUE)
 
 BenchmarkPlots(condition = "S8",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
 BenchmarkPlots(condition = "S9",all.reps = TRUE,basedir = getwd(),cex=0.75,mar=c(5,5,2,1))
 
+par(mfrow=c(2,2),cex=1)
+TWSplitSC("S8",extra.dimensions = TRUE,E = 15)
+TWSplitSC("S9",extra.dimensions = TRUE,E = 15)
 
 TWTestAndPlot(c("S8","S9"),extra.dimensions = TRUE,E=17,ratios=TRUE)
 
 EVTestTab<-data.frame(Dimensions = c(1,1,1,3,3,5,5,10,10), LambdaN2 = c(NA,NA,NA,1,0,1,0,2,0), 
            LambdaN1 = c(NA,NA,NA,1,0,1,0,1,0), Lambda = c(0,0,0,0,0,0,0,1,0), 
            LambdaP1 = c(0,0,1,1,1,1,1,3,1), LambdaP2 = c(1,1,2,2,2,2,2,4,2))
+
+

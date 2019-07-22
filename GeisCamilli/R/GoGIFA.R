@@ -13,7 +13,7 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
   N<-nrow(rp)
   rp<-data.matrix(rp)
   CV<-mat.or.vec(J,J)+1
-  pxi<-J*(1+settings$Adim)
+  pxi<-J*(1+settings$Adim+settings$guess)
   indL<-indU<-list()
   for (j in 1:J) {
     indL[[j]] <- cbind(1:N,rp[,j]+1)
@@ -47,22 +47,31 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     Aiter<-array(A, dim=c(J,settings$Adim,1))    
     Biter<-matrix(B, nrow=J, ncol=1)
     ifelse(settings$guess,Citer<-matrix(C, nrow=J, ncol=1),Citer<-NA)
+    Viter = array(0,dim=c(settings$Adim,1)) 
+    Viter[,1]<-rep(1,settings$Adim)
     #Titer<-array(init$THat, dim=c(N,settings$Adim,1))
     LLiter<-vector()
   }
   #Gain constant array
   gain <- GainConstant(settings=settings)
   
-  Dnew = rep(0,(settings$Adim+1)*J) # Jacobian Delta
-  Gnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
-  Jnew = mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
+  Dnew = rep(0,(settings$Adim+1+settings$guess)*J) # Jacobian Delta
+  Gnew = mat.or.vec((settings$Adim+1+settings$guess)*J,
+                    (settings$Adim+1+settings$guess)*J) # Hessian Covariance G
+  Jnew = mat.or.vec((settings$Adim+1+settings$guess)*J,
+                    (settings$Adim+1+settings$guess)*J) # Hessian D
   
   Deltak0<-rep(0,(settings$Adim+1)*J) # Jacobian Delta
-  Hess<-array(mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J), dim=c((settings$Adim+1)*J,(settings$Adim+1)*J,1))
-  Dk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian D
-  Gk0<-mat.or.vec((settings$Adim+1)*J,(settings$Adim+1)*J) # Hessian Covariance G
+  Hess<-array(mat.or.vec((settings$Adim+1+settings$guess)*J,
+                         (settings$Adim+1+settings$guess)*J), 
+              dim=c((settings$Adim+1+settings$guess)*J,
+                    (settings$Adim+1+settings$guess)*J,1))
+  Dk0<-mat.or.vec((settings$Adim+1+settings$guess)*J,
+                  (settings$Adim+1+settings$guess)*J) # Hessian D
+  Gk0<-mat.or.vec((settings$Adim+1+settings$guess)*J,
+                  (settings$Adim+1+settings$guess)*J) # Hessian Covariance G
   XIMean0<-rep(1,J*(1+settings$Adim))
-  test<-rep(1,J*(1+settings$Adim))
+  test<-1
   It<-1  
   if (!is.na(settings$simfile)) {
     ifelse(grepl("\\.[Rr][Dd][Aa]",settings$simfile),
@@ -176,6 +185,7 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
         Aiter<-abind(Aiter,as.matrix(A),along=3)    
         Biter<-cbind(Biter,B)
         if (settings$guess) Citer<-cbind(Citer,C)
+        if (settings$Adim>1) Viter<-cbind(Viter,PSI$Avec[1:Q])
         LLiter<-c(LLiter,LL)
         #if (It%%(10*settings$Adim)==0 && settings$plots && ncol(Biter)>40 && settings$Adim>1) PlotsCCF(Aiter,Biter,settings,ItCC,ItAC)
         if (It%%(10*settings$Adim)==0 && settings$plots && ncol(Biter)>settings$burnin+1 && !is.na(settings$simfile)) PlotsChain(Aiter,Biter,settings,A,init)
@@ -286,26 +296,21 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
       AR$APermute<-Fctr
     }
   } else if (settings$Adim>1) {#what is the proper rotation when there's no TARGET loading?
-    print("Doing a bifactor rotation")
-    ARB<-bifactorT(A, Tmat=diag(ncol(A)), normalize=FALSE, eps=1e-5, maxit=1000)
-    print(ARB)
-    print("Doing a Varimax rotation")
-    ARV<-Varimax(A, Tmat=diag(ncol(A)), normalize=FALSE, eps=1e-5, maxit=1000)
-    print(ARV)
-    print("Doing a Infomax rotation")
-    ARI<-infomaxT(A, Tmat=diag(ncol(A)), normalize=FALSE, eps=1e-5, maxit=1000)
-    print(ARI)
+    ROT.Data<-RotateSlopes(slopes = A)
     if (settings$record) {
       if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
         rfilename=paste0(gsub("\\.[Rr][Dd][Aa]","",settings$estfile),"_ROT.rda")
       } else { 
         rfilename=paste0(settings$estfile,"_ROT.rda") 
       }
-      ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
+      #ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
       save(ROT.Data,settings,file=rfilename)
     }
-    AR<-NA
-    
+    if (tolower(settings$rmethod) %in% tolower("Bifactor","Oblimin","Varimax","Infomax")) {
+      AR<-ROT.Data[[grepl(tolower(settings$rmethod),tolower(names(ROT.Data)))]]
+    } else {
+      AR<-NA
+    }
   } else {
     AR<-NA
   }
@@ -327,11 +332,12 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     xi=cbind(A,B)
   }
   THAT<-GetThetaHat(aa=A,bb=B,cc=C,rp=rp,tHat=THat,zHat=Z,w=W,prior=prior,setting=settings,
-                    indU=indU,indL=indL,R=AR)
+                    indU=indU,indL=indL,RT=AR)
   if (settings$Adim>1 & tolower(settings$fm)!="licai" & !is.na(AR)[1] & 
       (!is.na(settings$nesttheta) | settings$thetamap)) {
     if (!is.na(settings$nesttheta)) {
-      TROT<-cbind(THAT$THETA[,Fctr]%*%AR$Th,THAT$THETA[,settings$Adim+Fctr]%*%AR$Th,THAT$THETA[,2*settings$Adim+Fctr]%*%AR$Th)
+      TROT<-THAT$THETA 
+      #TROT<-cbind(THAT$THETA[,Fctr]%*%AR$Th,THAT$THETA[,settings$Adim+Fctr]%*%AR$Th,THAT$THETA[,2*settings$Adim+Fctr]%*%AR$Th)
       Z<-SampZFast(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
     } else {
       TROT<-NA
@@ -343,7 +349,7 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
       TMAPROT<-NA
     }
     # Z<-SampZ(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],rp=rp,w=W) 
-    Z<-SampZFast(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
+    # Z<-SampZFast(aa=AR$loadings,bb=B,that=TROT[,1:settings$Adim],indL=indL,indU=indU,srp=rp,w=W) 
     oJH<-GetErrorOgive(A=AR$loadings,B=B,C=C,TH=TROT[,1:settings$Adim],Z=Z,RP=rp)
     oJacob <- oJH$Jacob
     oHess  <- oJH$Hess
@@ -366,10 +372,10 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
       gen.theta=settings$thetaGen
       cat(length(settings$thetaGen), length(THAT$THETA[,1:(ncol(THAT$THETA)-2)]))
     }
-    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
-                  xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-                  That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
-                  Theta=TROT[,1:settings$Adim],Trot=TROT,settings=settings)
+    # FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
+    #               xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+    #               That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
+    #               Theta=TROT[,1:settings$Adim],Trot=TROT,settings=settings)
   } else if (settings$Adim>1 & is.na(AR)[1] & 
              (!is.na(settings$nesttheta) | settings$thetamap)) {
     #Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1:settings$Adim],rp=rp,w=W) 
@@ -402,10 +408,11 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     } else if (length(settings$thetaGen)==length(THAT$THETA[,1:(ncol(THAT$THETA)-2)])) {
       gen.theta=settings$thetaGen
     }
-    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
-                  xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-                  That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                  Theta=NA,Trot=NA,settings=settings)
+    TROT<-NA; TMAPROT<-NA
+    # FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
+    #               xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+    #               That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+    #               Theta=NA,Trot=NA,settings=settings)
   } else {
     #Z<-SampZ(aa=A,bb=B,that=THAT$THETA[,1],rp=rp,w=W)
     Z<-SampZFast(aa=A,bb=B,that=THat,indL=indL,indU=indU,srp=rp,w=W)
@@ -427,42 +434,57 @@ GoGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
     } else if (length(settings$thetaGen)==length(THat)) {
       gen.theta=settings$thetaGen
     }
-    FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
-                  xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-                  That=as.matrix(THat),Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                  Theta=NA,Trot=NA,settings=settings)    
+    TROT<-NA; TMAPROT<-NA
+    # FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
+    #               xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+    #               That=as.matrix(THat),Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+    #               Theta=NA,Trot=NA,settings=settings)    
   }
+  FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,fTheta=THat,
+       gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,That=THAT$THETA,Tmap=THAT$TMAP,
+       Tmaprot=TMAPROT,TRmap=THAT$TRMAP,Trot=TROT,settings=settings)
+  if (settings$esttheta & !is.na(settings$nesttheta)) {
+    ThetaFix<-FixedParamTheta(FitDATA,rp=rp,indL=indL,indU=indU)
+  } else {ThetaFix<-NA}
   if (settings$empiricalse) {
     EmpSE<-GetEmpiricalSE(FitDATA,rp=rp,indL=indL,indU=indU)
-    print(FitDATA$A)
-    ThetaFix<-FixedParamTheta(FitDATA,rp=rp,indL=indL,indU=indU)
-    if (settings$Adim>1 & !is.na(AR)[1]) {
-      FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
-                    xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
-                    Theta=TROT[,1:settings$Adim],Trot=TROT,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
-    } else if (settings$Adim>1 & is.na(AR)[1]) {
-      FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
-                    xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Theta=NA,Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
-    } else {
-      FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
-                    xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
-                    That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
-                    Theta=NA,Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)    
-    }
+    #print(FitDATA$A)
+    # if (settings$Adim>1 & !is.na(AR)[1]) {
+    #   FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,
+    #                 xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+    #                 That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,
+    #                 Theta=TROT[,1:settings$Adim],Trot=TROT,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
+    # } else if (settings$Adim>1 & is.na(AR)[1]) {
+    #   FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
+    #                 xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+    #                 That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+    #                 Theta=NA,Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)#      }
+    # } else {
+    #   FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=NA,B=B,C=C,xi=xi,
+    #                 xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+    #                 That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=NA,TRmap=NA,
+    #                 Theta=NA,Trot=NA,EmpSE=EmpSE,ThetaFix=ThetaFix,settings=settings)    
+    # }
+  } else {EmpSE<-NA}
+  if (settings$record) {
+    Iterations<-list(Aiter=Aiter,Viter=Viter,Biter=Biter,Citer=Citer,LLiter=LLiter)
+  } else {
+    Iterations<-NA
   }
+  
+  FitDATA<-list(XI=gen.xi,RP=rp,THETA=gen.theta,A=A,AR=AR,B=B,C=C,xi=xi,fTheta=THat,
+                xiError=xiError,iError=iError,oError=oError,gain=gain,EZ=PSI$EZ,EZZ=PSI$EZZ,
+                That=THAT$THETA,Tmap=THAT$TMAP,Tmaprot=TMAPROT,TRmap=THAT$TRMAP,EmpSE=EmpSE,
+                ThetaFix=ThetaFix,Trot=TROT,settings=settings,Iterations=Iterations)
+  
+  if (!is.na(TROT)[1]) {
+    FitDATA$Theta=TROT[,1:settings$Adim]
+  } else {FitDATA$Theta=NA}
   ########### Estimate Thetas with fixed parameters
   ## Write files
   if (grepl("\\.[Rr][Dd][Aa]",settings$estfile)) {
     filename=settings$estfile
   } else { filename=paste(settings$estfile,".rda",sep="") }
-  if (settings$record) {
-    MCMCDATA<-list(Aiter=Aiter,Biter=Biter,Citer=Citer,LLiter=LLiter) #Titer=Titer,
-    save(FitDATA,MCMCDATA,settings,file=filename)
-  } else {
-    save(FitDATA,settings,file=filename)
-  }
-  return(FitDATA)  
+  save(FitDATA,file=filename)
+  FitDATA  
 }
