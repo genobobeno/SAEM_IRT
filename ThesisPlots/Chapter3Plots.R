@@ -155,7 +155,7 @@ text(875,1.25,expression(italic(gamma)[RM]),col=1)
 ######################
 
 
-BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd())
+BenchmarkPlots(condition = "S1",all.reps = TRUE,basedir = getwd())
 
 RMProofPlots(condition = "S1",items=c(5,11,37,38,53,63),basedir = getwd())
 
@@ -187,7 +187,10 @@ TWSplitSC("S2",extra.dimensions = TRUE,E=8)
 TWSplitSC("S3",extra.dimensions = TRUE,E=8)
 
 
-BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd())
+BenchmarkPlots(condition = "S2",all.reps = TRUE,basedir = getwd(),cex=1)
+
+
+BenchmarkPlots(condition = "S3",all.reps = TRUE,basedir = getwd(),cex=1)
 
 CompareConditions("S1","S3",basedir = getwd())
 

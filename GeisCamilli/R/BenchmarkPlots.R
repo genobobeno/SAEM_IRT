@@ -1,5 +1,5 @@
 BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IRT/",...) {
-  #condition="S9";repl=NA;all.reps=T;basedir=getwd()
+  #condition="S1";repl=NA;all.reps=T;basedir=getwd()
   source(paste0(basedir,"/","CreateSimulationStructure.R"))
   d<-condition  
   simdir<-paste0(basedir,"/",gen.dir,"/",d)
@@ -70,17 +70,17 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
                c(1,2),sd)
     if (sim.list[[d]]$Q==1 & !sim.list[[d]]$Guessing & 
         (is.na(sim.list[[d]]$K) | sim.list[[d]]$K!=4)) {
-      par(mfrow=c(2,1),mar=c(5,5,3,2),...)
+      par(mfrow=c(2,1),mar=c(3,5,2,2),...)
     } else if (sim.list[[d]]$Q==1 & sim.list[[d]]$Guessing) {
-      par(mfrow=c(3,1),mar=c(5,5,3,2),...)
+      par(mfrow=c(3,1),mar=c(3,5,2,2),...)
     } else if (sim.list[[d]]$Q==1 & sim.list[[d]]$K==4) {
-      par(mfrow=c(5,1),mar=c(5,5,3,2),...)
+      par(mfrow=c(5,1),mar=c(3,5,2,2),...)
     } else if (sim.list[[d]]$Q==3) {
-      par(mfrow=c(3,1),mar=c(5,5,3,2),...)
+      par(mfrow=c(3,1),mar=c(3,5,2,2),...)
     } else if (sim.list[[d]]$Q==5) {
-      par(mfrow=c(5,1),mar=c(5,5,3,2),...)
+      par(mfrow=c(5,1),mar=c(3,5,2,2),...)
     } else if (sim.list[[d]]$Q==10) {
-      par(mfrow=c(5,2),mar=c(5,5,3,2),...)
+      par(mfrow=c(5,2),mar=c(3,5,2,2),...)
     } else {
       print(paste("Check condition",d,
                   "cause there is a discrepancy in expectations of parameter plots."))
@@ -102,14 +102,15 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
       #}
       plot(SimList$gen.xi[,q],bias[,q],pch=pCH,cex=pCH.s,xlim=c(-0.1,1.05*max(SimList$gen.xi[,q])),
            ylim=1.05*range(c(bias[,q]-2*sXI[,q],bias[,q]+2*sXI[,q])),bg=pCH.col,
-           main=sTitle,xlab=ptx,ylab=pty)
+           main=sTitle,xlab=NA,ylab=pty)
       arrows(SimList$gen.xi[,q],bias[,q]-2*sXI[,q],SimList$gen.xi[,q],bias[,q]+2*sXI[,q],
              code=3,angle=90,length=0.07)
-      abline(lm(bias[,q]~SimList$gen.xi[,q]),col=2,lty=2)
+      # abline(lm(bias[,q]~SimList$gen.xi[,q]),col=2,lty=2)
+      abline(h=0,lty=2,col=2)
       print(paste0("Fit of bias: A",q, " ::: Mean bias = ",mean(bias[,q])," : sigma = ",sd(bias[,q])))
       print(summary(lm(bias[,q]~SimList$gen.xi[,q])))
     }
-    if (!is.na(sim.list[[d]]$K) & sim.list[[d]]$K>2 & sim.list[[d]]$Q>1) {par(mfrow=c(4,1),mar=c(5,5,3,2),...)}
+    if (!is.na(sim.list[[d]]$K) & sim.list[[d]]$K>2 & sim.list[[d]]$Q>1) {par(mfrow=c(4,1),mar=c(3,5,2,2),...)}
     pty<-expression(hat(italic(b)) - italic(b))
     ptx<-expression(italic(b))
     sTitle<-eval(parse(text=paste0('expression("Condition"~"',gsub("S","",d),
@@ -117,9 +118,10 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
     q<-1+sim.list[[d]]$Q
     plot(SimList$gen.xi[,q],bias[,q],pch=19,cex=1.5,xlim=c(-1.03,1.03)*max(abs(SimList$gen.xi[,q])),
          ylim=1.05*range(c(bias[,q]-2*sXI[,q],bias[,q]+2*sXI[,q])),
-         main=sTitle,xlab=ptx,ylab=pty)
+         main=sTitle,xlab=NA,ylab=pty)
     arrows(SimList$gen.xi[,q],bias[,q]-2*sXI[,q],SimList$gen.xi[,q],bias[,q]+2*sXI[,q],code=3,angle=90,length=0.07)
-    abline(lm(bias[,q]~SimList$gen.xi[,q]),col=2,lty=2)
+    # abline(lm(bias[,q]~SimList$gen.xi[,q]),col=2,lty=2)
+    abline(h=0,lty=2,col=2)
     print(paste0("Fit of bias: b ::: Mean bias = ",mean(bias[,q])," : sigma = ",sd(bias[,q])))
     print(summary(lm(bias[,q]~SimList$gen.xi[,q])))
     if (!is.na(sim.list[[d]]$K) & sim.list[[d]]$K>2) {
@@ -136,9 +138,10 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
         #       as.integer(5000000/sim.list[[d]]$N)," burn-in iterations")
         plot(SimList$gen.tau[,k],tau.bias[,k],pch=19,cex=1.5,xlim=1.05*range(SimList$gen.tau[,k]),
              ylim=1.05*range(c(tau.bias-2*sTau,tau.bias+2*sTau)),
-             main=sTitle,xlab=ptx,ylab=pty)
+             main=sTitle,xlab=NA,ylab=pty)
         arrows(SimList$gen.tau[,k],tau.bias[,k]-2*sTau[,k],SimList$gen.tau[,k],tau.bias[,k]+2*sTau[,k],code=3,angle=90,length=0.07)
-        abline(lm(tau.bias[,k]~SimList$gen.tau[,k]),col=2,lty=2)
+        # abline(lm(tau.bias[,k]~SimList$gen.tau[,k]),col=2,lty=2)
+        abline(h=0,lty=2,col=2)
         print(paste0("Fit of bias: tau",k, " ::: Mean bias = ",mean(tau.bias[,k])," : sigma = ",sd(tau.bias[,k])))
         print(summary(lm(tau.bias[,k]~SimList$gen.tau[,k])))      }
     }
@@ -150,10 +153,11 @@ BenchmarkPlots<-function(condition,repl=NA,all.reps=T,basedir="~/ParSAEM/SAEM_IR
       q<-2+sim.list[[d]]$Q
       plot(SimList$gen.xi[,q],bias[,q],pch=19,cex=1.5,xlim=c(-0.01,1.05*max(SimList$gen.xi[,q])),
            ylim=1.05*range(c(bias[,q]-2*sXI[,q],bias[,q]+2*sXI[,q])),
-           main=sTitle,xlab=ptx,ylab=pty)
+           main=sTitle,xlab=NA,ylab=pty)
       arrows(SimList$gen.xi[,q],bias[,q]-2*sXI[,q],SimList$gen.xi[,q],bias[,q]+2*sXI[,q],
              code=3,angle=90,length=0.07)
-      abline(lm(bias[,q]~SimList$gen.xi[,q]),col=2,lty=2)
+      # abline(lm(bias[,q]~SimList$gen.xi[,q]),col=2,lty=2)
+      abline(h=0,lty=2,col=2)
       print(paste0("Fit of bias: guessing ::: Mean bias = ",mean(bias[,q])," : sigma = ",sd(bias[,q])))
       print(summary(lm(bias[,q]~SimList$gen.xi[,q])))
     }
