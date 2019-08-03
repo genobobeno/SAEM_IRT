@@ -102,10 +102,10 @@ for (d in names(sim.list)) {
                     empiricalse=TRUE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
                     thinA=8, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
                     thinB=5, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                    EmpIT=2500, # Iterations of Empirical Errors
+                    EmpIT=200, # Iterations of Empirical Errors
                     est="rm",        # Estimation method? model("gifa) -> "off"=mean, "rm"=robbinsmonro, "sa"=simannealing; model("irt") -> "anr"=analytical newton-raphson, "nnr"=numerical newton-raphson #Convergence procedure
                     estgain=1,       # Constant to slow down(decrease to decimal)/speed up(increase) newton cycles, or exponent on denominator in rm-squeeze
-                    burnin=2500,  #as.integer(5000000/sim.list[[d]]$N),      # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
+                    burnin=5000,  #as.integer(5000000/sim.list[[d]]$N),      # MCMC Burn-In iterations... or some other convergence criteria, acf? or Euclidean distance?
                     quad="manual",   # gauss-hermite
                     nodes=15,        # nodes for quadrature
                     gridbounds=c(-3.5,3.5), #manual quadrature bounds

@@ -8,20 +8,318 @@ source("InitializeGeisCamilli.R")
 # }
 #"ConvergedModelFits/"
 
-ERRStats<-RunErrors(condition="S1",CLT.start=0.1,CLT.end=0.8,item.ind=FALSE)
-PlotErrorEstimates(ERRStats,condition="S1")
+ERRStats_T<-RunErrors(condition="S1",CLT.start=0.1,CLT.end=0.8,item.ind=TRUE)
+ERRStats_F<-RunErrors(condition="S1",CLT.start=0.1,CLT.end=0.8,item.ind=FALSE)
+
+#### Let's start with condition one LMI error calculations:
+plt.cex<-0.8
+stats1D=ERRStats_T;condition="S1"
+  if (!is.na(condition)) {
+    simdir<-paste0("GeneratedFiles/",condition);r=1
+    SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[condition]],gen=TRUE,r = r),".rds"))
+    gen.xi<-SimList$gen.xi}
+
+  nf <- layout(matrix(c(1,2,3,4,5,7,8,9,10,11,6,6,6,6,6,12,12,12,12,12),10,2), c(15,16), 
+               c(4,3,3,3,5,4,3,3,3,5), TRUE)
+  #layout.show(nf)
+  if (!sum(is.nan(stats1D$A1_ERR_LMI_Iter))>0) {
+    YR<-range(c(
+      #stats1D$A1_ERR_CLT_Burn,stats1D$A1_ERR_MCMC_Burn 
+      stats1D$A1_ERR_LMI_Iter,stats1D$A1_ERR_LMI_Iter_Emp_2PL,stats1D$A1_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$A1_ERR_Simple_2PL,stats1D$A1_ERR_Simple_2PNO)/stats1D$A1_RMSE)
+  } else {
+    preYR<-c(#stats1D$A1_ERR_CLT_Burn,#stats1D$A1_ERR_MCMC_Burn,
+      stats1D$A1_ERR_LMI_Iter,stats1D$A1_ERR_LMI_Iter_Emp_2PL,stats1D$A1_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$A1_ERR_Simple_2PL,stats1D$A1_ERR_Simple_2PNO)/stats1D$A1_RMSE
+    YR<-range(preYR[!is.nan(preYR)&!is.na(preYR)&!is.infinite(preYR)])
+  }
+  txt.labels<-c(#expression("CLT"["B"]),expression("MCMC"["B"]),
+    expression("ICE"),expression("IPCE"["L"]),expression("IPCE"["O"]),expression("SPCE"["L"]),
+    expression("SPCE"["O"]))
+  
+  ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]; labels <- format(ticks, big.mark=",", scientific=FALSE)
+  m.b = 0.25
+  par(mar=c(m.b,4,2,m.b),cex=plt.cex)
+  p=1;iL<-1;ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
+  print(YR)
+
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n", main=expression("Slope Error Estimates : 2PNO"),
+       ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n");axis(2,at=ticks,labels=labels,las=2);abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$A1_ERR_LMI_Iter/stats1D$A1_RMSE,pch=3,col=1)
+  text(0.6,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+  
+  par(mar=c(m.b,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$A1_ERR_LMI_Iter_Emp_2PL/stats1D$A1_RMSE,pch=4,col=1)
+  text(0.6,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$A1_ERR_LMI_Iter_Emp_2PNO/stats1D$A1_RMSE,pch=5,col=1)
+  text(0.6,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+  
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$A1_ERR_Simple_2PL/stats1D$A1_RMSE,pch=6,col=1)
+  text(0.6,0.9*YR[2],txt.labels[iL])
+  mtext(text = "Ratio of Error Approximation to RMSE",side = 2,line = 2.5,cex=0.7,adj=0)
+  iL<-iL+1
+  
+  par(mar=c(4+0.5,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab="Generated Slope",
+       ylab=NA,yaxt="n");axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$A1_ERR_Simple_2PNO/stats1D$A1_RMSE,pch=7,col=1)
+  text(0.6,0.9*YR[2],txt.labels[iL])
+  
+  fitA1.LMI_Iter<-loess(A1_ERR_LMI_Iter/A1_RMSE~A1,data=stats1D,span=0.5)
+  fitA1.LMI_Iter_Emp_2PL<-loess(A1_ERR_LMI_Iter_Emp_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
+  fitA1.LMI_Iter_Emp_2PNO<-loess(A1_ERR_LMI_Iter_Emp_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
+  fitA1.Simple_2PL<-loess(A1_ERR_Simple_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
+  fitA1.Simple_2PNO<-loess(A1_ERR_Simple_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
+  
+    ######plot2
+  par(mar=c(6,6,4,m.b))
+  seqA1<-seq(range(stats1D$A1)[1],range(stats1D$A1)[2],length.out = 50)
+  plot(stats1D$A1,stats1D$A1_ERR_MCMC_Burn/stats1D$A1_RMSE,main=expression("Loess fit to Hessian Approximations"~hat(sigma)/sigma["RMSE"]),
+       ylab="Ratio of Error Approximation to RMSE",xlab="Generated Slope",ylim=YR,type="n")
+  if (!is.na(stats1D$A1_ERR_LMI_Iter)[1]) lines(seqA1,predict(fitA1.LMI_Iter,newdata = data.frame(A1=seqA1)),lty=1,col=1)
+  if (!is.na(stats1D$A1_ERR_LMI_Iter_Emp_2PL)[1]) lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PL,newdata = data.frame(A1=seqA1)),lty=2,col=2)
+  if (!is.na(stats1D$A1_ERR_LMI_Iter_Emp_2PNO)[1]) lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PNO,newdata = data.frame(A1=seqA1)),lty=3,col=3,lwd=2)
+  if (!is.na(stats1D$A1_ERR_Simple_2PL)[1]) lines(seqA1,predict(fitA1.Simple_2PL,newdata = data.frame(A1=seqA1)),lty=4,col=4)
+  if (!is.na(stats1D$A1_ERR_Simple_2PNO)[1]) lines(seqA1,predict(fitA1.Simple_2PNO,newdata = data.frame(A1=seqA1)),lty=5,col=6)
+  legend("topright",c(expression("ICE"),expression("IPCE"["L"]),expression("IPCE"["O"]),expression("SPCE"["L"]),
+                      expression("SPCE"["O"])),inset = 0.05,lty=1:5,col=c(1:4,6),lwd=c(1,1,2,1,1))
+  abline(h=1)
+  
+############ LMI Errors for B
+
+  p=2
+  if (!sum(is.nan(stats1D$B_ERR_LMI_Iter))>0) {
+    YR<-range(c(#stats1D$B_ERR_CLT_Burn,stats1D$B_ERR_MCMC_Burn
+      stats1D$B_ERR_LMI_Iter,stats1D$B_ERR_LMI_Iter_Emp_2PL,stats1D$B_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$B_ERR_Simple_2PL,stats1D$B_ERR_Simple_2PNO)/stats1D$B_RMSE)
+  } else {
+    preYR<-c(#stats1D$B_ERR_MCMC_Burn,stats1D$B_ERR_CLT_Burn,
+      stats1D$B_ERR_LMI_Iter,stats1D$B_ERR_LMI_Iter_Emp_2PL,stats1D$B_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$B_ERR_Simple_2PL,stats1D$B_ERR_Simple_2PNO)/stats1D$B_RMSE
+    YR<-range(preYR[!is.nan(preYR)&!is.na(preYR)&!is.infinite(preYR)])
+  }
+  
+  ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]; labels <- format(ticks, big.mark=",", scientific=FALSE)
+  m.b = 0.25 ; iL<-1
+  par(mar=c(m.b,4,2,m.b))
+  p=2; ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
+
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=expression("Intercept Error Estimates : 2PNO"),
+       ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$B_ERR_LMI_Iter/stats1D$B_RMSE,pch=3,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+  
+  par(mar=c(m.b,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$B_ERR_LMI_Iter_Emp_2PL/stats1D$B_RMSE,pch=4,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+  
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$B_ERR_LMI_Iter_Emp_2PNO/stats1D$B_RMSE,pch=5,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+  
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$B_ERR_Simple_2PL/stats1D$B_RMSE,pch=6,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+  mtext(text = "Ratio of Error Approximation to RMSE",side = 2,line = 2.5,cex=0.7,adj=0)
+  iL<-iL+1
+  
+  par(mar=c(4+0.5,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab="Generated Intercept",
+       ylab=NA,yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2); abline(h=1,lwd=2,lty=2)
+  points(gen.xi[,p],stats1D$B_ERR_Simple_2PNO/stats1D$B_RMSE,pch=7,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+
+  fitB.LMI_Iter<-loess(B_ERR_LMI_Iter/B_RMSE~B,data=stats1D,span=0.5)
+  fitB.LMI_Iter_Emp_2PL<-loess(B_ERR_LMI_Iter_Emp_2PL/B_RMSE~B,data=stats1D,span=0.5)
+  fitB.LMI_Iter_Emp_2PNO<-loess(B_ERR_LMI_Iter_Emp_2PNO/B_RMSE~B,data=stats1D,span=0.5)
+  fitB.Simple_2PL<-loess(B_ERR_Simple_2PL/B_RMSE~B,data=stats1D,span=0.5)
+  fitB.Simple_2PNO<-loess(B_ERR_Simple_2PNO/B_RMSE~B,data=stats1D,span=0.5)
+  
+  ######plot2
+  seqB<-seq(range(stats1D$B)[1],range(stats1D$B)[2],length.out = 50)
+  par(mar=c(6,6,5,m.b))
+  plot(stats1D$B,stats1D$B_ERR_MCMC_Burn/stats1D$B_RMSE,main=expression("Loess fit to Hessian Approximations"~hat(sigma)/sigma["RMSE"]),
+       ylab="Ratio of Error Approximation to RMSE",xlab="Generated Intercept",ylim=YR,type="n")
+  if (!is.na(stats1D$B_ERR_LMI_Iter)[1]) lines(seqB,predict(fitB.LMI_Iter,newdata = data.frame(B=seqB)),lty=1,col=1)
+  if (!is.na(stats1D$B_ERR_LMI_Iter_Emp_2PL)[1]) lines(seqB,predict(fitB.LMI_Iter_Emp_2PL,newdata = data.frame(B=seqB)),lty=2,col=2)
+  if (!is.na(stats1D$B_ERR_LMI_Iter_Emp_2PNO)[1]) lines(seqB,predict(fitB.LMI_Iter_Emp_2PNO,newdata = data.frame(B=seqB)),lty=3,col=3,lwd=2)
+  if (!is.na(stats1D$B_ERR_Simple_2PL)[1]) lines(seqB,predict(fitB.Simple_2PL,newdata = data.frame(B=seqB)),lty=4,col=4)
+  if (!is.na(stats1D$B_ERR_Simple_2PNO)[1]) lines(seqB,predict(fitB.Simple_2PNO,newdata = data.frame(B=seqB)),lty=5,col=6)
+  legend("topright",c(expression("ICE"),expression("IPCE"["L"]),expression("IPCE"["O"]),
+                      expression("SPCE"["L"]),expression("SPCE"["O"])),
+         inset = 0.05,lty=1:5,col=c(1:4,6),lwd=c(1,1,2,1,1))
+  abline(h=1)  
 
 
-ERRStats_E<-RunErrors(fitFile = "C:/Dev/R_Code/SAEM_IRT/RMSE_Tests/S1/Fit_GFALSE_J100_K2_N5000_Q1_mbeta_R50_1.rds",
-                      condition = "S1",CLT.start=0.6,CLT.end=0.8,item.ind=TRUE)
-PlotErrorEstimates(ERRStats_E,condition="S1")
+  stats1DT=ERRStats_T;stats1DF=ERRStats_F
+  ################# NOW the MCMC errors
+  plt.cex<-0.85
+  condition="S1"
+  if (!is.na(condition)) {
+    simdir<-paste0("GeneratedFiles/",condition);r=1
+    SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[condition]],gen=TRUE,r = r),".rds"))
+    gen.xi<-SimList$gen.xi}
+  
+  nf <- layout(matrix(c(1,2,3,5,6,7,4,4,4,8,8,8),6,2), c(8,12), 
+               c(4,3,5,4,3,5), TRUE)
+  #layout.show(nf)
+  if (!sum(is.nan(stats1DT$A1_ERR_LMI_Iter))>0) {
+    YR<-range(c(stats1DT$A1_ERR_CLT_Burn,stats1DT$A1_ERR_MCMC_Burn,stats1DF$A1_ERR_CLT_Burn)/stats1DT$A1_RMSE)
+  } else {
+    preYR<-c(stats1DT$A1_ERR_CLT_Burn,stats1DT$A1_ERR_MCMC_Burn,stats1DF$A1_ERR_CLT_Burn)/stats1DT$A1_RMSE
+    YR<-range(preYR[!is.nan(preYR)&!is.na(preYR)&!is.infinite(preYR)])
+  }
+  txt.labels<-c(expression("MCMC"),expression("CLT"["F"]),expression("CLT"["I"]))
+  
+  ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]; labels <- format(ticks, big.mark=",", scientific=FALSE)
+  m.b = 0.25
+  par(mar=c(m.b,4,2,m.b),cex=plt.cex)
+  p=1;iL<-1;ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
+  print(YR)
+########## MCMC Errors: SLOPES
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=expression("Slope Error Estimates : 2PNO"),
+       ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=1,lty=2)
+  points(gen.xi[,p],stats1DT$A1_ERR_MCMC_Burn/stats1DT$A1_RMSE,pch=2,col=1)
+  text(0.6,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+
+  par(mar=c(m.b,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  points(gen.xi[,p],stats1DF$A1_ERR_CLT_Burn/stats1DT$A1_RMSE,pch=3,col=1)
+  abline(h=1,lwd=1,lty=2); text(0.6,0.9*YR[2],txt.labels[iL])
+  iL<-iL+1
+  mtext(text = "Ratio of Error Approximation to RMSE",side = 2,line = 2.5,cex=0.7,adj=0)
+
+  par(mar=c(5,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab="Generated Slope",
+       ylab=NA,yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2); points(gen.xi[,p],stats1DT$A1_ERR_CLT_Burn/stats1DT$A1_RMSE,pch=4,col=1)
+  abline(h=1,lwd=1,lty=2); text(0.6,0.9*YR[2],txt.labels[iL])
+  
+  fitA1.CLT_Burn.T<-loess(A1_ERR_CLT_Burn/A1_RMSE~A1,data=stats1DT,span=0.5)
+  fitA1.CLT_Burn.T;  sd(fitA1.CLT_Burn.T$residuals)
+  fitA1.CLT_Burn.F<-loess(A1_ERR_CLT_Burn/A1_RMSE~A1,data=stats1DF,span=0.5)
+  fitA1.CLT_Burn.F;  sd(fitA1.CLT_Burn.F$residuals)
+  fitA1.MCMC_Burn<-loess(A1_ERR_MCMC_Burn/A1_RMSE~A1,data=stats1DT,span=0.5)
+  fitA1.MCMC_Burn;  sd(fitA1.MCMC_Burn$residuals)
+  
+  par(mar=c(6,6,4,m.b))
+  seqA1<-seq(range(stats1D$A1)[1],range(stats1D$A1)[2],length.out = 50)
+  plot(stats1D$A1,stats1D$A1_ERR_MCMC_Burn/stats1D$A1_RMSE,main=expression("Loess fit to MCMC Approximation"~hat(sigma)/sigma["RMSE"]),
+       ylab="Ratio of Error Approximation to RMSE",xlab="Generated Slope",ylim=c(0,4),type="n")
+  lines(seqA1,predict(fitA1.MCMC_Burn,newdata = data.frame(A1=seqA1)),lty=2,col=2,lwd=2)
+  lines(seqA1,predict(fitA1.CLT_Burn.F,newdata = data.frame(A1=seqA1)),lty=3,col=3,lwd=2)
+  lines(seqA1,predict(fitA1.CLT_Burn.T,newdata = data.frame(A1=seqA1)),lty=4,col=4,lwd=2)
+  legend("topright",c(expression("MCMC"),expression("CLT"["F"]),expression("CLT"["I"])),
+  inset = 0.05,lty=c(2:4),col=c(2:4),lwd=c(2)); abline(h=1)
+
+  ############# Intercept MCMC
+  ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]; labels <- format(ticks, big.mark=",", scientific=FALSE)
+  m.b = 0.25
+  par(mar=c(m.b,4,2,m.b),cex=plt.cex)
+  p=2;iL<-1;ifelse(p==ncol(gen.xi),pt<-"B",pt<-paste("A",p,sep=""))
+  print(YR)
+  
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=expression("Intercept Error Estimates : 2PNO"),
+       ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=1,lty=2)
+  points(gen.xi[,p],stats1DT$B_ERR_MCMC_Burn/stats1DT$B_RMSE,pch=2,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+  iL<-1+iL
+
+  par(mar=c(m.b,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab=NA,ylab=NA,xaxt="n",yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=1,lty=2)
+  points(gen.xi[,p],stats1DF$B_ERR_CLT_Burn/stats1DT$B_RMSE,pch=3,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+  iL<-1+iL
+  mtext(text = "Ratio of Error Approximation to RMSE",side = 2,line = 2.5,cex=0.7,adj=0)
+  
+  par(mar=c(5,4,m.b,m.b))
+  plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",main=NA,ylim=YR,xlab="Generated Intercept",
+       ylab=NA,yaxt="n")
+  axis(2,at=ticks,labels=labels,las=2);  abline(h=1,lwd=1,lty=2)
+  points(gen.xi[,p],stats1DT$B_ERR_CLT_Burn/stats1DT$B_RMSE,pch=4,col=1)
+  text(-1,0.9*YR[2],txt.labels[iL])
+  
+  fitB.MCMC_Burn<-loess(B_ERR_MCMC_Burn/B_RMSE~B,data=stats1DT,span=0.5)
+  fitB.CLT_Burn.T<-loess(B_ERR_CLT_Burn/B_RMSE~B,data=stats1DT,span=0.5)
+  fitB.CLT_Burn.F<-loess(B_ERR_CLT_Burn/B_RMSE~B,data=stats1DF,span=0.5)
+  
+  par(mar=c(6,6,5,m.b))
+  seqB<-seq(range(stats1D$B)[1],range(stats1D$B)[2],length.out = 50)
+  plot(stats1D$B,stats1D$B_ERR_MCMC_Burn/stats1D$B_RMSE,main=expression("Loess fit to MCMC Approximation"~hat(sigma)/sigma["RMSE"]),
+       ylab="Ratio of Error Approximation to RMSE",xlab="Generated Intercept",ylim=c(0,13),type="n")
+  lines(seqB,predict(fitB.MCMC_Burn,newdata = data.frame(B=seqB)),lty=2,col=2,lwd=2)
+  lines(seqB,predict(fitB.CLT_Burn.F,newdata = data.frame(B=seqB)),lty=3,col=3,lwd=2)
+  lines(seqB,predict(fitB.CLT_Burn.T,newdata = data.frame(B=seqB)),lty=4,col=4,lwd=2)
+  legend("topright",c(expression("MCMC"),expression("CLT"["F"]),expression("CLT"["I"])),
+  inset = 0.05,lty=c(2:4),col=c(2:4),lwd=2)
+  abline(h=1)
+  
+  
 
 ERRStats_E2<-RunErrors(fitFile = "C:/Dev/R_Code/SAEM_IRT/RMSE_Tests/S2/Fit_GTRUE_J100_K2_N5000_Q1_mbeta_R50_1.rds",
-                      condition = "S2",CLT.start=0.7,CLT.end=0.8,item.ind=TRUE,guessing = TRUE)
+                      condition = "S2",CLT.start=0.3,CLT.end=0.8,item.ind=FALSE,guessing = TRUE)
+head(ERRStats_E2)
+par(mfrow=c(3,1))
+plot(ERRStats_E2$A1,ERRStats_E2$A1_ERR_CLT_Burn/ERRStats_E2$A1_RMSE)
+plot(ERRStats_E2$B,ERRStats_E2$B_ERR_CLT_Burn/ERRStats_E2$B_RMSE)
+plot(ERRStats_E2$C,ERRStats_E2$C_ERR_CLT_Burn/ERRStats_E2$C_RMSE)
+
+par(mfrow=c(3,1))
+plot(ERRStats_E2$A1,ERRStats_E2$A1_ERR_Simple_2PNO/ERRStats_E2$A1_RMSE)
+plot(ERRStats_E2$B,ERRStats_E2$B_ERR_Simple_2PNO/ERRStats_E2$B_RMSE)
+plot(ERRStats_E2$C,ERRStats_E2$C_ERR_Simple_2PNO/ERRStats_E2$C_RMSE)
+
+head(ERRStats_E2)
+
+
 PlotErrorEstimates(ERRStats_E2,condition="S2")
 
 ERRStats_E3<-RunErrors(fitFile = "C:/Dev/R_Code/SAEM_IRT/RMSE_Tests/S3/Fit_GFALSE_J100_K4_N5000_Q1_mbeta_R50_1.rds",
                        condition = "S3",CLT.start=0.4,CLT.end=0.8,item.ind=TRUE,guessing = FALSE)
+par(mfrow=c(5,1),mar=c(3,3,2,2))
+plot(ERRStats_E3$A1,ERRStats_E3$A1_ERR_CLT_Burn/ERRStats_E3$A1_RMSE); abline(h=1)
+plot(ERRStats_E3$B,ERRStats_E3$B_ERR_CLT_Burn/ERRStats_E3$B_RMSE); abline(h=1)
+plot(ERRStats_E3$Tau1,ERRStats_E3$Tau1_ERR_CLT_Burn/ERRStats_E3$Tau1_RMSE); abline(h=1)
+plot(ERRStats_E3$Tau2,ERRStats_E3$Tau2_ERR_CLT_Burn/ERRStats_E3$Tau2_RMSE); abline(h=1)
+plot(ERRStats_E3$Tau3,ERRStats_E3$Tau3_ERR_CLT_Burn/ERRStats_E3$Tau3_RMSE); abline(h=1)
+
+
+ERRStats_E4<-RunErrors(fitFile = "C:/Dev/R_Code/SAEM_IRT/RMSE_Tests/S4/Fit_GFALSE_J30_K4_N5000_Q3_mbifactor_R50_1.rds",
+                       condition = "S4",CLT.start=0.4,CLT.end=0.8,item.ind=TRUE,guessing = FALSE)
+par(mfrow=c(5,1),mar=c(3,3,2,2))
+plot(ERRStats_E4$A1,ERRStats_E4$A1_ERR_CLT_Burn/ERRStats_E4$A1_RMSE); abline(h=1)
+plot(ERRStats_E4$A2,ERRStats_E4$A2_ERR_CLT_Burn/ERRStats_E4$A2_RMSE); abline(h=1)
+plot(ERRStats_E4$A3,ERRStats_E4$A3_ERR_CLT_Burn/ERRStats_E4$A3_RMSE); abline(h=1)
+plot(ERRStats_E4$B,ERRStats_E4$B_ERR_CLT_Burn/ERRStats_E4$B_RMSE); abline(h=1)
+plot(ERRStats_E4$Tau1,ERRStats_E4$Tau1_ERR_CLT_Burn/ERRStats_E4$Tau1_RMSE); abline(h=1)
+plot(ERRStats_E4$Tau2,ERRStats_E4$Tau2_ERR_CLT_Burn/ERRStats_E4$Tau2_RMSE); abline(h=1)
+plot(ERRStats_E4$Tau3,ERRStats_E4$Tau3_ERR_CLT_Burn/ERRStats_E4$Tau3_RMSE); abline(h=1)
+
+
+
 plot(ERRStats_E3$B,ERRStats_E3$B_ERR_CLT_Burn/ERRStats_E3$B_RMSE,ylim=c(0,3))
 plot(ERRStats_E3$A1,ERRStats_E3$A1_ERR_CLT_Burn/ERRStats_E3$A1_RMSE,ylim=c(0,3))
 plot(ERRStats_E3$Tau1,ERRStats_E3$Tau1_ERR_CLT_Burn/ERRStats_E3$Tau1_RMSE,ylim=c(0,3))

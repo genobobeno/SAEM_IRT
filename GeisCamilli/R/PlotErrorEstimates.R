@@ -1,22 +1,43 @@
-PlotErrorEstimates<-function(ErrorStats) {
-
+PlotErrorEstimates<-function(ErrorStats,condition=NA) {
+  #ErrorStats<-ERRStats_E;condition="S1"
+  #condition<-"S2"
+  if (!is.na(condition)) {
+    simdir<-paste0("GeneratedFiles/",condition);r=1
+    SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[condition]],gen=TRUE,r = r),".rds"))
+    gen.xi<-SimList$gen.xi
+  }
   stats1D<-ErrorStats
   nf <- layout(matrix(c(1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,8,8,8,8,8,9,9,9,9,9,9,9),14,2), c(18,24), 
                c(4,3,3,3,3,3,3,3,3,3,3,3,5,4,3,3,3,3,3,3,3,3,3,3,3,5), TRUE)
   #layout.show(nf)
-
-  YR<-range(c(#stats1D$A1_ERR_CLT_Ann,
-    stats1D$A1_ERR_CLT_Burn,
-    #stats1D$A1_ERR_CLT_Emp,
-    stats1D$A1_ERR_LMI_Iter,
-    stats1D$A1_ERR_LMI_Iter_Emp_2PL,
-    stats1D$A1_ERR_LMI_Iter_Emp_2PNO,
-    stats1D$A1_ERR_Simple_2PL,
-    stats1D$A1_ERR_Simple_2PNO,
-    #stats1D$A1_ERR_MCMC_Ann,
-    stats1D$A1_ERR_MCMC_Burn #,
-    #stats1D$A1_ERR_MCMC_Emp
-  )/stats1D$A1_RMSE)
+  if (!sum(is.nan(stats1D$A1_ERR_LMI_Iter))>0) {
+    YR<-range(c(#stats1D$A1_ERR_CLT_Ann,
+      stats1D$A1_ERR_CLT_Burn,
+      #stats1D$A1_ERR_CLT_Emp,
+      stats1D$A1_ERR_LMI_Iter,
+      stats1D$A1_ERR_LMI_Iter_Emp_2PL,
+      stats1D$A1_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$A1_ERR_Simple_2PL,
+      stats1D$A1_ERR_Simple_2PNO,
+      #stats1D$A1_ERR_MCMC_Ann,
+      stats1D$A1_ERR_MCMC_Burn #,
+      #stats1D$A1_ERR_MCMC_Emp
+    )/stats1D$A1_RMSE)
+  } else {
+    preYR<-c(#stats1D$A1_ERR_CLT_Ann,
+      stats1D$A1_ERR_CLT_Burn,
+      #stats1D$A1_ERR_CLT_Emp,
+      stats1D$A1_ERR_LMI_Iter,
+      stats1D$A1_ERR_LMI_Iter_Emp_2PL,
+      stats1D$A1_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$A1_ERR_Simple_2PL,
+      stats1D$A1_ERR_Simple_2PNO,
+      #stats1D$A1_ERR_MCMC_Ann,
+      stats1D$A1_ERR_MCMC_Burn #,
+      #stats1D$A1_ERR_MCMC_Emp
+      )/stats1D$A1_RMSE
+    YR<-range(preYR[!is.nan(preYR)&!is.na(preYR)&!is.infinite(preYR)])
+  }
   
   txt.labels<-c(#expression("CLT"["Ann"]),
     expression("CLT"["B"]),
@@ -44,7 +65,7 @@ PlotErrorEstimates<-function(ErrorStats) {
   # abline(h=1,lwd=2,lty=2)
   # points(gen.xi[,p],stats1D$A1_ERR_CLT_Ann/stats1D$A1_RMSE,pch=0,col=1)
   # text(0.6,0.9*YR[2],txt.labels[1])
-  
+  print(YR)
   #par(mar=c(m.b,4,m.b,m.b))
   plot(gen.xi[,p],rep(c(YR),sim.list[[d]]$J/2),type="n",
        main=expression("Slope Error Estimates : 2PNO"),
@@ -133,24 +154,44 @@ PlotErrorEstimates<-function(ErrorStats) {
   # fitA1.CLT_Emp
   # sd(fitA1.CLT_Emp$residuals)
   #fitA1LM<-lm(A1_sd_LMI/A1_sd~A1,data=stats1D)
-  fitA1.LMI_Iter<-loess(A1_ERR_LMI_Iter/A1_RMSE~A1,data=stats1D,span=0.5)
-  fitA1.LMI_Iter
-  sd(fitA1.LMI_Iter$residuals)
-  fitA1.LMI_Iter_Emp_2PL<-loess(A1_ERR_LMI_Iter_Emp_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
-  fitA1.LMI_Iter_Emp_2PL
-  sd(fitA1.LMI_Iter_Emp_2PL$residuals)
+  if (!is.na(stats1D$A1_ERR_LMI_Iter)[1]) {
+    fitA1.LMI_Iter<-loess(A1_ERR_LMI_Iter/A1_RMSE~A1,data=stats1D,span=0.5)
+    fitA1.LMI_Iter
+    sd(fitA1.LMI_Iter$residuals)
+  } else {
+    fitA1.LMI_Iter<-NA
+  }
+  if (!is.na(stats1D$A1_ERR_LMI_Iter_Emp_2PL)[1]) {
+    fitA1.LMI_Iter_Emp_2PL<-loess(A1_ERR_LMI_Iter_Emp_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
+    fitA1.LMI_Iter_Emp_2PL
+    sd(fitA1.LMI_Iter_Emp_2PL$residuals)
+  } else {
+    fitA1.LMI_Iter_Emp_2PL<-NA
+  }
   #fitA1o<-lm(A1_sd_LMIo/A1_sd~A1,data=stats1D)
-  fitA1.LMI_Iter_Emp_2PNO<-loess(A1_ERR_LMI_Iter_Emp_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
-  fitA1.LMI_Iter_Emp_2PNO
-  sd(fitA1.LMI_Iter_Emp_2PNO$residuals)
+  if (!is.na(stats1D$A1_ERR_LMI_Iter_Emp_2PNO)[1]) {
+    fitA1.LMI_Iter_Emp_2PNO<-loess(A1_ERR_LMI_Iter_Emp_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
+    fitA1.LMI_Iter_Emp_2PNO
+    sd(fitA1.LMI_Iter_Emp_2PNO$residuals)
+  } else {
+    fitA1.LMI_Iter_Emp_2PNO<-NA
+  }
   #fitA1MC<-lm(A1_sd_MCE/A1_sd~A1,data=stats1D)
-  fitA1.Simple_2PL<-loess(A1_ERR_Simple_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
-  fitA1.Simple_2PL
-  sd(fitA1.Simple_2PL$residuals)
+  if (!is.na(stats1D$A1_ERR_Simple_2PL)[1]) {
+    fitA1.Simple_2PL<-loess(A1_ERR_Simple_2PL/A1_RMSE~A1,data=stats1D,span=0.5)
+    fitA1.Simple_2PL
+    sd(fitA1.Simple_2PL$residuals)
+  } else {
+    fitA1.Simple_2PL<-NA
+  }
   #fitA1LM<-lm(A1_sd_LMI/A1_sd~A1,data=stats1D)
-  fitA1.Simple_2PNO<-loess(A1_ERR_Simple_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
-  fitA1.Simple_2PNO
-  sd(fitA1.Simple_2PNO$residuals)
+  if (!is.na(stats1D$A1_ERR_Simple_2PNO)[1]) {
+    fitA1.Simple_2PNO<-loess(A1_ERR_Simple_2PNO/A1_RMSE~A1,data=stats1D,span=0.5)
+    fitA1.Simple_2PNO
+    sd(fitA1.Simple_2PNO$residuals)
+  } else {
+    fitA1.Simple_2PNO<-NA
+  }
   # fitA1.MCMC_Ann<-loess(A1_ERR_MCMC_Ann/A1_RMSE~A1,data=stats1D,span=0.5)
   # fitA1.MCMC_Ann
   # sd(fitA1.MCMC_Ann$residuals)
@@ -185,11 +226,11 @@ PlotErrorEstimates<-function(ErrorStats) {
   par(mar=c(4+0.5,6,7,m.b))
   plot(stats1D$A1,stats1D$A1_ERR_MCMC_Burn/stats1D$A1_RMSE,main=expression("Loess fit to Hessian"~hat(sigma)/sigma["RMSE"]),
        ylab="Ratio of Error Approximation to RMSE",xlab="Generated Slope (1D, 2PNO)",ylim=YR,type="n")
-  lines(seqA1,predict(fitA1.LMI_Iter,newdata = data.frame(A1=seqA1)),lty=1,col=1)
-  lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PL,newdata = data.frame(A1=seqA1)),lty=2,col=2)
-  lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PNO,newdata = data.frame(A1=seqA1)),lty=3,col=3,lwd=2)
-  lines(seqA1,predict(fitA1.Simple_2PL,newdata = data.frame(A1=seqA1)),lty=4,col=4)
-  lines(seqA1,predict(fitA1.Simple_2PNO,newdata = data.frame(A1=seqA1)),lty=5,col=6)
+  if (!is.na(stats1D$A1_ERR_LMI_Iter)[1]) lines(seqA1,predict(fitA1.LMI_Iter,newdata = data.frame(A1=seqA1)),lty=1,col=1)
+  if (!is.na(stats1D$A1_ERR_LMI_Iter_Emp_2PL)[1]) lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PL,newdata = data.frame(A1=seqA1)),lty=2,col=2)
+  if (!is.na(stats1D$A1_ERR_LMI_Iter_Emp_2PNO)[1]) lines(seqA1,predict(fitA1.LMI_Iter_Emp_2PNO,newdata = data.frame(A1=seqA1)),lty=3,col=3,lwd=2)
+  if (!is.na(stats1D$A1_ERR_Simple_2PL)[1]) lines(seqA1,predict(fitA1.Simple_2PL,newdata = data.frame(A1=seqA1)),lty=4,col=4)
+  if (!is.na(stats1D$A1_ERR_Simple_2PNO)[1]) lines(seqA1,predict(fitA1.Simple_2PNO,newdata = data.frame(A1=seqA1)),lty=5,col=6)
   legend("topright",c(expression("ICE"),
                       expression("IPCE"["L"]),
                       expression("IPCE"["O"]),
@@ -199,18 +240,34 @@ PlotErrorEstimates<-function(ErrorStats) {
   
   #########  Error Plots for B
   p=2
-  YR<-range(c(#stats1D$B_ERR_CLT_Ann,
-    stats1D$B_ERR_CLT_Burn,
-    #stats1D$B_ERR_CLT_Emp,
-    stats1D$B_ERR_LMI_Iter,
-    stats1D$B_ERR_LMI_Iter_Emp_2PL,
-    stats1D$B_ERR_LMI_Iter_Emp_2PNO,
-    stats1D$B_ERR_Simple_2PL,
-    stats1D$B_ERR_Simple_2PNO,
-    #stats1D$B_ERR_MCMC_Ann,
-    stats1D$B_ERR_MCMC_Burn#,
-    #stats1D$B_ERR_MCMC_Emp
-  )/stats1D$B_RMSE)
+  if (!sum(is.nan(stats1D$B_ERR_LMI_Iter))>0) {
+    YR<-range(c(#stats1D$B_ERR_CLT_Ann,
+      stats1D$B_ERR_CLT_Burn,
+      #stats1D$B_ERR_CLT_Emp,
+      stats1D$B_ERR_LMI_Iter,
+      stats1D$B_ERR_LMI_Iter_Emp_2PL,
+      stats1D$B_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$B_ERR_Simple_2PL,
+      stats1D$B_ERR_Simple_2PNO,
+      #stats1D$B_ERR_MCMC_Ann,
+      stats1D$B_ERR_MCMC_Burn#,
+      #stats1D$B_ERR_MCMC_Emp
+    )/stats1D$B_RMSE)
+  } else {
+    preYR<-c(#stats1D$A1_ERR_CLT_Ann,
+      stats1D$B_ERR_CLT_Burn,
+      #stats1D$B_ERR_CLT_Emp,
+      stats1D$B_ERR_LMI_Iter,
+      stats1D$B_ERR_LMI_Iter_Emp_2PL,
+      stats1D$B_ERR_LMI_Iter_Emp_2PNO,
+      stats1D$B_ERR_Simple_2PL,
+      stats1D$B_ERR_Simple_2PNO,
+      #stats1D$B_ERR_MCMC_Ann,
+      stats1D$B_ERR_MCMC_Burn#,
+      #stats1D$B_ERR_MCMC_Emp
+    )/stats1D$B_RMSE
+    YR<-range(preYR[!is.nan(preYR)&!is.na(preYR)&!is.infinite(preYR)])
+  }
   
   ticks <- pretty(YR)[-c(length(pretty(YR))-1:0)]
   labels <- format(ticks, big.mark=",", scientific=FALSE)
@@ -315,24 +372,44 @@ PlotErrorEstimates<-function(ErrorStats) {
   # fitB.CLT_Emp
   # sd(fitB.CLT_Emp$residuals)
   #fitBLM<-lm(B_sd_LMI/B_sd~B,data=stats1D)
-  fitB.LMI_Iter<-loess(B_ERR_LMI_Iter/B_RMSE~B,data=stats1D,span=0.5)
-  fitB.LMI_Iter
-  sd(fitB.LMI_Iter$residuals)
-  fitB.LMI_Iter_Emp_2PL<-loess(B_ERR_LMI_Iter_Emp_2PL/B_RMSE~B,data=stats1D,span=0.5)
-  fitB.LMI_Iter_Emp_2PL
-  sd(fitB.LMI_Iter_Emp_2PL$residuals)
+  if (!is.na(stats1D$B_ERR_LMI_Iter)[1]) {
+    fitB.LMI_Iter<-loess(B_ERR_LMI_Iter/B_RMSE~B,data=stats1D,span=0.5)
+    fitB.LMI_Iter
+    sd(fitB.LMI_Iter$residuals)
+  } else {
+    fitB.LMI_Iter<-NA
+  }
+  if (!is.na(stats1D$B_ERR_LMI_Iter_Emp_2PL)[1]) {
+    fitB.LMI_Iter_Emp_2PL<-loess(B_ERR_LMI_Iter_Emp_2PL/B_RMSE~B,data=stats1D,span=0.5)
+    fitB.LMI_Iter_Emp_2PL
+    sd(fitB.LMI_Iter_Emp_2PL$residuals)
+  } else {
+    fitB.LMI_Iter_Emp_2PL<-NA
+  }
   #fitBo<-lm(B_sd_LMIo/B_sd~B,data=stats1D)
-  fitB.LMI_Iter_Emp_2PNO<-loess(B_ERR_LMI_Iter_Emp_2PNO/B_RMSE~B,data=stats1D,span=0.5)
-  fitB.LMI_Iter_Emp_2PNO
-  sd(fitB.LMI_Iter_Emp_2PNO$residuals)
+  if (!is.na(stats1D$B_ERR_LMI_Iter_Emp_2PNO)[1]) {
+    fitB.LMI_Iter_Emp_2PNO<-loess(B_ERR_LMI_Iter_Emp_2PNO/B_RMSE~B,data=stats1D,span=0.5)
+    fitB.LMI_Iter_Emp_2PNO
+    sd(fitB.LMI_Iter_Emp_2PNO$residuals)
+  } else {
+    fitB.LMI_Iter_Emp_2PNO<-NA
+  }
   #fitBMC<-lm(B_sd_MCE/B_sd~B,data=stats1D)
-  fitB.Simple_2PL<-loess(B_ERR_Simple_2PL/B_RMSE~B,data=stats1D,span=0.5)
-  fitB.Simple_2PL
-  sd(fitB.Simple_2PL$residuals)
+  if (!is.na(stats1D$B_ERR_Simple_2PL)[1]) {
+    fitB.Simple_2PL<-loess(B_ERR_Simple_2PL/B_RMSE~B,data=stats1D,span=0.5)
+    fitB.Simple_2PL
+    sd(fitB.Simple_2PL$residuals)
+  } else {
+    fitB.Simple_2PL<-NA
+  }
   #fitBLM<-lm(B_sd_LMI/B_sd~B,data=stats1D)
-  fitB.Simple_2PNO<-loess(B_ERR_Simple_2PNO/B_RMSE~B,data=stats1D,span=0.5)
-  fitB.Simple_2PNO
-  sd(fitB.Simple_2PNO$residuals)
+  if (!is.na(stats1D$B_ERR_Simple_2PNO)[1]) {
+    fitB.Simple_2PNO<-loess(B_ERR_Simple_2PNO/B_RMSE~B,data=stats1D,span=0.5)
+    fitB.Simple_2PNO
+    sd(fitB.Simple_2PNO$residuals)
+  } else {
+    fitB.Simple_2PNO<-NA
+  }
   # fitB.MCMC_Ann<-loess(B_ERR_MCMC_Ann/B_RMSE~B,data=stats1D,span=0.5)
   # fitB.MCMC_Ann
   # sd(fitB.MCMC_Ann$residuals)
@@ -367,11 +444,11 @@ PlotErrorEstimates<-function(ErrorStats) {
   par(mar=c(4+0.5,6,7,m.b))
   plot(stats1D$B,stats1D$B_ERR_MCMC_Burn/stats1D$B_RMSE,main=expression("Loess fit to Hessian"~hat(sigma)/sigma["RMSE"]),
        ylab="Ratio of Error Approximation to RMSE",xlab="Generated Intercept (2PNO)",ylim=YR,type="n")
-  lines(seqB,predict(fitB.LMI_Iter,newdata = data.frame(B=seqB)),lty=1,col=1)
-  lines(seqB,predict(fitB.LMI_Iter_Emp_2PL,newdata = data.frame(B=seqB)),lty=2,col=2)
-  lines(seqB,predict(fitB.LMI_Iter_Emp_2PNO,newdata = data.frame(B=seqB)),lty=3,col=3,lwd=2)
-  lines(seqB,predict(fitB.Simple_2PL,newdata = data.frame(B=seqB)),lty=4,col=4)
-  lines(seqB,predict(fitB.Simple_2PNO,newdata = data.frame(B=seqB)),lty=5,col=6)
+  if (!is.na(stats1D$B_ERR_LMI_Iter)[1]) lines(seqB,predict(fitB.LMI_Iter,newdata = data.frame(B=seqB)),lty=1,col=1)
+  if (!is.na(stats1D$B_ERR_LMI_Iter_Emp_2PL)[1]) lines(seqB,predict(fitB.LMI_Iter_Emp_2PL,newdata = data.frame(B=seqB)),lty=2,col=2)
+  if (!is.na(stats1D$B_ERR_LMI_Iter_Emp_2PNO)[1]) lines(seqB,predict(fitB.LMI_Iter_Emp_2PNO,newdata = data.frame(B=seqB)),lty=3,col=3,lwd=2)
+  if (!is.na(stats1D$B_ERR_Simple_2PL)[1]) lines(seqB,predict(fitB.Simple_2PL,newdata = data.frame(B=seqB)),lty=4,col=4)
+  if (!is.na(stats1D$B_ERR_Simple_2PNO)[1]) lines(seqB,predict(fitB.Simple_2PNO,newdata = data.frame(B=seqB)),lty=5,col=6)
   legend("topright",c(expression("ICE"),
                       expression("IPCE"["L"]),
                       expression("IPCE"["O"]),
