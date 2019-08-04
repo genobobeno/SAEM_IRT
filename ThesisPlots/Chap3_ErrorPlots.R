@@ -281,24 +281,53 @@ stats1D=ERRStats_T;condition="S1"
 
 ERRStats_E2<-RunErrors(fitFile = "C:/Dev/R_Code/SAEM_IRT/RMSE_Tests/S2/Fit_GTRUE_J100_K2_N5000_Q1_mbeta_R50_1.rds",
                       condition = "S2",CLT.start=0.3,CLT.end=0.8,item.ind=FALSE,guessing = TRUE)
+
 head(ERRStats_E2)
 par(mfrow=c(3,1))
 plot(ERRStats_E2$A1,ERRStats_E2$A1_ERR_CLT_Burn/ERRStats_E2$A1_RMSE)
 plot(ERRStats_E2$B,ERRStats_E2$B_ERR_CLT_Burn/ERRStats_E2$B_RMSE)
 plot(ERRStats_E2$C,ERRStats_E2$C_ERR_CLT_Burn/ERRStats_E2$C_RMSE)
-
 par(mfrow=c(3,1))
 plot(ERRStats_E2$A1,ERRStats_E2$A1_ERR_Simple_2PNO/ERRStats_E2$A1_RMSE)
 plot(ERRStats_E2$B,ERRStats_E2$B_ERR_Simple_2PNO/ERRStats_E2$B_RMSE)
 plot(ERRStats_E2$C,ERRStats_E2$C_ERR_Simple_2PNO/ERRStats_E2$C_RMSE)
-
 head(ERRStats_E2)
 
+FitObj<-readRDS("ConvergedModelFits/S2/Fit_GTRUE_J100_K2_N5000_Q1_mbeta_R50_1.rds")
+EmpChains<-RestartChainForDichSE(FitDATA = FitObj,IT = 400)
+MCerr<-CalculateMCMCErrors(Achain=EmpChains$Aiter,Bchain = EmpChains$Biter,
+                           settings = FitObj$settings,Cchain = EmpChains$Citer,
+                           Dchain=NA,item.ind = TRUE,condition = "S2")
+cbind(MCerr$BayesError$A1,MCerr$BayesError$B,MCerr$BayesError$C)
+colSums(cbind(MCerr$BayesError$A1>0.90,MCerr$BayesError$B>0.90,MCerr$BayesError$C>0.90))
+sum(rowSums(cbind(MCerr$BayesError$A1>0.95,MCerr$BayesError$B>0.95,MCerr$BayesError$C>0.95))==3)
 
-PlotErrorEstimates(ERRStats_E2,condition="S2")
 
-ERRStats_E3<-RunErrors(fitFile = "C:/Dev/R_Code/SAEM_IRT/RMSE_Tests/S3/Fit_GFALSE_J100_K4_N5000_Q1_mbeta_R50_1.rds",
+
+ERRStats_E3<-RunErrors(fitFile = "RMSE_Tests/S3/Fit_GFALSE_J100_K4_N5000_Q1_mbeta_R50_1.rds",
                        condition = "S3",CLT.start=0.4,CLT.end=0.8,item.ind=TRUE,guessing = FALSE)
+FitObj_E3<-readRDS("RMSE_Tests/S3/Fit_GFALSE_J100_K4_N5000_Q1_mbeta_R50_1.rds")
+# MCCOV_E3<-cbind(t(FitObj_E3$Iterations$Aiter[,1,]),t(FitObj_E3$Iterations$Biter),
+#              t(FitObj_E3$Iterations$Diter[,1,]),t(FitObj_E3$Iterations$Diter[,2,]),t(FitObj_E3$Iterations$Diter[,3,]))
+# ChainCov<-mcmcse::mcse.initseq(x=MCCOV_E3[2500:4500,c(j,30+j,60+j,90+j,121)])
+
+MCerr_E3<-CalculateMCMCErrors(Achain=FitObj_E3$Iterations$Aiter,Bchain = FitObj_E3$Iterations$Biter,
+                              settings = FitObj_E3$settings,Cchain = NA,start = 3003,end=4021,
+                              Dchain=FitObj_E3$Iterations$Diter,item.ind = TRUE,condition = "S3")
+
+plot(FitObj_E3$XI[,1],MCerr_E3$MCCLT[,"A1_CLTERR"]/MCerr_E3$MCCLT[,"A1_RMSE"])
+plot(FitObj_E3$XI[,2],MCerr_E3$MCCLT[,"B_CLTERR"]/MCerr_E3$MCCLT[,"B_RMSE"])
+plot(FitObj_E3$TAU[,1],MCerr_E3$MCCLT[,"D1_CLTERR"]/MCerr_E3$MCCLT[,"Tau1_RMSE"])
+plot(FitObj_E3$TAU[,2],MCerr_E3$MCCLT[,"D2_CLTERR"]/MCerr_E3$MCCLT[,"Tau2_RMSE"])
+plot(FitObj_E3$TAU[,3],MCerr_E3$MCCLT[,"D3_CLTERR"]/MCerr_E3$MCCLT[,"Tau3_RMSE"])
+cbind(MCerr_E3$BayesError$A1,MCerr_E3$BayesError$B,MCerr_E3$BayesError$D1,
+      MCerr_E3$BayesError$D2,MCerr_E3$BayesError$D3)
+rowSums(cbind(MCerr_E3$BayesError$A1>0.95,MCerr_E3$BayesError$B>0.95,
+              MCerr_E3$BayesError$D1>0.95,MCerr_E3$BayesError$D2>0.95,MCerr_E3$BayesError$D3>0.95))
+sum(rowSums(cbind(MCerr_E3$BayesError$A1>0.95,MCerr_E3$BayesError$B>0.95,
+                  MCerr_E3$BayesError$D1>0.95,MCerr_E3$BayesError$D2>0.95,MCerr_E3$BayesError$D3>0.95))>=4)
+
+
 par(mfrow=c(5,1),mar=c(3,3,2,2))
 plot(ERRStats_E3$A1,ERRStats_E3$A1_ERR_CLT_Burn/ERRStats_E3$A1_RMSE); abline(h=1)
 plot(ERRStats_E3$B,ERRStats_E3$B_ERR_CLT_Burn/ERRStats_E3$B_RMSE); abline(h=1)
@@ -307,8 +336,73 @@ plot(ERRStats_E3$Tau2,ERRStats_E3$Tau2_ERR_CLT_Burn/ERRStats_E3$Tau2_RMSE); abli
 plot(ERRStats_E3$Tau3,ERRStats_E3$Tau3_ERR_CLT_Burn/ERRStats_E3$Tau3_RMSE); abline(h=1)
 
 
+FitObj_E4<-readRDS("ConvergedModelFits/S4/Fit_GFALSE_J30_K4_N5000_Q3_mbifactor_R50_1.rds")
+EmpChains_E4<-RestartChainForPolySE(FitDATA = FitObj_E4,IT = 1000)
+MCerr_E4<-CalculateMCMCErrors(Achain=EmpChains_E4$Aiter,Bchain = EmpChains_E4$Biter,settings = FitObj$settings,
+                           Cchain = NA,Dchain=EmpChains_E4$Diter,item.ind = TRUE,condition = "S4")
+par(mfrow=c(5,1),mar=c(3,3,2,2))
+plot(FitObj_E4$XI[,1],MCerr_E4$MCCLT[,"A1_CLTERR"]/MCerr_E4$MCCLT[,"A1_RMSE"]); abline(h=1)
+plot(FitObj_E4$XI[,2],MCerr_E4$MCCLT[,"A2_CLTERR"]/MCerr_E4$MCCLT[,"A2_RMSE"]); abline(h=1)
+plot(FitObj_E4$XI[,3],MCerr_E4$MCCLT[,"A3_CLTERR"]/MCerr_E4$MCCLT[,"A3_RMSE"]); abline(h=1)
+plot(FitObj_E4$XI[,4],MCerr_E4$MCCLT[,"B_CLTERR"]/MCerr_E4$MCCLT[,"B_RMSE"]); abline(h=1)
+plot(FitObj_E4$TAU[,1],MCerr_E4$MCCLT[,"D1_CLTERR"]/MCerr_E4$MCCLT[,"Tau1_RMSE"]); abline(h=1)
+plot(FitObj_E4$TAU[,1],MCerr_E4$MCCLT[,"D2_CLTERR"]/MCerr_E4$MCCLT[,"Tau2_RMSE"]); abline(h=1)
+plot(FitObj_E4$TAU[,1],MCerr_E4$MCCLT[,"D3_CLTERR"]/MCerr_E4$MCCLT[,"Tau3_RMSE"]); abline(h=1)
+c(FitObj_E4$XI[1,],FitObj_E4$TAU[1,])
+c(FitObj_E4$XI[23,],FitObj_E4$TAU[23,])
+cbind(MCerr_E4$BayesError$A1,MCerr_E4$BayesError$A2,MCerr_E4$BayesError$A3,
+      MCerr_E4$BayesError$B,MCerr_E4$BayesError$D1,
+      MCerr_E4$BayesError$D2,MCerr_E4$BayesError$D3)
+sum(rowSums(cbind(MCerr_E4$BayesError$A1>0.95,MCerr_E4$BayesError$A2>0.95,MCerr_E4$BayesError$A3>0.95,
+      MCerr_E4$BayesError$B>0.95,MCerr_E4$BayesError$D1>0.95,
+      MCerr_E4$BayesError$D2>0.95,MCerr_E4$BayesError$D3>0.95))>=5)
+
+FitObj_E5<-readRDS("ConvergedModelFits/S5/Fit_GFALSE_J30_K4_N5000_Q3_msubscale_R50_1.rds")
+EmpChains_E5<-RestartChainForPolySE(FitDATA = FitObj_E5,IT = 1000)
+MCerr_E5<-CalculateMCMCErrors(Achain=EmpChains_E5$Aiter,Bchain = EmpChains_E5$Biter,settings = FitObj$settings,
+                              Cchain = NA,Dchain=EmpChains_E5$Diter,item.ind = TRUE,condition = "S5")
+par(mfrow=c(4,1),mar=c(3,3,2,2))
+
+c(FitObj_E5$XI[14,],FitObj_E5$xi[14,])
+plot(FitObj_E5$XI[,1],MCerr_E5$MCCLT[,"A1_CLTERR"]/MCerr_E5$MCCLT[,"A1_RMSE"]); abline(h=1)
+plot(FitObj_E5$XI[,2],MCerr_E5$MCCLT[,"A2_CLTERR"]/MCerr_E5$MCCLT[,"A2_RMSE"]); abline(h=1)
+plot(FitObj_E5$XI[,3],MCerr_E5$MCCLT[,"A3_CLTERR"]/MCerr_E5$MCCLT[,"A3_RMSE"]); abline(h=1)
+plot(FitObj_E5$XI[,4],MCerr_E5$MCCLT[,"B_CLTERR"]/MCerr_E5$MCCLT[,"B_RMSE"]); abline(h=1)
+plot(FitObj_E5$TAU[,1],MCerr_E5$MCCLT[,"D1_CLTERR"]/MCerr_E5$MCCLT[,"Tau1_RMSE"]); abline(h=1)
+plot(FitObj_E5$TAU[,1],MCerr_E5$MCCLT[,"D2_CLTERR"]/MCerr_E5$MCCLT[,"Tau2_RMSE"]); abline(h=1)
+plot(FitObj_E5$TAU[,1],MCerr_E5$MCCLT[,"D3_CLTERR"]/MCerr_E5$MCCLT[,"Tau3_RMSE"]); abline(h=1)
+c(FitObj_E5$XI[1,],FitObj_E5$TAU[1,])
+c(FitObj_E5$XI[14,],FitObj_E5$TAU[14,])
+c(FitObj_E5$XI[22,],FitObj_E5$TAU[22,])
+c(FitObj_E5$XI[24,],FitObj_E5$TAU[24,])
+c(FitObj_E5$XI[28,],FitObj_E5$TAU[28,])
+cbind(MCerr_E5$BayesError$A1,MCerr_E5$BayesError$A2,MCerr_E5$BayesError$A3,
+      MCerr_E5$BayesError$B,MCerr_E5$BayesError$D1,
+      MCerr_E5$BayesError$D2,MCerr_E5$BayesError$D3)
+sum(rowSums(cbind(MCerr_E5$BayesError$A1>0.95,MCerr_E5$BayesError$A2>0.95,MCerr_E5$BayesError$A3>0.95,
+                  MCerr_E5$BayesError$B>0.95,MCerr_E5$BayesError$D1>0.95,
+                  MCerr_E5$BayesError$D2>0.95,MCerr_E5$BayesError$D3>0.95))>=5)
+
+MCerr$BayesError$A1
+
+cbind(FitObj$XI[c(20,21,25,29),1],EmpChains$Aiter[c(20,21,25,29),1,100:110])
+cbind(FitObj$XI[c(20,21,25,29),2],EmpChains$Aiter[c(20,21,25,29),2,100:110])
+cbind(FitObj$XI[c(20,21,25,29),3],EmpChains$Aiter[c(20,21,25,29),3,100:110])
+cbind(FitObj$XI[c(1,25,29),4],EmpChains$Biter[c(1,25,29),100:110])
+cbind(FitObj$TAU[c(1,25,29),1],matrix(FitObj$B[c(1,25,29)],nrow=3,ncol=11)+EmpChains$Diter[c(1,25,29),1,100:110])
+cbind(FitObj$TAU[c(1,25,29),2],matrix(FitObj$B[c(1,25,29)],nrow=3,ncol=11)+EmpChains$Diter[c(1,25,29),2,100:110])
+cbind(FitObj$TAU[c(1,25,29),3],matrix(FitObj$B[c(1,25,29)],nrow=3,ncol=11)+EmpChains$Diter[c(1,25,29),3,100:110])
+
+# MCCOV<-cbind(t(EmpChains$Aiter[,1,]),t(EmpChains$Aiter[,2,]),t(EmpChains$Aiter[,3,]),
+#              t(EmpChains$Biter),t(EmpChains$Diter[,1,]),t(EmpChains$Diter[,2,]),t(EmpChains$Diter[,3,]))
+#j=7; ChainCov<-mcmcse::mcse.initseq(x=MCCOV[,c(j,30+j,60+j,90+j,121,150+j,180+j)])
+
+BayesError<-cbind(FitObj)
+
 ERRStats_E4<-RunErrors(fitFile = "C:/Dev/R_Code/SAEM_IRT/RMSE_Tests/S4/Fit_GFALSE_J30_K4_N5000_Q3_mbifactor_R50_1.rds",
                        condition = "S4",CLT.start=0.4,CLT.end=0.8,item.ind=TRUE,guessing = FALSE)
+
+
 par(mfrow=c(5,1),mar=c(3,3,2,2))
 plot(ERRStats_E4$A1,ERRStats_E4$A1_ERR_CLT_Burn/ERRStats_E4$A1_RMSE); abline(h=1)
 plot(ERRStats_E4$A2,ERRStats_E4$A2_ERR_CLT_Burn/ERRStats_E4$A2_RMSE); abline(h=1)

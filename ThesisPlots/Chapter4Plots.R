@@ -286,10 +286,10 @@ CCI.Fit.14D.NoGuess<-FitDATA
 rm(FitDATA)
 
 TWSplitSCData(fit.data.list = list(CCI.Fit.1D.NoGuess,
-                                        CCI.Fit.2D.NoGuess,
-                                        CCI.Fit.3D.NoGuess,
-                                        CCI.Fit.10D.NoGuess,
-                                        CCI.Fit.15D.NoGuess),E=17,sTitle = "CCI (no guessing)")
+                                   CCI.Fit.2D.NoGuess,
+                                   CCI.Fit.3D.NoGuess,
+                                   CCI.Fit.10D.NoGuess,
+                                   CCI.Fit.15D.NoGuess),E=17,sTitle = "CCI (no guessing)")
 
 MultipleTWFitTests(fit.data.list = list(CCI.Fit.1D.Guess,
                                         CCI.Fit.2D.Guess,
@@ -477,8 +477,26 @@ QOL.TEST<-c("I wished I had more friends.",
 
 
 QOL.ROT3<-RotateSlopes(QOL.Fit.3D)
-for (i in 1:nrow(QOL.ROT3$Oblimin$loadings)) {
-  cat(i,"&",paste0(c(apaformat(round(QOL.ROT3$Oblimin$loadings[i,]/sqrt(1+QOL.ROT3$Oblimin$loadings[i,]^2),digits=3),digits=3),QOL.TEST[i]),collapse=" & "),"\\\\ \n")
+################## SE for 3D QOL 
+RestartChainForPolySE(QOL.Fit.3D,IT = 200)
+
+QOL_3E<-RestartChainForPolySE(QOL.Fit.3D,IT = 1000)
+
+
+ERR<-CalculateMCMCErrors(Achain=QOL_3E$Aiter/(sqrt(1+QOL_3E$Aiter^2)),Bchain = QOL_3E$Biter,Dchain = QOL_3E$Diter,item.ind = TRUE,
+                         start = 231, end=519, Cchain = NA,settings = QOL.Fit.3D$settings)
+plot(1:dim(QOL_3E$Aiter)[3],QOL_3E$Aiter[17,2,])
+abline(v=c(231,519))
+ERR$MCCLT
+
+QOL_3D_Table<-data.frame(QOL.ROT3$Oblimin$loadings[,1]/sqrt(1+QOL.ROT3$Oblimin$loadings[,1]^2),ERR$MCCLT[,1],
+                         QOL.ROT3$Oblimin$loadings[,2]/sqrt(1+QOL.ROT3$Oblimin$loadings[,2]^2),ERR$MCCLT[,2],
+                         QOL.ROT3$Oblimin$loadings[,3]/sqrt(1+QOL.ROT3$Oblimin$loadings[,3]^2),ERR$MCCLT[,3])
+
+for (i in 1:nrow(QOL_3D_Table)) {
+  cat(i,"&",paste0(c(paste0(c("","(","","(","","("),c(apaformat(round(QOL_3D_Table[i,],
+                                     digits=2),
+                               digits=2)),c("",")","",")","",")")),QOL.TEST[i]),collapse=" & "),"\\\\ \n")
 }
 
 QOL.Study<-list()
@@ -528,6 +546,52 @@ points(10*1:length(QOL.Study),R.O.A.sigma,pch=15,col=2)
 points(10*1:length(QOL.Study),R.V.A.sigma,pch=16,col=3)
 points(10*1:length(QOL.Study),R.I.A.sigma,pch=17,col=4)
 legend("topright",c("Oblimin","Varimax","Infomax"),pch=15:17,col=2:4,lty=2:4)
+
+
+############# Timing
+settings$burnin=80
+settings$Adim<-5; settings$tmu<-rep(0,settings$Adim); settings$tsigma<-diag(settings$Adim)
+settings$estfile<-paste0(data.dir,"/QOL_TIMED_A",settings$Adim)
+QOL.Fit.5D<-AnalyzeTestData(RP = Response,settings = settings,verbose = TRUE,TargetA = NA,timed = TRUE)
+
+settings$rmethod<-"Oblimin";settings$esttheta<-TRUE
+settings$Adim<-3; settings$tmu<-rep(0,settings$Adim); settings$tsigma<-diag(settings$Adim)
+settings$estfile<-paste0(data.dir,"/QOL_TIMED_A",settings$Adim)
+QOL.Fit.3D<-AnalyzeTestData(RP = Response,settings = settings,verbose = TRUE,TargetA = NA,timed=TRUE)
+
+
+
+
+
+
+
+1 & .43 & .33 & -.04 & I wished I had more friends. \\ 
+2 & -.37 & .26 & .38 & I want to spend more time with my family. \\ 
+3 & -.02 & .44 & .07 & I was good at talking with adults. \\ 
+4 & .14 & .69 & .06 & I was good at making friends. \\ 
+5 & .46 & .23 & .15 & I have trouble getting along with other kids my age. \\ 
+6 & .36 & -.06 & .70 & I had trouble getting along with my family. \\ 
+7 & .85 & .11 & -.04 & Other kids were mean to me. \\ 
+8 & .46 & -.07 & .32 & I got into a yelling fight with other kids. \\ 
+9 & .12 & .68 & -.08 & I felt accepted by other kids my age. \\ 
+10 & -.37 & .65 & .51 & I felt loved by my parents or guardians. \\ 
+11 & .55 & .13 & -.00 & I was afraid of other kids my age. \\ 
+12 & .82 & -.05 & .11 & Other kids made fun of me. \\ 
+13 & .65 & .15 & .18 & I felt different from other kids my age. \\ 
+14 & .38 & .11 & .04 & I got along better with adults than other kids my age. \\ 
+15 & .16 & .70 & -.07 & I felt comfortable with other kids my age. \\ 
+16 & .00 & .43 & .29 & My teachers understood me. \\ 
+17 & .17 & -.05 & .70 & I had problems getting along with my parents or guardians. \\ 
+18 & .13 & .70 & .23 & I felt good about how I got along with my classmates. \\ 
+19 & .42 & .16 & .29 & I felt bad about how I got along with my friends. \\ 
+20 & .53 & .21 & .10 & I felt nervous when I was with other kids my age. \\ 
+21 & .45 & .31 & .17 & I did not want to be with other kids. \\ 
+22 & .06 & .72 & -.05 & I could talk with my friends. \\ 
+23 & .15 & .71 & -.19 & Other kids wanted to be with me. \\ 
+24 & .07 & .70 & -.22 & I did things with other kids my age. \\  \hline
+
+
+
 
 #saveRDS(QOL.Study,"QOLFITS.rds")
 

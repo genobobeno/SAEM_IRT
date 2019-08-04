@@ -415,15 +415,19 @@ for (j in 1:ncol(Response)) {
 }
 
 
+source("InitializeGeisCamilli.R")
+basedir<-getwd()
 
+data.dir<-"RealData"
+if (!data.dir %in% dir()) dir.create(data.dir)
 ### QOL Data
-?Rprof
-Rprof()
+# ?Rprof
+# Rprof()
 Response = scan(paste0(data.dir,"/qol.dat"), what = "numeric",sep = "\n") # N=753
 Response = data.matrix(do.call(rbind,lapply(strsplit(Response,"\\s"), function(x) as.numeric(x[-1]))))
 settings<-CheckParams(generate = FALSE)
 settings$ncat<-5
-settings$Adim<-5
+settings$Adim<-1
 settings$dbltrunc<-TRUE
 settings$tmu<-rep(0,settings$Adim)
 settings$tsigma<-diag(settings$Adim)
@@ -474,6 +478,30 @@ settings$estfile<-paste0(data.dir,"/QOL_A",settings$Adim)
 QOL.Fit.5D<-AnalyzeTestData(RP = Response,settings = settings,verbose = TRUE,TargetA = NA)
 GetLikelihood(QOL.Fit.5D)
 LRTest(QOL.Fit.5D,QOL.Fit.4D)
+
+
+
+settings<-CheckParams(generate = FALSE)
+settings$ncat<-5
+settings$Adim<-5
+settings$dbltrunc<-TRUE
+settings$tmu<-rep(0,settings$Adim)
+settings$tsigma<-diag(settings$Adim)
+settings$rmethod<-NA
+settings$empiricalse<-FALSE
+settings$esttheta<-FALSE
+settings$nesttheta<-100
+settings$thinA=8
+settings$thinB=5
+settings$EmpIT=1000
+settings$estfile<-paste0(data.dir,"/QOL_TIMED_A",settings$Adim)
+settings$burnin=2000
+settings$eps=0.0001
+settings$thetamap=FALSE
+settings$record=FALSE
+settings$cores<-1
+settings$parallel<-FALSE
+
 #TWFitTest(fit.data = QOL.Fit.5D)
 
 # settings$Adim<-6; settings$tmu<-rep(0,settings$Adim); settings$tsigma<-diag(settings$Adim)

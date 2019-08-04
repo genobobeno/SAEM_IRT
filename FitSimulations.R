@@ -133,14 +133,13 @@ for (d in names(sim.list)) {
     } else {
       settings = list(Adim=sim.list[[d]]$Q,
                       guess=FALSE,
-                      empiricalse=TRUE,
+                      empiricalse=TRUE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
                       est="rm",
                       estgain=1,
-                      empiricalse=TRUE, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                      thinA=8, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                      thinB=5, # Get empirical SEs by restarting sampling at converged estimates. TRUE or FALSE
-                      EmpIT=2500, # Iterations of Empirical Errors
-                      burnin=2500, #as.integer(5000000/sim.list[[d]]$N),
+                      thinA=8, 
+                      thinB=5,
+                      EmpIT=200, # Iterations of Empirical Errors
+                      burnin=5000, #as.integer(5000000/sim.list[[d]]$N),
                       ncat=sim.list[[d]]$K,
                       plots=FALSE,
                       plotiter=10,

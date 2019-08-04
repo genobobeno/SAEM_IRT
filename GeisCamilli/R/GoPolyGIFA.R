@@ -422,8 +422,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
         #ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
         save(ROT.Data,settings,file=rfilename)
       }
-      if (tolower(settings$rmethod) %in% tolower("Bifactor","Oblimin","Varimax","Infomax")) {
-        AR<-ROT.Data[[grepl(tolower(settings$rmethod),tolower(names(ROT.Data)))]]
+      if (tolower(settings$rmethod) %in% tolower(c("Bifactor","Oblimin","Varimax","Infomax"))) {
+        AR<-ROT.Data[[c("Bifactor","Oblimin","Varimax","Infomax")[grepl(tolower(settings$rmethod),tolower(names(ROT.Data)))]]]
+        ARot <- AR$loadings
       } else {
         AR<-list()
         AR$loadings <- A
@@ -450,8 +451,9 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
       #ROT.Data<-list(Bifactor=ARB,Varimax=ARV,Infomax=ARI)
       save(ROT.Data,settings,file=rfilename)
     }
-    if (tolower(settings$rmethod) %in% tolower("Bifactor","Oblimin","Varimax","Infomax")) {
-      AR<-ROT.Data[[grepl(tolower(settings$rmethod),tolower(names(ROT.Data)))]]
+    if (tolower(settings$rmethod) %in% tolower(c("Bifactor","Oblimin","Varimax","Infomax"))) {
+      AR<-ROT.Data[[c("Bifactor","Oblimin","Varimax","Infomax")[grepl(tolower(settings$rmethod),tolower(names(ROT.Data)))]]]
+      ARot <- AR$loadings
     } else {
       AR<-list()
       AR$loadings <- A
@@ -475,6 +477,8 @@ GoPolyGIFA <- function(rp,init=Init,settings=settings,TargetA=NA,timed=NA) {
                         prior=prior,setting=settings,RT=AR,R=R,
                         TAU=d+matrix(rep(b,ncat-1),length(b),ncat-1),
                         MN=MN,missList=missList,MY=MY,indU=indU,indL=indL)
+    } else {
+      THAT<-list(THETA=NA,TMAP=NA,TRMAP=NA)
     }
     TROT<-NA
   }
