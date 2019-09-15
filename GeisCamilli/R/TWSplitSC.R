@@ -1,4 +1,4 @@
-TWSplitSC<-function(d,extra.dimensions=FALSE,E=10,tw=0.999,...) {
+TWSplitSC<-function(d,extra.dimensions=FALSE,E=10,tw=0.999,basedir=".",...) {
   # extra.dimensions=TRUE; d="S4";r=1
   fd<-d
   source("CreateSimulationStructure.R")
@@ -7,17 +7,17 @@ TWSplitSC<-function(d,extra.dimensions=FALSE,E=10,tw=0.999,...) {
     if (extra.dimensions & di %in% c("S1","S2","S3")) {
       fit.dir.tw <- "TWFits"
       twd <- paste0(di,c("Plus1","Times5"))
-      fitdir<-c(paste0(fit.dir,"/",di),paste0(fit.dir.tw,"/",twd))
+      fitdir<-c(paste0(basedir,"/",fit.dir,"/",di),paste0(fit.dir.tw,"/",twd))
     } else if (extra.dimensions & di %in% c("S4","S5","S6","S7","S8","S9")) {
       fit.dir.tw <- "TWFits"
       twd <- paste0(di,c("Minus2","Minus1","Plus1","Plus2"))
-      fitdir<-c(paste0(fit.dir.tw,"/",twd[1:2]),
-                paste0(fit.dir,"/",di),
-                paste0(fit.dir.tw,"/",twd[3:4]))
+      fitdir<-c(paste0(basedir,"/",fit.dir.tw,"/",twd[1:2]),
+                paste0(basedir,"/",fit.dir,"/",di),
+                paste0(basedir,"/",fit.dir.tw,"/",twd[3:4]))
     } else {
-      fitdir<-paste0(fit.dir,"/",di)    
+      fitdir<-paste0(basedir,"/",fit.dir,"/",di)    
     }
-    simdir<-paste0(gen.dir,"/",di)
+    simdir<-paste0(basedir,"/",gen.dir,"/",di)
     SimList<-readRDS(paste0(simdir,"/",SFileString(sim.list[[di]],gen=TRUE),"_1.rds"))
     if (di=="S4" & length(fitdir)>1) {
       FitList<-readRDS(paste0(fitdir[length(fitdir)-1],"/",SFileString(sim.list[[di]],gen=FALSE,r = 1),".rds"))

@@ -225,9 +225,12 @@ layout(matrix(c(1,4,2,5,3,6),nrow=3,ncol=2,byrow = TRUE))
 FactorReconstruction(condition = "S4",all.reps = TRUE,basedir = getwd())
 FactorReconstruction(condition = "S5",all.reps = TRUE,basedir = getwd())
 
-par(mfrow=c(2,2),cex=0.95)
-TWSplitSC("S4",extra.dimensions = TRUE,E = 9)
-TWSplitSC("S5",extra.dimensions = TRUE,E = 9)
+par(mfrow=c(2,2),cex=1.1)
+TWSplitSC("S4",extra.dimensions = TRUE,E = 7,
+          basedir="C:/Dev/MyFiles/NextCloud/Documents/Rutgers/SAEM_IRT/",
+          tw = 0.95)
+TWSplitSC("S5",extra.dimensions = TRUE,E = 7,
+          basedir="C:/Dev/MyFiles/NextCloud/Documents/Rutgers/SAEM_IRT/")
 
 par(mfrow=c(1,2))
 PlotEVRatios("S4",extra.dimensions = TRUE,E = 9)

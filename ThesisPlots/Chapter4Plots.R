@@ -429,7 +429,7 @@ R.QOL[R.QOL==9]<-NA
 par(mfrow=c(1,2),mar=c(5,4,3,2))
 barplot(table((as.numeric(cut2(rowMeans(R.QOL-2,na.rm = TRUE),cuts=seq(from = -2,to = 2,by = 0.1)))-21)*(1/10)),
         main="Distribution of QOL Scores",ylab="Frequency",xlab="Average Response")
-qqnorm(y=100*round(rowMeans(R.QOL-2,na.rm = TRUE),digits = 3),main="FCI Pretest Q-Q Analysis")
+qqnorm(y=100*round(rowMeans(R.QOL-2,na.rm = TRUE),digits = 3),main="QOL Pretest Q-Q Analysis")
 
 
 ResponseCurves(R.QOL-2,scores = rowMeans(R.QOL-2,na.rm = TRUE),
