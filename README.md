@@ -2,7 +2,10 @@
 # SAEM_IRT
 Eugene Geis, Greg Camilli, Stochastic Approximation Estimation Maximization algorithm as applied to an Multidimensional Item Response Theory model of dichotomous and polythomous response data, with a cumulative normal ogive response function.
 
+
 Keywords: IRT, SAEM, MIRT, 2PNO, 3PNO
+
+Thesis: https://arxiv.org/abs/1912.12755
 
 ## Directions to get started
 
